@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, Upload, Download, Plus, Trash2, CheckCircle2, Search, Key, Copy, Eye, EyeOff, Check, AlertTriangle, FileSpreadsheet } from 'lucide-react';
+import { Users, Upload, Download, Plus, Trash2, CheckCircle2, Search, Key, Copy, Eye, EyeOff, Check, AlertTriangle, FileSpreadsheet, Edit3 } from 'lucide-react';
 import { initialAccounts, UserAccount } from '@/lib/mockStore';
 import { readExcelFile, downloadUserImportTemplate, exportToExcel } from '@/lib/utils/excel';
 
@@ -17,6 +17,7 @@ export default function AdminUserManagementPage() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [editingUser, setEditingUser] = useState<UserAccount | null>(null);
 
   // Single Add User Form State
   const [newFullName, setNewFullName] = useState('');
@@ -129,6 +130,22 @@ export default function AdminUserManagementPage() {
     setNewPassword('SIAKAL2026!');
   };
 
+  const handleSaveEditUser = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+
+    // Sync usernameOrId into nim/nip if applicable
+    const updatedUser = {
+      ...editingUser,
+      nim: editingUser.role === 'mahasiswa' ? editingUser.usernameOrId : editingUser.nim,
+      nip: editingUser.role === 'dosen' ? editingUser.usernameOrId : editingUser.nip,
+    };
+
+    const updatedList = users.map((u) => (u.id === updatedUser.id ? updatedUser : u));
+    saveUsers(updatedList);
+    setEditingUser(null);
+  };
+
   const handleExportUsers = () => {
     exportToExcel(
       [
@@ -222,7 +239,7 @@ export default function AdminUserManagementPage() {
         </div>
       </div>
 
-      {/* Table List User with Generous Padding & Spacious Layout */}
+      {/* Table List User */}
       <div className="glass-panel p-6 overflow-hidden">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
@@ -296,12 +313,21 @@ export default function AdminUserManagementPage() {
                       {u.prodi || u.namaLengkapGelar || '-'}
                     </td>
 
-                    {/* Actions: Copy & Delete */}
+                    {/* Actions: Edit, Copy & Delete */}
                     <td className="py-4 px-4 whitespace-nowrap text-right space-x-1.5">
                       <button
                         type="button"
+                        onClick={() => setEditingUser({ ...u })}
+                        className="p-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-sky-400 transition-colors inline-flex items-center border border-sky-500/20"
+                        title="Edit Data User & Password"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+
+                      <button
+                        type="button"
                         onClick={() => handleCopyCredentials(u)}
-                        className="p-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-sky-500/20 text-slate-700 dark:text-slate-300 hover:text-sky-600 transition-colors inline-flex items-center"
+                        className="p-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors inline-flex items-center"
                         title="Salin ID Masuk & Password"
                       >
                         {copiedId === u.id ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
@@ -323,6 +349,121 @@ export default function AdminUserManagementPage() {
           </table>
         </div>
       </div>
+
+      {/* MODAL EDIT USER */}
+      {editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
+          <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-lg p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-white/20">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Edit3 className="w-5 h-5 text-sky-500" />
+                <span>Edit Akun Pengguna & Password</span>
+              </h3>
+            </div>
+
+            <form onSubmit={handleSaveEditUser} className="space-y-3.5 text-xs sm:text-sm">
+              <div>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Nama Lengkap Pengguna</label>
+                <input
+                  type="text"
+                  required
+                  value={editingUser.fullName}
+                  onChange={(e) => setEditingUser({ ...editingUser, fullName: e.target.value })}
+                  className="w-full glass-input font-bold"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Peran (Role Akun)</label>
+                  <select
+                    value={editingUser.role}
+                    onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as any })}
+                    className="w-full glass-input font-bold"
+                  >
+                    <option value="mahasiswa">Mahasiswa</option>
+                    <option value="dosen">Dosen</option>
+                    <option value="pembimbing_lapangan">Pembimbing Lapangan</option>
+                    <option value="alumni">Alumni</option>
+                    <option value="unit_approver">Unit Approver</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Program Studi / Unit</label>
+                  <select
+                    value={editingUser.prodi || 'Studi Nautika'}
+                    onChange={(e) => setEditingUser({ ...editingUser, prodi: e.target.value })}
+                    className="w-full glass-input font-semibold"
+                  >
+                    <option value="Studi Nautika">Studi Nautika</option>
+                    <option value="Permesinan Kapal">Permesinan Kapal</option>
+                    <option value="Manajemen Transportasi Perairan Daratan">MTPD</option>
+                    <option value="Teknologi Rekayasa Pelayaran & TSDP">TSDP</option>
+                    <option value="Unit Verifikator">Unit Verifikator</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-sky-500/10 border border-sky-500/30 space-y-3">
+                <div className="font-extrabold text-sky-700 dark:text-sky-300 text-xs flex items-center gap-1.5">
+                  <Key className="w-4 h-4" />
+                  <span>Kredensial Log In (ID & Password Akun)</span>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
+                    {editingUser.role === 'mahasiswa' ? 'NIM (ID Log In)' : editingUser.role === 'dosen' ? 'NIP (ID Log In)' : 'Username / ID Masuk'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editingUser.usernameOrId || editingUser.nim || editingUser.nip || ''}
+                    onChange={(e) => setEditingUser({ ...editingUser, usernameOrId: e.target.value })}
+                    className="w-full glass-input font-mono font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Kata Sandi (Password)</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingUser.initialPassword || 'SIAKAL2026!'}
+                    onChange={(e) => setEditingUser({ ...editingUser, initialPassword: e.target.value })}
+                    className="w-full glass-input font-mono font-bold"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Email Official</label>
+                <input
+                  type="email"
+                  required
+                  value={editingUser.email}
+                  onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                  className="w-full glass-input font-medium"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingUser(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs"
+                >
+                  Batal
+                </button>
+                <button type="submit" className="glass-button text-xs sm:text-sm font-bold">
+                  Simpan Perubahan Akun
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Modal Import Excel Preview */}
       {showImportModal && (
