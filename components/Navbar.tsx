@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useTheme } from '@/components/ThemeProvider';
-import { Sun, Moon, LogOut, User } from 'lucide-react';
+import { Sun, Moon, LogOut } from 'lucide-react';
 
 interface NavbarProps {
   currentUser?: {
@@ -78,7 +78,7 @@ export function Navbar({ currentUser, onLogout }: NavbarProps) {
           </button>
 
           {/* User Info / Profile */}
-          {currentUser && currentUser.name ? (
+          {currentUser && currentUser.name && (
             <div className="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-white/10">
               <div className="hidden sm:flex flex-col text-right">
                 <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{userName}</span>
@@ -98,11 +98,6 @@ export function Navbar({ currentUser, onLogout }: NavbarProps) {
                 </button>
               )}
             </div>
-          ) : (
-            <Link href="/login" className="glass-button text-xs font-bold flex items-center gap-2 py-2.5 px-4 shadow-md">
-              <User className="w-4 h-4" />
-              <span>Portal Masuk</span>
-            </Link>
           )}
         </div>
       </div>
