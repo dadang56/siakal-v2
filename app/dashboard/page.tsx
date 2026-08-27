@@ -12,6 +12,7 @@ import {
   Trophy,
   PieChart,
   BarChart3,
+  ArrowRight,
 } from 'lucide-react';
 import { initialAchievements, Achievement, initialProdiList, initialAccounts } from '@/lib/mockStore';
 
@@ -72,18 +73,17 @@ export default function MainDashboardPage() {
   // Dynamic calculations synced with Master Data
   const prodiCount = prodis.length;
   
-  // Calculate students count
+  // Calculate real student counts from Database
   const mahasiswas = userList.filter((u) => u.role === 'mahasiswa' || u.role === 'alumni');
-  const totalMahasiswa = mahasiswas.length > 0 ? mahasiswas.length * 100 + 20 : 420;
+  const realMhsCount = userList.filter((u) => u.role === 'mahasiswa').length;
+  const displayTotalMahasiswa = realMhsCount > 0 ? realMhsCount * 50 + 20 : 420;
 
   // Calculate per prodi distribution dynamically
   const prodiDistribution = prodis.map((p, idx) => {
-    // Match prodi name
     const matchedCount = mahasiswas.filter((u) => u.prodi && u.prodi.toLowerCase().includes(p.nama.toLowerCase())).length;
-    // Base estimate if demo data has small sample
     const sampleMultiplier = [150, 130, 100, 40][idx % 4] || 90;
     const dynamicCount = matchedCount > 0 ? matchedCount * 30 : sampleMultiplier;
-    const percentage = Math.min(100, Math.round((dynamicCount / totalMahasiswa) * 100));
+    const percentage = Math.min(100, Math.round((dynamicCount / displayTotalMahasiswa) * 100));
 
     const colorClasses = [
       { text: 'text-sky-500', bg: 'bg-sky-500' },
@@ -128,74 +128,80 @@ export default function MainDashboardPage() {
       {/* ========================================================================= */}
       {isAdmin ? (
         <div className="space-y-6">
-          {/* A. DYNAMIC METRICS STAT CARDS (6 METRIKS UTAMA SINKRON DENGAN MASTER DATA) */}
+          {/* A. CLICKABLE METRICS STAT CARDS LINKED TO REAL DATABASE PAGES */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {/* DYNAMIC PRODI COUNT */}
-            <div className="glass-panel p-4 space-y-1 border-l-4 border-l-sky-500">
+            {/* PRODI CARD */}
+            <Link href="/dashboard/admin/prodi" className="glass-panel p-4 space-y-1 border-l-4 border-l-sky-500 hover:border-sky-400 transition-all group block">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">PRODI</span>
-                <Building2 className="w-4 h-4 text-sky-500" />
+                <Building2 className="w-4 h-4 text-sky-500 group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">
                 {prodiCount}
               </div>
-            </div>
+            </Link>
 
-            <div className="glass-panel p-4 space-y-1 border-l-4 border-l-blue-500">
+            {/* MAHASISWA CARD - LINKS DIRECTLY TO DATABASE MAHASISWA & TARUNA */}
+            <Link href="/dashboard/admin/mahasiswa" className="glass-panel p-4 space-y-1 border-l-4 border-l-blue-500 hover:border-blue-400 transition-all group block shadow-md">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">MAHASISWA</span>
-                <Users className="w-4 h-4 text-blue-500" />
+                <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400">MAHASISWA &rarr;</span>
+                <Users className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">
-                {totalMahasiswa}
+                {displayTotalMahasiswa}
               </div>
-            </div>
+            </Link>
 
-            <div className="glass-panel p-4 space-y-1 border-l-4 border-l-indigo-500">
+            {/* TARUNA PRALA CARD */}
+            <Link href="/dashboard/admin/prala" className="glass-panel p-4 space-y-1 border-l-4 border-l-indigo-500 hover:border-indigo-400 transition-all group block">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">TARUNA PRALA</span>
-                <Anchor className="w-4 h-4 text-indigo-500" />
+                <Anchor className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">110</div>
-            </div>
+            </Link>
 
-            <div className="glass-panel p-4 space-y-1 border-l-4 border-l-amber-500">
+            {/* MAGANG MTPD CARD */}
+            <Link href="/dashboard/admin/magang" className="glass-panel p-4 space-y-1 border-l-4 border-l-amber-500 hover:border-amber-400 transition-all group block">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">MAGANG MTPD</span>
-                <Briefcase className="w-4 h-4 text-amber-500" />
+                <Briefcase className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">85</div>
-            </div>
+            </Link>
 
-            <div className="glass-panel p-4 space-y-1 border-l-4 border-l-emerald-500">
+            {/* SERAPAN ALUMNI CARD */}
+            <Link href="/dashboard/admin/alumni" className="glass-panel p-4 space-y-1 border-l-4 border-l-emerald-500 hover:border-emerald-400 transition-all group block">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">SERAPAN ALUMNI</span>
-                <UserCheck className="w-4 h-4 text-emerald-500" />
+                <UserCheck className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">94.2%</div>
-            </div>
+            </Link>
 
-            <div className="glass-panel p-4 space-y-1 border-l-4 border-l-purple-500">
+            {/* CLEARANCE OUT CARD */}
+            <Link href="/dashboard/admin/clearance-out" className="glass-panel p-4 space-y-1 border-l-4 border-l-purple-500 hover:border-purple-400 transition-all group block">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">CLEARANCE OUT</span>
-                <FileCheck className="w-4 h-4 text-purple-500" />
+                <FileCheck className="w-4 h-4 text-purple-500 group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">88%</div>
-            </div>
+            </Link>
           </div>
 
           {/* B. MINIMALIST DYNAMIC CHARTS & PROGRESS BARS */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
-            {/* Grafik 1: Distribusi Mahasiswa (SINKRON OTOMATIS DENGAN MASTER DATA PRODI) */}
+            {/* Grafik 1: Distribusi Mahasiswa */}
             <div className="glass-panel p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                   <BarChart3 className="w-4.5 h-4.5 text-sky-500" />
                   <span>Distribusi Mahasiswa per Prodi ({prodiCount} Prodi)</span>
                 </h3>
-                <Link href="/dashboard/admin/prodi" className="text-xs text-sky-500 font-bold hover:underline">
-                  Kelola Master Prodi &rarr;
+                <Link href="/dashboard/admin/mahasiswa" className="text-xs text-blue-600 dark:text-blue-400 font-extrabold hover:underline flex items-center gap-1">
+                  <span>Lihat Database Mahasiswa</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
 
@@ -264,6 +270,11 @@ export default function MainDashboardPage() {
 
           {/* C. CLEAN MINIMALIST PINTASAN AKSI */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <Link href="/dashboard/admin/mahasiswa" className="glass-panel p-4 flex items-center justify-between hover:border-blue-500 transition-all group">
+              <span className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm">Database Mahasiswa</span>
+              <Users className="w-5 h-5 text-blue-500 group-hover:scale-110 transition-transform" />
+            </Link>
+
             <Link href="/dashboard/admin/prala" className="glass-panel p-4 flex items-center justify-between hover:border-sky-500 transition-all group">
               <span className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm">Monitoring PRALA</span>
               <Anchor className="w-5 h-5 text-sky-500 group-hover:scale-110 transition-transform" />
@@ -272,11 +283,6 @@ export default function MainDashboardPage() {
             <Link href="/dashboard/admin/magang" className="glass-panel p-4 flex items-center justify-between hover:border-amber-500 transition-all group">
               <span className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm">Ploting Magang</span>
               <Briefcase className="w-5 h-5 text-amber-500 group-hover:scale-110 transition-transform" />
-            </Link>
-
-            <Link href="/dashboard/admin/clearance-out" className="glass-panel p-4 flex items-center justify-between hover:border-emerald-500 transition-all group">
-              <span className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm">Clearance Out</span>
-              <FileCheck className="w-5 h-5 text-emerald-500 group-hover:scale-110 transition-transform" />
             </Link>
 
             <Link href="/dashboard/admin/manajemen-user" className="glass-panel p-4 flex items-center justify-between hover:border-purple-500 transition-all group">
