@@ -3,7 +3,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion } from 'framer-motion';
 import {
   LayoutDashboard,
   Users,
@@ -120,20 +119,16 @@ export function Sidebar({ role, prodi }: SidebarProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-bold transition-all relative ${
+                className={`flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-bold transition-colors relative ${
                   isActive
-                    ? 'text-sky-600 dark:text-sky-400 bg-sky-500/10 border border-sky-500/30 shadow-sm'
-                    : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                    ? 'text-sky-600 dark:text-sky-400 bg-sky-500/10 dark:bg-sky-500/15 border border-sky-500/30 shadow-sm'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60'
                 }`}
               >
                 <Icon className={`w-4.5 h-4.5 shrink-0 ${isActive ? 'text-sky-500' : 'text-slate-400'}`} />
                 <span className="truncate">{item.label}</span>
                 {isActive && (
-                  <motion.div
-                    layoutId="activeIndicator"
-                    className="absolute left-0 w-1 h-6 bg-sky-500 rounded-r-full"
-                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                  />
+                  <div className="absolute left-0 w-1 h-6 bg-sky-500 rounded-r-full shadow-sm" />
                 )}
               </Link>
             );

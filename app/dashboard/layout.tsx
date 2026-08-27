@@ -10,14 +10,28 @@ import { initialAccounts, UserAccount } from '@/lib/mockStore';
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [currentUser, setCurrentUser] = useState<UserAccount>(initialAccounts[0]);
+
+  // Synchronous State Initializer to prevent re-render flashes during navigation
+  const [currentUser, setCurrentUser] = useState<UserAccount>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('siakal_user');
+        if (stored) {
+          return JSON.parse(stored) as UserAccount;
+        }
+      } catch (e) {}
+    }
+    return initialAccounts[0];
+  });
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem('siakal_user');
       if (stored) {
         const user = JSON.parse(stored) as UserAccount;
-        setCurrentUser(user);
+        if (user.id !== currentUser.id) {
+          setCurrentUser(user);
+        }
 
         if (
           user.role === 'mahasiswa' &&
@@ -30,7 +44,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     } catch (err) {
       console.error(err);
     }
-  }, [pathname, router]);
+  }, [pathname, router, currentUser.id]);
 
   const handleLogout = () => {
     try {
