@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Building2, Plus, Trash2, CheckCircle2 } from 'lucide-react';
+import { Building2, Plus, Trash2, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { initialProdiList } from '@/lib/mockStore';
 
 export default function AdminProdiPage() {
   const [prodis, setProdis] = useState(initialProdiList);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+
   const [namaProdi, setNamaProdi] = useState('');
   const [jenjang, setJenjang] = useState<'Diploma III' | 'Diploma IV'>('Diploma III');
   const [kodeProdi, setKodeProdi] = useState('');
@@ -35,9 +37,11 @@ export default function AdminProdiPage() {
     setShowAddModal(false);
   };
 
-  const handleDeleteProdi = (id: string) => {
-    const updated = prodis.filter((p) => p.id !== id);
+  const confirmDeleteProdi = () => {
+    if (!deleteTargetId) return;
+    const updated = prodis.filter((p) => p.id !== deleteTargetId);
     saveProdis(updated);
+    setDeleteTargetId(null);
   };
 
   return (
@@ -86,7 +90,7 @@ export default function AdminProdiPage() {
                   <td className="py-3.5 px-3 font-mono text-slate-600 dark:text-slate-300 font-semibold">{p.kode}</td>
                   <td className="py-3.5 px-3 text-right">
                     <button
-                      onClick={() => handleDeleteProdi(p.id)}
+                      onClick={() => setDeleteTargetId(p.id)}
                       className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
                       title="Hapus Prodi"
                     >
@@ -167,6 +171,37 @@ export default function AdminProdiPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* POPUP MODAL KONFIRMASI HAPUS */}
+      {deleteTargetId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
+          <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-sm p-6 space-y-4 shadow-2xl border border-red-500/30 text-center">
+            <div className="w-12 h-12 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Konfirmasi Hapus Prodi</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+              Apakah Anda yakin ingin menghapus Program Studi ini? Data yang dihapus tidak dapat dikembalikan.
+            </p>
+            <div className="flex justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTargetId(null)}
+                className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteProdi}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-lg"
+              >
+                Ya, Hapus Sekarang
+              </button>
+            </div>
           </div>
         </div>
       )}

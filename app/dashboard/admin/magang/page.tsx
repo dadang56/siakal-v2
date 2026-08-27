@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Briefcase, Plus, FileText, Upload, CheckCircle2, UserPlus, Trash2 } from 'lucide-react';
+import { Briefcase, Plus, FileText, Upload, CheckCircle2, UserPlus, Trash2, AlertTriangle } from 'lucide-react';
 
 export default function AdminMagangPage() {
   const [kelompoks, setKelompoks] = useState([
@@ -25,6 +25,8 @@ export default function AdminMagangPage() {
   ]);
 
   const [showModal, setShowModal] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+
   const [namaKelompok, setNamaKelompok] = useState('');
   const [nomorSk, setNomorSk] = useState('');
   const [tempatMagang, setTempatMagang] = useState('');
@@ -52,8 +54,10 @@ export default function AdminMagangPage() {
     setShowModal(false);
   };
 
-  const handleDeleteKelompok = (id: string) => {
-    setKelompoks(kelompoks.filter((k) => k.id !== id));
+  const confirmDeleteKelompok = () => {
+    if (!deleteTargetId) return;
+    setKelompoks(kelompoks.filter((k) => k.id !== deleteTargetId));
+    setDeleteTargetId(null);
   };
 
   return (
@@ -100,7 +104,7 @@ export default function AdminMagangPage() {
                   <span>File SK Magang PDF</span>
                 </a>
                 <button
-                  onClick={() => handleDeleteKelompok(klp.id)}
+                  onClick={() => setDeleteTargetId(klp.id)}
                   className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
                   title="Hapus Kelompok"
                 >
@@ -215,6 +219,37 @@ export default function AdminMagangPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* POPUP MODAL KONFIRMASI HAPUS */}
+      {deleteTargetId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
+          <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-sm p-6 space-y-4 shadow-2xl border border-red-500/30 text-center">
+            <div className="w-12 h-12 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Konfirmasi Hapus Ploting Magang</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+              Apakah Anda yakin ingin menghapus kelompok magang ini? Data ploting anggota dan SK akan terhapus.
+            </p>
+            <div className="flex justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTargetId(null)}
+                className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteKelompok}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-lg"
+              >
+                Ya, Hapus Sekarang
+              </button>
+            </div>
           </div>
         </div>
       )}

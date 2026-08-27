@@ -2,12 +2,14 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { GraduationCap, Plus, FileCheck, Calendar, Users, Award } from 'lucide-react';
+import { GraduationCap, Plus, FileCheck, Trash2, AlertTriangle } from 'lucide-react';
 import { initialScholarshipOffers, ScholarshipOffer } from '@/lib/mockStore';
 
 export default function AdminBeasiswaPage() {
   const [offers, setOffers] = useState<ScholarshipOffer[]>(initialScholarshipOffers);
   const [showModal, setShowModal] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+
   const [namaBeasiswa, setNamaBeasiswa] = useState('');
   const [jenisBeasiswa, setJenisBeasiswa] = useState('Prestasi Akademik');
   const [sasaran, setSasaran] = useState('');
@@ -35,6 +37,12 @@ export default function AdminBeasiswaPage() {
     setShowModal(false);
     setNamaBeasiswa('');
     setSasaran('');
+  };
+
+  const confirmDeleteOffer = () => {
+    if (!deleteTargetId) return;
+    setOffers(offers.filter((o) => o.id !== deleteTargetId));
+    setDeleteTargetId(null);
   };
 
   return (
@@ -66,9 +74,18 @@ export default function AdminBeasiswaPage() {
                 <span className="px-3 py-1 rounded-full text-xs font-bold bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/30">
                   {off.jenisBeasiswa}
                 </span>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                  Status: {off.status}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                    Status: {off.status}
+                  </span>
+                  <button
+                    onClick={() => setDeleteTargetId(off.id)}
+                    className="p-1 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10"
+                    title="Hapus Penawaran"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">{off.namaBeasiswa}</h3>
@@ -170,6 +187,37 @@ export default function AdminBeasiswaPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* POPUP MODAL KONFIRMASI HAPUS BEASISWA */}
+      {deleteTargetId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
+          <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-sm p-6 space-y-4 shadow-2xl border border-red-500/30 text-center">
+            <div className="w-12 h-12 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Konfirmasi Hapus Penawaran</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+              Apakah Anda yakin ingin menghapus Penawaran Beasiswa ini? Pendaftaran mahasiswa pada beasiswa ini akan dibatalkan.
+            </p>
+            <div className="flex justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTargetId(null)}
+                className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteOffer}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-lg"
+              >
+                Ya, Hapus Sekarang
+              </button>
+            </div>
           </div>
         </div>
       )}

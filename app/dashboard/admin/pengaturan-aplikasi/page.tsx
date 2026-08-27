@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Settings, Upload, Image as ImageIcon, CheckCircle2, Trash2, Plus, RefreshCw } from 'lucide-react';
+import { Settings, Upload, Image as ImageIcon, CheckCircle2, Trash2, Plus, RefreshCw, AlertTriangle } from 'lucide-react';
 
-// Lightweight Canvas Image Compression (max 300px for logo ~15KB, max 800px for background ~50KB)
 function compressImage(file: File, maxWidth = 800, quality = 0.7): Promise<string> {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -40,6 +39,10 @@ export default function AppSettingsPage() {
   ]);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
+  // Modal confirm targets
+  const [deleteSlideIndex, setDeleteSlideIndex] = useState<number | null>(null);
+  const [showResetConfirmModal, setShowResetConfirmModal] = useState(false);
+
   useEffect(() => {
     try {
       const storedLogo = localStorage.getItem('siakal_custom_logo');
@@ -57,7 +60,6 @@ export default function AppSettingsPage() {
     }
   }, []);
 
-  // Instant Save Helper
   const persistBranding = (newLogo: string, newBgs: string[]) => {
     try {
       localStorage.setItem('siakal_custom_logo', newLogo);
@@ -66,11 +68,10 @@ export default function AppSettingsPage() {
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 3000);
     } catch (err) {
-      console.error('LocalStorage quota error:', err);
+      console.error('LocalStorage error:', err);
     }
   };
 
-  // Handle Local Logo Upload (Instant Compression & Storage)
   const handleLogoFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -85,7 +86,6 @@ export default function AppSettingsPage() {
     persistBranding(compressedLogo, backgrounds);
   };
 
-  // Handle Local Background Photos Upload (Multiple - Instant Compression & Storage)
   const handleBgFilesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -106,14 +106,15 @@ export default function AppSettingsPage() {
     }
   };
 
-  // Instant Delete Slide & Storage Sync
-  const handleRemoveBg = (idx: number) => {
-    const updatedBgs = backgrounds.filter((_, i) => i !== idx);
+  const confirmRemoveBg = () => {
+    if (deleteSlideIndex === null) return;
+    const updatedBgs = backgrounds.filter((_, i) => i !== deleteSlideIndex);
     setBackgrounds(updatedBgs);
     persistBranding(logoUrl, updatedBgs);
+    setDeleteSlideIndex(null);
   };
 
-  const handleResetToDefault = () => {
+  const confirmResetToDefault = () => {
     localStorage.removeItem('siakal_custom_logo');
     localStorage.removeItem('siakal_custom_backgrounds');
     const defaultBgs = [
@@ -123,7 +124,7 @@ export default function AppSettingsPage() {
     setLogoUrl('');
     setBackgrounds(defaultBgs);
     window.dispatchEvent(new Event('siakal_branding_updated'));
-    alert('Branding berhasil di-reset ke standar bawaan.');
+    setShowResetConfirmModal(false);
   };
 
   const handleSaveSettings = () => {
@@ -140,13 +141,13 @@ export default function AppSettingsPage() {
             <span>Pengaturan Branding & Landing Page Dinamis</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 font-medium">
-            Unggah Logo Kampus resmi dan atur multi-foto latar belakang dari perangkat komputer Anda. File dioptimalkan dan tersimpan secara permanen.
+            Unggah Logo Kampus resmi dan atur multi-foto latar belakang dari perangkat komputer Anda.
           </p>
         </div>
 
         <button
           type="button"
-          onClick={handleResetToDefault}
+          onClick={() => setShowResetConfirmModal(true)}
           className="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:text-red-500 flex items-center gap-1.5 shrink-0 shadow-sm"
           title="Reset ke Standar"
         >
@@ -157,7 +158,7 @@ export default function AppSettingsPage() {
 
       {savedSuccess && (
         <div className="p-4 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 text-xs sm:text-sm font-bold text-center shadow-lg">
-          ✓ Pengaturan Logo & Multi-Foto Background Lokal Berhasil Disimpan & Diperbarui!
+          ✓ Pengaturan Logo & Multi-Foto Background Lokal Berhasil Disimpan!
         </div>
       )}
 
@@ -169,7 +170,6 @@ export default function AppSettingsPage() {
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
-          {/* File Picker Box */}
           <div className="sm:col-span-2">
             <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
               Pilih Gambar Logo dari Komputer (.PNG / .JPG / .SVG)
@@ -191,7 +191,6 @@ export default function AppSettingsPage() {
             </label>
           </div>
 
-          {/* Live Logo Preview Box */}
           <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-center space-y-2 flex flex-col items-center justify-center h-full">
             <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pratinjau Logo</span>
             <div className="w-24 h-24 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 flex items-center justify-center p-2 shadow-inner">
@@ -225,12 +224,8 @@ export default function AppSettingsPage() {
               <ImageIcon className="w-4.5 h-4.5 text-amber-500 dark:text-amber-400" />
               <span>2. Carousel Multi-Foto Background Fluid Landing Page</span>
             </h3>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
-              Unggah satu atau beberapa foto lokasi kampus, kapal, atau kegiatan dari perangkat lokal Anda.
-            </p>
           </div>
 
-          {/* Multiple File Upload Button */}
           <div>
             <input
               type="file"
@@ -250,7 +245,6 @@ export default function AppSettingsPage() {
           </div>
         </div>
 
-        {/* List Photos Carousel Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
           {backgrounds.map((bg, idx) => (
             <div
@@ -259,12 +253,11 @@ export default function AppSettingsPage() {
             >
               <img src={bg} alt={`Background Slide ${idx + 1}`} className="w-full h-full object-cover" />
               
-              {/* Overlay Delete Button */}
               <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                 <button
                   type="button"
-                  onClick={() => handleRemoveBg(idx)}
-                  className="px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg active:scale-95 cursor-pointer"
+                  onClick={() => setDeleteSlideIndex(idx)}
+                  className="px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span>Hapus Slide Ini</span>
@@ -279,13 +272,74 @@ export default function AppSettingsPage() {
         </div>
       </div>
 
-      {/* Save Settings Action Button */}
       <div className="flex justify-end pt-2">
         <button onClick={handleSaveSettings} className="glass-button text-xs sm:text-sm font-bold flex items-center gap-2 py-3 px-6 shadow-xl">
           <CheckCircle2 className="w-4.5 h-4.5" />
           <span>Simpan Perubahan Branding</span>
         </button>
       </div>
+
+      {/* POPUP MODAL KONFIRMASI HAPUS SLIDE FOTO */}
+      {deleteSlideIndex !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
+          <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-sm p-6 space-y-4 shadow-2xl border border-red-500/30 text-center">
+            <div className="w-12 h-12 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Konfirmasi Hapus Slide Foto</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+              Apakah Anda yakin ingin menghapus Slide Foto Carousel ini? Foto tidak akan ditampilkan lagi di landing page.
+            </p>
+            <div className="flex justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteSlideIndex(null)}
+                className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={confirmRemoveBg}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-lg"
+              >
+                Ya, Hapus Sekarang
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* POPUP MODAL KONFIRMASI RESET DEFAULTS */}
+      {showResetConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
+          <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-sm p-6 space-y-4 shadow-2xl border border-amber-500/30 text-center">
+            <div className="w-12 h-12 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center mx-auto">
+              <RefreshCw className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Konfirmasi Reset Pengaturan</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+              Apakah Anda yakin ingin mengembalikan logo & foto carousel ke pengaturan standar bawaan?
+            </p>
+            <div className="flex justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowResetConfirmModal(false)}
+                className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={confirmResetToDefault}
+                className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-lg"
+              >
+                Ya, Reset Sekarang
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, Upload, Download, Plus, Trash2, CheckCircle2, Search, Key, Copy, Eye, EyeOff, Check } from 'lucide-react';
+import { Users, Upload, Download, Plus, Trash2, CheckCircle2, Search, Key, Copy, Eye, EyeOff, Check, AlertTriangle } from 'lucide-react';
 import { initialAccounts, UserAccount } from '@/lib/mockStore';
 import { readExcelFile, downloadUserImportTemplate, exportToExcel } from '@/lib/utils/excel';
 
@@ -12,10 +12,11 @@ export default function AdminUserManagementPage() {
   const [visiblePasswords, setVisiblePasswords] = useState<{ [key: string]: boolean }>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  // Excel Import state
+  // Pop-up modals
   const [importedPreview, setImportedPreview] = useState<any[]>([]);
   const [showImportModal, setShowImportModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   // Single Add User Form State
   const [newFullName, setNewFullName] = useState('');
@@ -39,9 +40,11 @@ export default function AdminUserManagementPage() {
     } catch (e) {}
   };
 
-  const handleDeleteUser = (id: string) => {
-    const updated = users.filter((u) => u.id !== id);
+  const confirmDeleteUser = () => {
+    if (!deleteTargetId) return;
+    const updated = users.filter((u) => u.id !== deleteTargetId);
     saveUsers(updated);
+    setDeleteTargetId(null);
   };
 
   const togglePasswordVisibility = (id: string) => {
@@ -141,7 +144,7 @@ export default function AdminUserManagementPage() {
           })),
         },
       ],
-      'Database_User_SIAKAL_V2'
+      'Database_User_SIAKAL'
     );
   };
 
@@ -298,7 +301,7 @@ export default function AdminUserManagementPage() {
                       </button>
 
                       <button
-                        onClick={() => handleDeleteUser(u.id)}
+                        onClick={() => setDeleteTargetId(u.id)}
                         className="p-1.5 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
                         title="Hapus Akun"
                       >
@@ -362,7 +365,7 @@ export default function AdminUserManagementPage() {
         </div>
       )}
 
-      {/* Modal Single Add User (WITH EXPLICIT USERNAME/ID & PASSWORD FIELDS) */}
+      {/* Modal Single Add User */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
           <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-lg p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-white/20">
@@ -419,7 +422,6 @@ export default function AdminUserManagementPage() {
                 </div>
               </div>
 
-              {/* ID MASUK & PASSWORD FIELDS */}
               <div className="p-4 rounded-xl bg-sky-500/10 border border-sky-500/30 space-y-3">
                 <div className="font-extrabold text-sky-700 dark:text-sky-300 text-xs flex items-center gap-1.5">
                   <Key className="w-4 h-4" />
@@ -450,7 +452,6 @@ export default function AdminUserManagementPage() {
                     placeholder="SIAKAL2026!"
                     className="w-full glass-input font-mono font-bold"
                   />
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 block">Password ini digunakan user saat login pertama kali.</span>
                 </div>
               </div>
 
@@ -478,6 +479,37 @@ export default function AdminUserManagementPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* POPUP MODAL KONFIRMASI HAPUS */}
+      {deleteTargetId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
+          <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-sm p-6 space-y-4 shadow-2xl border border-red-500/30 text-center">
+            <div className="w-12 h-12 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Konfirmasi Hapus Akun</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+              Apakah Anda yakin ingin menghapus Akun Pengguna ini? Akses pengguna ini akan dicabut permanen.
+            </p>
+            <div className="flex justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTargetId(null)}
+                className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteUser}
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-lg"
+              >
+                Ya, Hapus Sekarang
+              </button>
+            </div>
           </div>
         </div>
       )}
