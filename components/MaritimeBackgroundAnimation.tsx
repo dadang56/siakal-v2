@@ -6,13 +6,13 @@ import { motion } from 'framer-motion';
 export function MaritimeBackgroundAnimation() {
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none opacity-50 dark:opacity-35 transition-opacity duration-300">
-      {/* 1. ANIMASI NAVIGASI - Compass Rose & Waypoint Coordinates (Top Right) */}
-      <div className="absolute -top-12 -right-12 text-sky-600/30 dark:text-sky-400/20">
+      {/* 1. ANIMASI NAVIGASI - Compass Rose & Waypoints (Di Bawah Kanan) */}
+      <div className="absolute -bottom-16 -right-16 text-sky-600/35 dark:text-sky-400/25">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 80, repeat: Infinity, ease: 'linear' }}
         >
-          <svg className="w-80 h-80 sm:w-96 sm:h-96" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1">
+          <svg className="w-80 h-80 sm:w-[420px] sm:h-[420px]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1">
             <circle cx="50" cy="50" r="46" strokeDasharray="2 2" />
             <circle cx="50" cy="50" r="38" />
             <circle cx="50" cy="50" r="28" />
@@ -33,14 +33,14 @@ export function MaritimeBackgroundAnimation() {
         </motion.div>
       </div>
 
-      {/* 2. ANIMASI KAPAL - Sailing Ship Traveling Across Ocean Waves (Left to Right) */}
-      <div className="absolute bottom-16 inset-x-0 h-24 overflow-hidden">
+      {/* 2. ANIMASI KAPAL - Melaju Penuh dari Ujung Kiri Luar Layar hingga Tembus Keluar Ujung Kanan */}
+      <div className="fixed bottom-12 inset-x-0 h-28 pointer-events-none overflow-hidden z-0">
         <motion.div
           className="absolute bottom-2 text-sky-700 dark:text-sky-400 flex flex-col items-center"
-          initial={{ x: '-15%' }}
-          animate={{ x: '115%' }}
+          initial={{ x: '-200px' }}
+          animate={{ x: 'calc(100vw + 200px)' }}
           transition={{
-            duration: 35,
+            duration: 38,
             repeat: Infinity,
             ease: 'linear',
           }}
@@ -59,7 +59,7 @@ export function MaritimeBackgroundAnimation() {
             className="flex flex-col items-center"
           >
             {/* Kapal Pelayaran / Vessel Graphic */}
-            <svg className="w-24 h-16 sm:w-32 sm:h-20" viewBox="0 0 120 70" fill="currentColor">
+            <svg className="w-28 h-18 sm:w-36 sm:h-24" viewBox="0 0 120 70" fill="currentColor">
               {/* Ship Hull */}
               <path d="M10 45 L25 60 L95 60 L115 45 Z" opacity="0.9" />
               {/* Ship Superstructure / Deck / Bridge */}
@@ -76,7 +76,7 @@ export function MaritimeBackgroundAnimation() {
               <rect x="64" y="30" width="6" height="4" rx="1" fill="#fff" opacity="0.6" />
             </svg>
             {/* Water Ripple under Ship */}
-            <div className="w-28 h-1 bg-sky-400/30 rounded-full blur-[1px] -mt-1" />
+            <div className="w-32 h-1 bg-sky-400/40 rounded-full blur-[1px] -mt-1" />
           </motion.div>
         </motion.div>
       </div>
