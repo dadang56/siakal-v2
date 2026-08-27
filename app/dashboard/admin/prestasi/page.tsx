@@ -1,146 +1,153 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Trophy, Plus, CheckCircle2, XCircle, FileSpreadsheet, ExternalLink } from 'lucide-react';
+import { Trophy, CheckCircle2, XCircle, Download, ExternalLink, Plus } from 'lucide-react';
 import { initialAchievements, Achievement } from '@/lib/mockStore';
 import { exportToExcel } from '@/lib/utils/excel';
-import { Modal } from '@/components/Modal';
 
 export default function AdminPrestasiPage() {
   const [achievements, setAchievements] = useState<Achievement[]>(initialAchievements);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
 
-  const [mahasiswaNama, setMahasiswaNama] = useState('');
+  const [mhsNama, setMhsNama] = useState('');
   const [namaEvent, setNamaEvent] = useState('');
   const [jenisPrestasi, setJenisPrestasi] = useState<'Akademik' | 'Non-Akademik'>('Akademik');
   const [tingkat, setTingkat] = useState<'Lokal' | 'Regional' | 'Nasional' | 'Internasional'>('Nasional');
   const [capaian, setCapaian] = useState('Juara 1');
+  const [penyelenggara, setPenyelenggara] = useState('');
+
+  const handleSetStatus = (id: string, status: 'APPROVED' | 'REJECTED') => {
+    setAchievements(achievements.map((a) => (a.id === id ? { ...a, statusVerifikasi: status } : a)));
+  };
 
   const handleAddDirect = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!mahasiswaNama || !namaEvent) return;
     const newAch: Achievement = {
       id: `ach-${Date.now()}`,
-      mahasiswaId: 'user-mhs-1',
-      mahasiswaNama,
+      mahasiswaId: 'mhs-direct',
+      mahasiswaNama: mhsNama,
       namaEvent,
       jenisPrestasi,
       tingkat,
       capaian,
-      penyelenggara: 'Panitia Penyelenggara',
+      penyelenggara,
       tanggalKegiatan: new Date().toISOString().split('T')[0],
       fileBuktiUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
       statusVerifikasi: 'APPROVED',
     };
-    setAchievements([...achievements, newAch]);
-    setMahasiswaNama('');
-    setNamaEvent('');
-    setIsModalOpen(false);
-  };
 
-  const handleSetStatus = (id: string, newStatus: 'APPROVED' | 'REJECTED') => {
-    setAchievements(achievements.map((a) => (a.id === id ? { ...a, statusVerifikasi: newStatus } : a)));
+    setAchievements([...achievements, newAch]);
+    setShowAddModal(false);
+    setMhsNama('');
+    setNamaEvent('');
   };
 
   const handleExportExcel = () => {
-    const exportData = achievements.map((a) => ({
-      'Nama Mahasiswa': a.mahasiswaNama,
-      'Nama Event/Lomba': a.namaEvent,
-      'Jenis Prestasi': a.jenisPrestasi,
-      'Tingkat': a.tingkat,
-      'Capaian': a.capaian,
-      'Penyelenggara': a.penyelenggara,
-      'Tanggal': a.tanggalKegiatan,
-      'Status Verifikasi': a.statusVerifikasi,
-    }));
-    exportToExcel([{ sheetName: 'Data Prestasi Mahasiswa', data: exportData }], 'SIAKAL_Data_Prestasi_Mahasiswa');
+    exportToExcel(
+      [
+        {
+          sheetName: 'Verifikasi Prestasi',
+          data: achievements.map((a) => ({
+            'Nama Mahasiswa': a.mahasiswaNama,
+            'Nama Event': a.namaEvent,
+            Kategori: a.jenisPrestasi,
+            Tingkat: a.tingkat,
+            Capaian: a.capaian,
+            Penyelenggara: a.penyelenggara,
+            'Status Verifikasi': a.statusVerifikasi,
+          })),
+        },
+      ],
+      'Rekap_Prestasi_Mahasiswa_SIAKAL'
+    );
   };
 
   return (
     <div className="space-y-6">
-      <div className="glass-panel p-6 border-l-4 border-l-amber-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      {/* Banner */}
+      <div className="glass-panel p-6 border-l-4 border-l-sky-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-extrabold text-white flex items-center gap-2">
-            <Trophy className="w-6 h-6 text-amber-400" />
-            <span>Pencatatan & Verifikasi Prestasi Mahasiswa</span>
+          <h1 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            <Trophy className="w-6 h-6 text-amber-500 dark:text-amber-400" />
+            <span>Verifikasi & Input Prestasi Mahasiswa</span>
           </h1>
-          <p className="text-xs text-slate-300 mt-1">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 font-medium">
             Input langsung prestasi mahasiswa atau verifikasi pengajuan mandiri untuk dipajang di Dashboard Hall of Fame.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <button onClick={handleExportExcel} className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/10 text-xs font-semibold text-white flex items-center gap-1.5">
-            <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+          <button onClick={handleExportExcel} className="px-4 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:text-sky-600 font-bold text-xs sm:text-sm shadow-sm border border-slate-300 dark:border-white/10 flex items-center gap-2">
+            <Download className="w-4 h-4" />
             <span>Export Excel</span>
           </button>
-          <button onClick={() => setIsModalOpen(true)} className="glass-button text-xs flex items-center gap-1.5">
+          <button onClick={() => setShowAddModal(true)} className="glass-button text-xs sm:text-sm font-bold flex items-center gap-2 shadow-lg">
             <Plus className="w-4 h-4" />
             <span>Input Prestasi Direct</span>
           </button>
         </div>
       </div>
 
-      {/* Table */}
+      {/* Table List Prestasi */}
       <div className="glass-panel p-6 overflow-hidden">
-        <h3 className="text-sm font-bold text-white mb-4">Daftar Pengajuan & Record Prestasi</h3>
+        <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-4">
+          Daftar Usulan & Data Prestasi ({achievements.length} Data)
+        </h3>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs sm:text-sm">
             <thead>
-              <tr className="border-b border-white/10 text-slate-400 font-semibold uppercase tracking-wider">
-                <th className="pb-3 px-2">Mahasiswa</th>
-                <th className="pb-3 px-2">Nama Event</th>
-                <th className="pb-3 px-2">Kategori</th>
-                <th className="pb-3 px-2">Tingkat</th>
-                <th className="pb-3 px-2">Capaian</th>
-                <th className="pb-3 px-2">Status</th>
-                <th className="pb-3 px-2 text-right">Verifikasi</th>
+              <tr className="border-b border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-extrabold uppercase tracking-wider">
+                <th className="pb-3 px-3">Mahasiswa</th>
+                <th className="pb-3 px-3">Nama Event</th>
+                <th className="pb-3 px-3">Kategori</th>
+                <th className="pb-3 px-3">Tingkat</th>
+                <th className="pb-3 px-3">Capaian</th>
+                <th className="pb-3 px-3">Status</th>
+                <th className="pb-3 px-3 text-right">Verifikasi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
-              {achievements.map((ach) => (
-                <tr key={ach.id} className="hover:bg-slate-900/40">
-                  <td className="py-3 px-2 font-bold text-white">{ach.mahasiswaNama}</td>
-                  <td className="py-3 px-2 text-slate-300">{ach.namaEvent}</td>
-                  <td className="py-3 px-2">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-sky-500/20 text-sky-300 font-semibold">
-                      {ach.jenisPrestasi}
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
+              {achievements.map((a) => (
+                <tr key={a.id} className="hover:bg-slate-100/80 dark:hover:bg-slate-800/50 transition-colors">
+                  <td className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white text-sm">{a.mahasiswaNama}</td>
+                  <td className="py-3.5 px-3 font-bold text-slate-800 dark:text-slate-200">{a.namaEvent}</td>
+                  <td className="py-3.5 px-3">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/30">
+                      {a.jenisPrestasi}
                     </span>
                   </td>
-                  <td className="py-3 px-2 text-slate-300">{ach.tingkat}</td>
-                  <td className="py-3 px-2 font-bold text-amber-400">{ach.capaian}</td>
-                  <td className="py-3 px-2">
-                    {ach.statusVerifikasi === 'APPROVED' && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300 font-bold">
+                  <td className="py-3.5 px-3 text-slate-700 dark:text-slate-300 font-semibold">{a.tingkat}</td>
+                  <td className="py-3.5 px-3 font-bold text-amber-600 dark:text-amber-400">{a.capaian}</td>
+                  <td className="py-3.5 px-3">
+                    {a.statusVerifikasi === 'APPROVED' ? (
+                      <span className="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
                         Terverifikasi
                       </span>
-                    )}
-                    {ach.statusVerifikasi === 'REJECTED' && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] bg-red-500/20 text-red-300 font-bold">
+                    ) : a.statusVerifikasi === 'REJECTED' ? (
+                      <span className="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-red-500/10 text-red-700 dark:text-red-300 border border-red-500/30">
                         Ditolak
                       </span>
-                    )}
-                    {ach.statusVerifikasi === 'Pending' && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300 font-bold">
+                    ) : (
+                      <span className="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30">
                         Pending
                       </span>
                     )}
                   </td>
-                  <td className="py-3 px-2 text-right space-x-1">
+                  <td className="py-3.5 px-3 text-right space-x-2">
                     <button
-                      onClick={() => handleSetStatus(ach.id, 'APPROVED')}
-                      className="p-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white"
-                      title="Setuju (Approve)"
+                      onClick={() => handleSetStatus(a.id, 'APPROVED')}
+                      className="p-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-all shadow-sm"
+                      title="Setuju & Pajang di Hall of Fame"
                     >
-                      <CheckCircle2 className="w-4 h-4" />
+                      <CheckCircle2 className="w-4.5 h-4.5" />
                     </button>
                     <button
-                      onClick={() => handleSetStatus(ach.id, 'REJECTED')}
-                      className="p-1 rounded bg-red-600 hover:bg-red-500 text-white"
-                      title="Tolak"
+                      onClick={() => handleSetStatus(a.id, 'REJECTED')}
+                      className="p-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold transition-all shadow-sm"
+                      title="Tolak Usulan"
                     >
-                      <XCircle className="w-4 h-4" />
+                      <XCircle className="w-4.5 h-4.5" />
                     </button>
                   </td>
                 </tr>
@@ -150,79 +157,104 @@ export default function AdminPrestasiPage() {
         </div>
       </div>
 
-      {/* Modal Input Direct */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Input Prestasi Mahasiswa (Direct Admin)">
-        <form onSubmit={handleAddDirect} className="space-y-4 text-xs">
-          <div>
-            <label className="block font-semibold text-slate-200 mb-1">Nama Mahasiswa *</label>
-            <input
-              type="text"
-              required
-              value={mahasiswaNama}
-              onChange={(e) => setMahasiswaNama(e.target.value)}
-              placeholder="Contoh: Ahmad Fauzi"
-              className="w-full glass-input text-xs"
-            />
-          </div>
+      {/* Modal Add Direct */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
+          <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-md p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-white/20">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Input Prestasi Mahasiswa Direct</h3>
 
-          <div>
-            <label className="block font-semibold text-slate-200 mb-1">Nama Lomba / Event *</label>
-            <input
-              type="text"
-              required
-              value={namaEvent}
-              onChange={(e) => setNamaEvent(e.target.value)}
-              placeholder="Contoh: National Maritime Debate Championship"
-              className="w-full glass-input text-xs"
-            />
-          </div>
+            <form onSubmit={handleAddDirect} className="space-y-3 text-xs sm:text-sm">
+              <div>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Nama Mahasiswa</label>
+                <input
+                  type="text"
+                  required
+                  value={mhsNama}
+                  onChange={(e) => setMhsNama(e.target.value)}
+                  placeholder="Nama Lengkap Mahasiswa"
+                  className="w-full glass-input"
+                />
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block font-semibold text-slate-200 mb-1">Jenis Prestasi</label>
-              <select
-                value={jenisPrestasi}
-                onChange={(e: any) => setJenisPrestasi(e.target.value)}
-                className="w-full glass-input text-xs bg-slate-900 text-white"
-              >
-                <option value="Akademik">Akademik</option>
-                <option value="Non-Akademik">Non-Akademik</option>
-              </select>
-            </div>
+              <div>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Nama Event / Kompetisi</label>
+                <input
+                  type="text"
+                  required
+                  value={namaEvent}
+                  onChange={(e) => setNamaEvent(e.target.value)}
+                  placeholder="Nama Event Kompetisi"
+                  className="w-full glass-input"
+                />
+              </div>
 
-            <div>
-              <label className="block font-semibold text-slate-200 mb-1">Tingkat</label>
-              <select
-                value={tingkat}
-                onChange={(e: any) => setTingkat(e.target.value)}
-                className="w-full glass-input text-xs bg-slate-900 text-white"
-              >
-                <option value="Lokal">Lokal</option>
-                <option value="Regional">Regional</option>
-                <option value="Nasional">Nasional</option>
-                <option value="Internasional">Internasional</option>
-              </select>
-            </div>
-          </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Kategori</label>
+                  <select
+                    value={jenisPrestasi}
+                    onChange={(e) => setJenisPrestasi(e.target.value as any)}
+                    className="w-full glass-input"
+                  >
+                    <option value="Akademik">Akademik</option>
+                    <option value="Non-Akademik">Non-Akademik</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Tingkat</label>
+                  <select
+                    value={tingkat}
+                    onChange={(e) => setTingkat(e.target.value as any)}
+                    className="w-full glass-input"
+                  >
+                    <option value="Lokal">Lokal</option>
+                    <option value="Regional">Regional</option>
+                    <option value="Nasional">Nasional</option>
+                    <option value="Internasional">Internasional</option>
+                  </select>
+                </div>
+              </div>
 
-          <div>
-            <label className="block font-semibold text-slate-200 mb-1">Capaian / Juara</label>
-            <input
-              type="text"
-              value={capaian}
-              onChange={(e) => setCapaian(e.target.value)}
-              placeholder="Contoh: Juara 1 / Medali Emas"
-              className="w-full glass-input text-xs"
-            />
-          </div>
+              <div>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Capaian Juara</label>
+                <input
+                  type="text"
+                  required
+                  value={capaian}
+                  onChange={(e) => setCapaian(e.target.value)}
+                  placeholder="Contoh: Juara 1 / Emas"
+                  className="w-full glass-input"
+                />
+              </div>
 
-          <div className="pt-2 flex justify-end">
-            <button type="submit" className="glass-button text-xs">
-              Simpan & Publikasikan ke Hall of Fame
-            </button>
+              <div>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Penyelenggara</label>
+                <input
+                  type="text"
+                  required
+                  value={penyelenggara}
+                  onChange={(e) => setPenyelenggara(e.target.value)}
+                  placeholder="Contoh: BPSDM Perhub / Kemendikbud"
+                  className="w-full glass-input"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold"
+                >
+                  Batal
+                </button>
+                <button type="submit" className="glass-button text-xs sm:text-sm font-bold">
+                  Simpan & Publish
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
-      </Modal>
+        </div>
+      )}
     </div>
   );
 }
