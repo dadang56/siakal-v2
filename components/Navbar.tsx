@@ -58,18 +58,17 @@ export function Navbar({ currentUser, onLogout, hideThemeToggle = false }: Navba
     >
       <div className="max-w-[1920px] mx-auto px-3 sm:px-8 lg:px-10 h-16 flex items-center justify-between">
         {/* Brand Logo & Name */}
-        <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
+        <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0 min-w-0">
           <img
             src={customLogo || DEFAULT_POLTEKTRANS_LOGO}
             alt="Logo Resmi Kampus Poltektrans SDP Palembang"
-            className="h-8 sm:h-10 w-auto max-w-[120px] sm:max-w-[170px] object-contain drop-shadow-md transition-transform group-hover:scale-105"
+            className="h-8 sm:h-10 w-auto max-w-[100px] sm:max-w-[170px] object-contain drop-shadow-md transition-transform group-hover:scale-105 shrink-0"
             onError={(e) => {
-              // Fallback if uploaded image URL fails
               (e.target as HTMLImageElement).src = DEFAULT_POLTEKTRANS_LOGO;
             }}
           />
 
-          <div className="flex flex-col justify-center">
+          <div className="flex flex-col justify-center min-w-0">
             <span
               className={`font-black text-base sm:text-xl tracking-wider leading-none transition-colors ${
                 isPublicPage ? 'text-white drop-shadow-md' : 'text-slate-900 dark:text-slate-100 group-hover:text-sky-600 dark:group-hover:text-sky-400'
@@ -78,17 +77,24 @@ export function Navbar({ currentUser, onLogout, hideThemeToggle = false }: Navba
               SIAKAL
             </span>
             <span
-              className={`text-[9px] sm:text-[11px] font-bold leading-tight mt-0.5 truncate max-w-[140px] sm:max-w-none ${
+              className={`hidden sm:block text-[11px] font-bold leading-tight mt-0.5 truncate ${
                 isPublicPage ? 'text-slate-200 drop-shadow-sm' : 'text-slate-500 dark:text-slate-400'
               }`}
             >
-              Poltektrans SDP Palembang
+              Ketarunaan & Alumni Poltektrans SDP Palembang
+            </span>
+            <span
+              className={`sm:hidden text-[9px] font-extrabold leading-tight mt-0.5 truncate ${
+                isPublicPage ? 'text-slate-200' : 'text-slate-500 dark:text-slate-400'
+              }`}
+            >
+              Poltektrans SDP
             </span>
           </div>
         </Link>
 
         {/* Right Section: Theme Switcher & User Profile */}
-        <div className="flex items-center gap-2 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           {/* Theme Switcher Toggle (Sun / Moon) */}
           {!hideThemeToggle && (
             <button
