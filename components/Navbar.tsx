@@ -65,10 +65,20 @@ export function Navbar({ currentUser, onLogout, hideThemeToggle = false }: Navba
             </div>
           )}
           <div className="flex flex-col">
-            <span className="font-extrabold text-lg sm:text-xl tracking-wider text-slate-900 dark:text-slate-100 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
+            <span
+              className={`font-black text-lg sm:text-xl tracking-wider transition-colors ${
+                isLandingPage ? 'text-white drop-shadow-md' : 'text-slate-900 dark:text-slate-100 group-hover:text-sky-600 dark:group-hover:text-sky-400'
+              }`}
+            >
               SIAKAL
             </span>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Ketarunaan & Alumni Poltektrans SDP Palembang</span>
+            <span
+              className={`text-[11px] font-semibold ${
+                isLandingPage ? 'text-slate-200 drop-shadow-sm' : 'text-slate-500 dark:text-slate-400'
+              }`}
+            >
+              Ketarunaan & Alumni Poltektrans SDP Palembang
+            </span>
           </div>
         </Link>
 
