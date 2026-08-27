@@ -39,7 +39,7 @@ export function Sidebar({ role, prodi }: SidebarProps) {
           { label: 'Beranda Admin', href: '/dashboard', icon: LayoutDashboard },
           { label: 'Database Mahasiswa', href: '/dashboard/admin/mahasiswa', icon: GraduationCap },
           { label: 'Manajemen User', href: '/dashboard/admin/manajemen-user', icon: Users },
-          { label: 'Master Data Prodi & Angkatan', href: '/dashboard/admin/prodi', icon: Building2 },
+          { label: 'Daftar Prodi', href: '/dashboard/admin/prodi', icon: Building2 },
           { label: 'Periode Akademik', href: '/dashboard/admin/periode-akademik', icon: Calendar },
           { label: 'Monitoring PRALA', href: '/dashboard/admin/prala', icon: Anchor },
           { label: 'Ploting Magang MTPD', href: '/dashboard/admin/magang', icon: Briefcase },
