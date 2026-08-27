@@ -21,7 +21,7 @@ export function Navbar({ currentUser, onLogout, hideThemeToggle = false }: Navba
   const { theme, setTheme } = useTheme();
   const [customLogo, setCustomLogo] = useState<string>('');
 
-  const isLandingPage = pathname === '/';
+  const isPublicPage = pathname === '/' || pathname === '/kepuasan-pengguna' || pathname === '/login';
 
   const loadCustomLogo = () => {
     try {
@@ -46,9 +46,9 @@ export function Navbar({ currentUser, onLogout, hideThemeToggle = false }: Navba
 
   return (
     <header
-      className={`sticky top-0 z-40 w-full backdrop-blur-xl transition-colors duration-200 ${
-        isLandingPage
-          ? 'bg-slate-950/40 border-none shadow-none'
+      className={`sticky top-0 z-40 w-full backdrop-blur-xl transition-all duration-200 ${
+        isPublicPage
+          ? 'bg-slate-950/30 dark:bg-slate-950/40 border-b border-white/15 text-white shadow-sm'
           : 'bg-white/95 dark:bg-slate-950/90 border-b border-slate-200/90 dark:border-white/10 shadow-sm dark:shadow-none'
       }`}
     >
@@ -56,10 +56,10 @@ export function Navbar({ currentUser, onLogout, hideThemeToggle = false }: Navba
         {/* Brand Logo & Name */}
         <Link href="/" className="flex items-center gap-3 group">
           {customLogo ? (
-            <img src={customLogo} alt="Logo Kampus Resmi" className="h-10 w-auto max-w-[160px] object-contain" />
+            <img src={customLogo} alt="Logo Kampus Resmi" className="h-10 w-auto max-w-[160px] object-contain drop-shadow-sm" />
           ) : (
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-blue-600 p-0.5 shadow-glow">
-              <div className="w-full h-full bg-white dark:bg-slate-950 rounded-[10px] flex items-center justify-center font-bold text-sky-600 dark:text-sky-400 text-lg shadow-inner">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-400 to-blue-500 p-0.5 shadow-glow">
+              <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center font-black text-white text-lg shadow-inner">
                 S
               </div>
             </div>
@@ -67,14 +67,14 @@ export function Navbar({ currentUser, onLogout, hideThemeToggle = false }: Navba
           <div className="flex flex-col">
             <span
               className={`font-black text-lg sm:text-xl tracking-wider transition-colors ${
-                isLandingPage ? 'text-white drop-shadow-md' : 'text-slate-900 dark:text-slate-100 group-hover:text-sky-600 dark:group-hover:text-sky-400'
+                isPublicPage ? 'text-white drop-shadow-md' : 'text-slate-900 dark:text-slate-100 group-hover:text-sky-600 dark:group-hover:text-sky-400'
               }`}
             >
               SIAKAL
             </span>
             <span
               className={`text-[11px] font-semibold ${
-                isLandingPage ? 'text-slate-200 drop-shadow-sm' : 'text-slate-500 dark:text-slate-400'
+                isPublicPage ? 'text-slate-200 drop-shadow-sm' : 'text-slate-500 dark:text-slate-400'
               }`}
             >
               Ketarunaan & Alumni Poltektrans SDP Palembang
@@ -89,13 +89,17 @@ export function Navbar({ currentUser, onLogout, hideThemeToggle = false }: Navba
             <button
               type="button"
               onClick={() => setTheme(isDark ? 'light' : 'dark')}
-              className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-white/15 text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-200/80 dark:hover:bg-slate-800 transition-all active:scale-95 shadow-sm cursor-pointer"
+              className={`p-2.5 rounded-xl transition-all active:scale-95 shadow-sm cursor-pointer border ${
+                isPublicPage
+                  ? 'bg-white/20 hover:bg-white/35 text-white border-white/30 backdrop-blur-md'
+                  : 'bg-slate-100 dark:bg-slate-900 border-slate-300 dark:border-white/15 text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-200/80 dark:hover:bg-slate-800'
+              }`}
               title="Ganti Mode Terang / Gelap"
             >
               {isDark ? (
                 <Sun className="w-5 h-5 text-amber-400" />
               ) : (
-                <Moon className="w-5 h-5 text-slate-700" />
+                <Moon className={`w-5 h-5 ${isPublicPage ? 'text-white' : 'text-slate-700'}`} />
               )}
             </button>
           )}
