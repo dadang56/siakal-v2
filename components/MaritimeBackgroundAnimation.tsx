@@ -5,14 +5,14 @@ import { motion } from 'framer-motion';
 
 export function MaritimeBackgroundAnimation() {
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none opacity-40 dark:opacity-30">
+    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none opacity-50 dark:opacity-30 transition-opacity duration-300">
       {/* 1. Kemudi Kapal (Ship's Wheel) - Rotating slowly top right */}
       <motion.div
-        className="absolute -top-12 -right-12 text-sky-600/30 dark:text-sky-400/20"
+        className="absolute -top-12 -right-12 text-sky-700/35 dark:text-sky-400/20"
         animate={{ rotate: 360 }}
         transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
       >
-        <svg className="w-80 h-80 sm:w-96 sm:h-96" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <svg className="w-80 h-80 sm:w-96 sm:h-96" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.6">
           <circle cx="50" cy="50" r="30" />
           <circle cx="50" cy="50" r="22" />
           <circle cx="50" cy="50" r="6" />
@@ -37,11 +37,11 @@ export function MaritimeBackgroundAnimation() {
 
       {/* 2. Kompas Maritim (Compass Rose) - Rotating counter-clockwise bottom left */}
       <motion.div
-        className="absolute bottom-10 -left-16 text-blue-600/25 dark:text-sky-300/15"
+        className="absolute bottom-10 -left-16 text-blue-700/30 dark:text-sky-300/15"
         animate={{ rotate: -360 }}
         transition={{ duration: 75, repeat: Infinity, ease: 'linear' }}
       >
-        <svg className="w-96 h-96 sm:w-[450px] sm:h-[450px]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.2">
+        <svg className="w-96 h-96 sm:w-[450px] sm:h-[450px]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.3">
           <circle cx="50" cy="50" r="45" strokeDasharray="2 2" />
           <circle cx="50" cy="50" r="38" />
           <circle cx="50" cy="50" r="28" />
@@ -61,7 +61,7 @@ export function MaritimeBackgroundAnimation() {
 
       {/* 3. Propeller Kapal (Ship's Propeller) - Spinning steadily mid right */}
       <motion.div
-        className="absolute top-1/2 right-12 text-sky-500/20 dark:text-sky-400/15"
+        className="absolute top-1/2 right-12 text-sky-600/25 dark:text-sky-400/15"
         animate={{ rotate: 360 }}
         transition={{ duration: 24, repeat: Infinity, ease: 'linear' }}
       >
@@ -77,7 +77,7 @@ export function MaritimeBackgroundAnimation() {
 
       {/* 4. Jangkar Floating (Anchor) - Gently bobbing top center */}
       <motion.div
-        className="absolute top-16 left-1/3 text-sky-600/20 dark:text-sky-400/15"
+        className="absolute top-16 left-1/3 text-sky-700/25 dark:text-sky-400/15"
         animate={{ y: [-10, 10, -10], rotate: [-4, 4, -4] }}
         transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
       >
@@ -92,7 +92,7 @@ export function MaritimeBackgroundAnimation() {
       </motion.div>
 
       {/* 5. Subtle Gelombang Laut (Maritime Waves) at the bottom */}
-      <div className="absolute bottom-0 inset-x-0 h-32 text-sky-500/10 dark:text-sky-400/10 overflow-hidden">
+      <div className="absolute bottom-0 inset-x-0 h-32 text-sky-600/15 dark:text-sky-400/10 overflow-hidden">
         <motion.svg
           className="w-[200%] h-full"
           viewBox="0 0 1200 120"

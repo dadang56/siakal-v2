@@ -101,22 +101,22 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col justify-between overflow-x-hidden text-slate-100 bg-slate-950 font-sans">
+    <div className="relative min-h-screen flex flex-col justify-between overflow-x-hidden text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-950 font-sans transition-colors duration-200">
       {/* Dynamic Background Photo Carousel Slider */}
       <LandingSlider />
 
       {/* Top Header Navbar */}
-      <Navbar hideThemeToggle={true} />
+      <Navbar hideThemeToggle={false} />
 
-      {/* Minimalist Landing Page Hero & Premium Dark Glass Login Box */}
+      {/* Landing Page Hero & High-Contrast Light/Dark Glass Login Box */}
       <main className="relative z-10 max-w-[1920px] w-full mx-auto px-4 sm:px-8 lg:px-12 py-10 flex-1 flex items-center">
         <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           
           {/* Left Column: Minimalist Title Headline */}
           <div className="lg:col-span-7 space-y-6 text-left">
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight drop-shadow-xl">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white drop-shadow-2xl leading-tight">
               Sistem Informasi Akademik <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400 drop-shadow-lg">
                 Ketarunaan & Alumni
               </span>
             </h1>
@@ -124,7 +124,7 @@ export default function LandingPage() {
             <div className="pt-2">
               <Link
                 href="/kepuasan-pengguna"
-                className="inline-flex items-center gap-2 py-3 px-5 rounded-2xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20 text-xs sm:text-sm font-bold text-sky-300 hover:text-white transition-all shadow-xl"
+                className="inline-flex items-center gap-2 py-3 px-5 rounded-2xl bg-white/20 dark:bg-white/10 hover:bg-white/30 backdrop-blur-md border border-white/30 text-xs sm:text-sm font-extrabold text-white transition-all shadow-xl"
               >
                 <Smile className="w-4.5 h-4.5 text-amber-400" />
                 <span>Kuesioner Kepuasan Pengguna Lulusan (Bebas Login)</span>
@@ -133,28 +133,28 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Right Column: Premium Dark Glass Embedded Login Card Box */}
+          {/* Right Column: Premium High-Contrast Dual-Theme Glass Embedded Login Card Box */}
           <div className="lg:col-span-5 w-full max-w-md mx-auto">
-            <div className="glass-panel bg-slate-950/85 backdrop-blur-2xl p-6 sm:p-8 border border-white/20 shadow-2xl rounded-3xl relative overflow-hidden space-y-5">
+            <div className="glass-panel bg-white/95 dark:bg-slate-950/90 backdrop-blur-2xl p-6 sm:p-8 border border-slate-200/90 dark:border-white/20 shadow-2xl rounded-3xl relative overflow-hidden space-y-5 text-slate-900 dark:text-white">
               
               <div className="text-center">
                 <div className="w-12 h-12 mx-auto mb-2 rounded-2xl bg-gradient-to-tr from-sky-500 to-blue-600 p-0.5 shadow-glow flex items-center justify-center font-black text-white text-xl">
                   S
                 </div>
-                <h2 className="text-xl sm:text-2xl font-black text-white tracking-wide">Masuk ke SIAKAL</h2>
-                <p className="text-xs text-slate-300 font-semibold mt-0.5">Politeknik Transportasi SDP Palembang</p>
+                <h2 className="text-xl sm:text-2xl font-black tracking-wide text-slate-900 dark:text-white">Masuk ke SIAKAL</h2>
+                <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-0.5">Politeknik Transportasi SDP Palembang</p>
               </div>
 
               {/* Login Form */}
               <form onSubmit={handleLogin} className="space-y-3.5">
                 {errorMsg && (
-                  <div className="p-3 rounded-xl bg-red-500/20 border border-red-500/40 text-red-200 text-xs font-semibold">
+                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-300 text-xs font-bold">
                     {errorMsg}
                   </div>
                 )}
 
                 <div>
-                  <label className="block text-xs font-extrabold text-slate-200 mb-1.5 uppercase tracking-wider">
+                  <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1.5 uppercase tracking-wider">
                     Email / NIM / NIP / Username ID
                   </label>
                   <input
@@ -163,12 +163,12 @@ export default function LandingPage() {
                     value={emailOrNim}
                     onChange={(e) => setEmailOrNim(e.target.value)}
                     placeholder="Masukkan NIM, NIP, Email, atau ID Masuk"
-                    className="w-full px-4 py-3 rounded-xl bg-slate-900/90 border border-white/20 text-white placeholder-slate-400 text-xs sm:text-sm font-medium focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition-all shadow-inner"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-white/20 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs sm:text-sm font-medium focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all shadow-inner"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-extrabold text-slate-200 mb-1.5 uppercase tracking-wider">
+                  <label className="block text-xs font-extrabold text-slate-700 dark:text-slate-200 mb-1.5 uppercase tracking-wider">
                     Kata Sandi (Password)
                   </label>
                   <input
@@ -177,7 +177,7 @@ export default function LandingPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full px-4 py-3 rounded-xl bg-slate-900/90 border border-white/20 text-white placeholder-slate-400 text-xs sm:text-sm font-medium focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-400 transition-all shadow-inner"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-white/20 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs sm:text-sm font-medium focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all shadow-inner"
                   />
                 </div>
 
@@ -191,9 +191,9 @@ export default function LandingPage() {
               </form>
 
               {/* QUICK DEMO ACCOUNT BUTTONS FOR ALL ROLES */}
-              <div className="pt-4 border-t border-white/10 space-y-2.5">
-                <div className="flex items-center justify-center gap-1.5 text-[11px] font-extrabold text-sky-300 uppercase tracking-wider">
-                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+              <div className="pt-4 border-t border-slate-200 dark:border-white/10 space-y-2.5">
+                <div className="flex items-center justify-center gap-1.5 text-[11px] font-extrabold text-sky-600 dark:text-sky-300 uppercase tracking-wider">
+                  <Zap className="w-3.5 h-3.5 text-amber-500" />
                   <span>Uji Coba Mode Demo (Klik 1-Kali Login):</span>
                 </div>
 
@@ -201,7 +201,7 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => handleQuickDemo('admin')}
-                    className="py-2 px-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/40 text-sky-200 border border-sky-500/40 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                    className="py-2 px-2 rounded-xl bg-sky-500/10 dark:bg-sky-500/20 hover:bg-sky-500/25 text-sky-700 dark:text-sky-200 border border-sky-500/30 dark:border-sky-500/40 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
                     title="Login sebagai Administrator"
                   >
                     🛡️ Admin
@@ -210,7 +210,7 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => handleQuickDemo('mahasiswa')}
-                    className="py-2 px-2 rounded-xl bg-blue-500/20 hover:bg-blue-500/40 text-blue-200 border border-blue-500/40 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                    className="py-2 px-2 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 hover:bg-blue-500/25 text-blue-700 dark:text-blue-200 border border-blue-500/30 dark:border-blue-500/40 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
                     title="Login sebagai Mahasiswa"
                   >
                     🎓 Mahasiswa
@@ -219,7 +219,7 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => handleQuickDemo('dosen')}
-                    className="py-2 px-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-200 border border-indigo-500/40 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                    className="py-2 px-2 rounded-xl bg-indigo-500/10 dark:bg-indigo-500/20 hover:bg-indigo-500/25 text-indigo-700 dark:text-indigo-200 border border-indigo-500/30 dark:border-indigo-500/40 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
                     title="Login sebagai Dosen Pembimbing"
                   >
                     👨‍🏫 Dosen
@@ -228,7 +228,7 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => handleQuickDemo('pembimbing_lapangan')}
-                    className="py-2 px-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/40 text-amber-200 border border-amber-500/40 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                    className="py-2 px-2 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 hover:bg-amber-500/25 text-amber-700 dark:text-amber-200 border border-amber-500/30 dark:border-amber-500/40 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
                     title="Login sebagai Pembimbing Lapangan"
                   >
                     ⚓ Pembimbing
@@ -237,7 +237,7 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => handleQuickDemo('alumni')}
-                    className="py-2 px-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-200 border border-emerald-500/40 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                    className="py-2 px-2 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 hover:bg-emerald-500/25 text-emerald-700 dark:text-emerald-200 border border-emerald-500/30 dark:border-emerald-500/40 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
                     title="Login sebagai Alumni"
                   >
                     👨‍🎓 Alumni
@@ -246,7 +246,7 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => handleQuickDemo('unit_approver')}
-                    className="py-2 px-2 rounded-xl bg-purple-500/20 hover:bg-purple-500/40 text-purple-200 border border-purple-500/40 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                    className="py-2 px-2 rounded-xl bg-purple-500/10 dark:bg-purple-500/20 hover:bg-purple-500/25 text-purple-700 dark:text-purple-200 border border-purple-500/30 dark:border-purple-500/40 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
                     title="Login sebagai Unit Approver"
                   >
                     🏛️ Approver
@@ -261,7 +261,7 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-white/10 bg-slate-950/80 backdrop-blur-md py-4 text-center text-xs text-slate-400 font-medium">
+      <footer className="relative z-10 border-t border-slate-200 dark:border-white/10 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md py-4 text-center text-xs text-slate-600 dark:text-slate-400 font-semibold">
         &copy; 2026 SIAKAL &bull; Politeknik Transportasi SDP Palembang
       </footer>
     </div>
