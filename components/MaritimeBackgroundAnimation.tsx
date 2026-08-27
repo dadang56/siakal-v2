@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
 // SVG 1: Kapal Tanker Minyak (Oil & Chemical Tanker)
@@ -137,7 +137,18 @@ function BulkCarrierSVG() {
   );
 }
 
+const fleetComponents = [
+  TankerVesselSVG,
+  CruiseShipSVG,
+  ContainerShipSVG,
+  BulkCarrierSVG,
+];
+
 export function MaritimeBackgroundAnimation() {
+  const [activeShipIndex, setActiveShipIndex] = useState(0);
+
+  const CurrentShip = fleetComponents[activeShipIndex % fleetComponents.length];
+
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none opacity-50 dark:opacity-40 transition-opacity duration-300">
       
@@ -216,94 +227,43 @@ export function MaritimeBackgroundAnimation() {
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. REALISTIC MARITIME CONVOY FLEET (4 VISUALLY DISTINCT VESSELS)          */}
+      {/* 2. SINGLE SHIP SAILING FORWARD (EXACTLY ONE SHIP AT A TIME)               */}
       {/* ========================================================================= */}
       <div className="fixed bottom-12 inset-x-0 h-28 pointer-events-none overflow-hidden z-0">
-        
-        {/* SHIP 1: KAPAL TANKER MINYAK (Starts 0s, Duration 75s) */}
         <motion.div
+          key={activeShipIndex}
           className="absolute bottom-2 flex flex-col items-center"
-          initial={{ x: '-220px' }}
-          animate={{ x: 'calc(100vw + 220px)' }}
+          initial={{ x: '-250px' }}
+          animate={{ x: 'calc(100vw + 250px)' }}
           transition={{
-            duration: 75,
-            repeat: Infinity,
-            delay: 0,
+            duration: 65, // Majestic calm forward sailing speed
             ease: 'linear',
           }}
-        >
-          <motion.div
-            animate={{ y: [-4, 4, -4], rotate: [-1.5, 1.5, -1.5] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <TankerVesselSVG />
-            <div className="w-36 h-1 bg-sky-400/40 rounded-full blur-[1px] -mt-1" />
-          </motion.div>
-        </motion.div>
-
-        {/* SHIP 2: KAPAL PESIAR MEWAH (Starts with 20s Delay, Duration 80s) */}
-        <motion.div
-          className="absolute bottom-2 flex flex-col items-center"
-          initial={{ x: '-220px' }}
-          animate={{ x: 'calc(100vw + 220px)' }}
-          transition={{
-            duration: 80,
-            repeat: Infinity,
-            delay: 20,
-            ease: 'linear',
+          onAnimationComplete={() => {
+            // When current single ship exits completely past right edge, change to NEXT ship type!
+            setActiveShipIndex((prev) => prev + 1);
           }}
         >
+          {/* Gentle Ship Bobbing / Pitching Motion on Waves */}
           <motion.div
-            animate={{ y: [-3, 3, -3], rotate: [-1, 1, -1] }}
-            transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
+            animate={{
+              y: [-4, 4, -4],
+              rotate: [-1.5, 1.5, -1.5],
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+            className="flex flex-col items-center"
           >
-            <CruiseShipSVG />
-            <div className="w-40 h-1 bg-sky-400/40 rounded-full blur-[1px] -mt-1" />
+            {/* Render 1 Single Vessel (Tanker -> Cruise -> Container -> Bulk Carrier) */}
+            <CurrentShip />
+
+            {/* Water Ripple & Bow Wave under Ship */}
+            <div className="w-36 h-1 bg-sky-400/40 rounded-full blur-[1px] -mt-1 shadow-sm" />
           </motion.div>
         </motion.div>
-
-        {/* SHIP 3: KAPAL KONTAINER KARGO (Starts with 40s Delay, Duration 72s) */}
-        <motion.div
-          className="absolute bottom-2 flex flex-col items-center"
-          initial={{ x: '-220px' }}
-          animate={{ x: 'calc(100vw + 220px)' }}
-          transition={{
-            duration: 72,
-            repeat: Infinity,
-            delay: 40,
-            ease: 'linear',
-          }}
-        >
-          <motion.div
-            animate={{ y: [-4, 4, -4], rotate: [-2, 2, -2] }}
-            transition={{ duration: 3.8, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <ContainerShipSVG />
-            <div className="w-38 h-1 bg-sky-400/40 rounded-full blur-[1px] -mt-1" />
-          </motion.div>
-        </motion.div>
-
-        {/* SHIP 4: KAPAL CURAH / BULK CARRIER (Starts with 60s Delay, Duration 78s) */}
-        <motion.div
-          className="absolute bottom-2 flex flex-col items-center"
-          initial={{ x: '-220px' }}
-          animate={{ x: 'calc(100vw + 220px)' }}
-          transition={{
-            duration: 78,
-            repeat: Infinity,
-            delay: 60,
-            ease: 'linear',
-          }}
-        >
-          <motion.div
-            animate={{ y: [-3, 3, -3], rotate: [-1.5, 1.5, -1.5] }}
-            transition={{ duration: 4.2, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <BulkCarrierSVG />
-            <div className="w-36 h-1 bg-sky-400/40 rounded-full blur-[1px] -mt-1" />
-          </motion.div>
-        </motion.div>
-
       </div>
 
       {/* ========================================================================= */}
