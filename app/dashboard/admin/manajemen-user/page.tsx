@@ -6,7 +6,20 @@ import { initialAccounts, UserAccount } from '@/lib/mockStore';
 import { readExcelFile, downloadUserImportTemplate, exportToExcel } from '@/lib/utils/excel';
 
 export default function AdminUserManagementPage() {
-  const [users, setUsers] = useState<UserAccount[]>(initialAccounts);
+  // Synchronous State Initializer to prevent split-second flash on refresh
+  const [users, setUsers] = useState<UserAccount[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('siakal_user_list');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      } catch (e) {}
+    }
+    return initialAccounts;
+  });
+
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRole, setFilterRole] = useState<string>('semua');
   const [visiblePasswords, setVisiblePasswords] = useState<{ [key: string]: boolean }>({});
@@ -26,13 +39,6 @@ export default function AdminUserManagementPage() {
   const [newUsernameOrId, setNewUsernameOrId] = useState('');
   const [newPassword, setNewPassword] = useState('SIAKAL2026!');
   const [newProdi, setNewProdi] = useState('Studi Nautika');
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('siakal_user_list');
-      if (stored) setUsers(JSON.parse(stored));
-    } catch (e) {}
-  }, []);
 
   const saveUsers = (newList: UserAccount[]) => {
     setUsers(newList);
@@ -134,7 +140,6 @@ export default function AdminUserManagementPage() {
     e.preventDefault();
     if (!editingUser) return;
 
-    // Sync usernameOrId into nim/nip if applicable
     const updatedUser = {
       ...editingUser,
       nim: editingUser.role === 'mahasiswa' ? editingUser.usernameOrId : editingUser.nim,
@@ -177,7 +182,7 @@ export default function AdminUserManagementPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner Header - Clean & Minimalist */}
+      {/* Top Banner Header */}
       <div className="glass-panel p-6 border-l-4 border-l-sky-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
@@ -271,27 +276,23 @@ export default function AdminUserManagementPage() {
 
                 return (
                   <tr key={u.id} className="hover:bg-slate-100/80 dark:hover:bg-slate-800/50 transition-colors">
-                    {/* User Name & Email */}
                     <td className="py-4 px-4 whitespace-nowrap">
                       <div className="font-extrabold text-slate-900 dark:text-white text-sm">{u.fullName}</div>
                       <div className="text-xs text-slate-500 font-mono font-medium">{u.email}</div>
                     </td>
 
-                    {/* Role Badge */}
                     <td className="py-4 px-4 whitespace-nowrap">
                       <span className="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-extrabold uppercase tracking-wider bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/30 inline-block">
                         {u.role.replace('_', ' ')}
                       </span>
                     </td>
 
-                    {/* Login ID */}
                     <td className="py-4 px-4 whitespace-nowrap">
                       <span className="font-mono font-extrabold text-sky-600 dark:text-sky-400 bg-sky-500/10 px-2.5 py-1 rounded-lg border border-sky-500/20 text-xs inline-block">
                         {loginId}
                       </span>
                     </td>
 
-                    {/* Password */}
                     <td className="py-4 px-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <span className="font-mono font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-300 dark:border-white/10 text-xs min-w-[90px] text-center inline-block">
@@ -308,12 +309,10 @@ export default function AdminUserManagementPage() {
                       </div>
                     </td>
 
-                    {/* Prodi / Unit */}
                     <td className="py-4 px-4 whitespace-nowrap text-slate-700 dark:text-slate-300 font-semibold">
                       {u.prodi || u.namaLengkapGelar || '-'}
                     </td>
 
-                    {/* Actions: Edit, Copy & Delete */}
                     <td className="py-4 px-4 whitespace-nowrap text-right space-x-1.5">
                       <button
                         type="button"

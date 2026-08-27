@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Navbar } from '@/components/Navbar';
 import { LandingSlider } from '@/components/LandingSlider';
-import { Smile, CheckCircle2, ArrowRight, ArrowLeft, Send } from 'lucide-react';
+import { Smile, CheckCircle2, ArrowRight, ArrowLeft, Send, Search, UserCheck } from 'lucide-react';
+import { initialAccounts, UserAccount } from '@/lib/mockStore';
 
 export default function KepuasanPenggunaPublicPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -13,7 +14,12 @@ export default function KepuasanPenggunaPublicPage() {
   const [namaAtasan, setNamaAtasan] = useState('');
   const [jabatanAtasan, setJabatanAtasan] = useState('');
   const [namaPerusahaan, setNamaPerusahaan] = useState('');
-  const [namaAlumni, setNamaAlumni] = useState('');
+  
+  // Searchable Alumni Selector State
+  const [alumniSearchQuery, setAlumniSearchQuery] = useState('');
+  const [selectedAlumni, setSelectedAlumni] = useState<UserAccount | null>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [registeredAlumnis, setRegisteredAlumnis] = useState<UserAccount[]>([]);
 
   // Form Step 2: 7 Indikator (1-4: Sangat Baik=4, Baik=3, Cukup=2, Kurang=1)
   const [scores, setScores] = useState<{ [key: string]: number }>({
@@ -26,6 +32,35 @@ export default function KepuasanPenggunaPublicPage() {
     pengembanganDiri: 4,
   });
 
+  useEffect(() => {
+    // Load registered alumnis & mahasiswas from localStorage or fallback mock
+    let allUsers: UserAccount[] = initialAccounts;
+    try {
+      const stored = localStorage.getItem('siakal_user_list');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          allUsers = parsed;
+        }
+      }
+    } catch (e) {}
+
+    // Filter only alumni & graduating mahasiswas
+    const filtered = allUsers.filter((u) => u.role === 'alumni' || u.role === 'mahasiswa');
+    setRegisteredAlumnis(filtered);
+  }, []);
+
+  const filteredAlumniOptions = registeredAlumnis.filter((a) => {
+    const query = alumniSearchQuery.toLowerCase();
+    const nim = a.nim || a.usernameOrId || '';
+    const prodi = a.prodi || '';
+    return (
+      a.fullName.toLowerCase().includes(query) ||
+      nim.toLowerCase().includes(query) ||
+      prodi.toLowerCase().includes(query)
+    );
+  });
+
   const indikators = [
     { key: 'etika', title: '1. Etika & Kedisiplinan', desc: 'Pembinaan etika, disiplin, integritas, dan kepatuhan keselamatan.' },
     { key: 'kompetensi', title: '2. Keahlian Bidang Ilmu (Kompetensi Utama)', desc: 'Penguasaan kompetensi inti dan ketrampilan teknis pekerjaan.' },
@@ -36,9 +71,18 @@ export default function KepuasanPenggunaPublicPage() {
     { key: 'pengembanganDiri', title: '7. Pengembangan Diri', desc: 'Inisiatif pengembangan diri, kesiapan belajar hal baru, dan adaptabilitas.' },
   ];
 
+  const handleSelectAlumni = (alumni: UserAccount) => {
+    setSelectedAlumni(alumni);
+    setAlumniSearchQuery(alumni.fullName);
+    setIsDropdownOpen(false);
+  };
+
   const handleNextStep1 = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!namaAtasan || !jabatanAtasan || !namaPerusahaan || !namaAlumni) return;
+    if (!namaAtasan || !jabatanAtasan || !namaPerusahaan || (!selectedAlumni && !alumniSearchQuery)) {
+      alert('Mohon lengkapi seluruh data identitas dan pilih nama alumni yang dinilai.');
+      return;
+    }
     setStep(2);
   };
 
@@ -49,7 +93,10 @@ export default function KepuasanPenggunaPublicPage() {
         namaAtasan,
         jabatanAtasan,
         namaPerusahaan,
-        namaAlumni,
+        alumniId: selectedAlumni?.id || 'custom',
+        namaAlumni: selectedAlumni?.fullName || alumniSearchQuery,
+        nimAlumni: selectedAlumni?.nim || selectedAlumni?.usernameOrId || '-',
+        prodiAlumni: selectedAlumni?.prodi || '-',
         scores,
         submittedAt: new Date().toISOString(),
       });
@@ -138,18 +185,69 @@ export default function KepuasanPenggunaPublicPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs sm:text-sm font-extrabold text-slate-900 dark:text-slate-100 mb-1.5">
-                  Nama Alumni yang Dinilai *
+              {/* SEARCHABLE ALUMNI SELECTOR DROPDOWN */}
+              <div className="relative">
+                <label className="block text-xs sm:text-sm font-extrabold text-slate-900 dark:text-slate-100 mb-1.5 flex items-center justify-between">
+                  <span>Cari & Pilih Nama Alumni yang Dinilai *</span>
+                  <span className="text-[11px] text-sky-600 dark:text-sky-400 font-bold">Terhubung Database Alumni</span>
                 </label>
-                <input
-                  type="text"
-                  required
-                  value={namaAlumni}
-                  onChange={(e) => setNamaAlumni(e.target.value)}
-                  placeholder="Contoh: Ahmad Fauzi, A.Md.Tra."
-                  className="w-full glass-input text-slate-900 dark:text-white font-medium"
-                />
+
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
+                  <input
+                    type="text"
+                    required
+                    value={alumniSearchQuery}
+                    onChange={(e) => {
+                      setAlumniSearchQuery(e.target.value);
+                      setSelectedAlumni(null);
+                      setIsDropdownOpen(true);
+                    }}
+                    onFocus={() => setIsDropdownOpen(true)}
+                    placeholder="Ketik Nama Alumni atau NIM (cth: Deni Kurniawan / 2001015)..."
+                    className="w-full glass-input pl-10 text-slate-900 dark:text-white font-semibold"
+                  />
+                </div>
+
+                {/* Dropdown Options List */}
+                {isDropdownOpen && (
+                  <div className="absolute left-0 right-0 top-full mt-1.5 z-50 max-h-56 overflow-y-auto rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-white/20 shadow-2xl divide-y divide-slate-100 dark:divide-white/5">
+                    {filteredAlumniOptions.length > 0 ? (
+                      filteredAlumniOptions.map((a) => (
+                        <div
+                          key={a.id}
+                          onClick={() => handleSelectAlumni(a)}
+                          className="p-3 hover:bg-sky-500/10 dark:hover:bg-sky-500/20 cursor-pointer transition-colors flex items-center justify-between"
+                        >
+                          <div>
+                            <div className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm">{a.fullName}</div>
+                            <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                              NIM: {a.nim || a.usernameOrId || '-'} &bull; {a.prodi || 'Alumni'}
+                            </div>
+                          </div>
+                          <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-sky-500/10 text-sky-600 border border-sky-500/30">
+                            Pilih
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-3 text-xs text-slate-500 text-center font-medium">
+                        Nama alumni tidak ada di daftar. Menggunakan masukan manual: <strong className="text-slate-900 dark:text-white">{alumniSearchQuery}</strong>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Selected Alumni Confirmation Chip */}
+                {selectedAlumni && (
+                  <div className="mt-2 p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between text-xs text-emerald-700 dark:text-emerald-300 font-bold">
+                    <div className="flex items-center gap-1.5">
+                      <UserCheck className="w-4 h-4 text-emerald-500" />
+                      <span>Alumni Terverifikasi: {selectedAlumni.fullName} (NIM: {selectedAlumni.nim || selectedAlumni.usernameOrId})</span>
+                    </div>
+                    <span className="text-[10px] bg-emerald-500 text-white px-2 py-0.5 rounded-full">Record Terkunci</span>
+                  </div>
+                )}
               </div>
 
               <div className="pt-3 flex justify-end">
@@ -225,7 +323,7 @@ export default function KepuasanPenggunaPublicPage() {
               </div>
               <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">Terima Kasih Atas Partisipasi Anda!</h3>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium max-w-md mx-auto">
-                Hasil evaluasi kepuasan atasan pengguna lulusan telah tersimpan secara resmi untuk bahan perbaikan mutu lulusan Politeknik Transportasi SDP Palembang.
+                Hasil evaluasi kepuasan atasan pengguna lulusan telah tersimpan secara resmi untuk {selectedAlumni?.fullName || 'Alumni'} dan terhubung dengan Database Tracer Study.
               </p>
               <div className="pt-4">
                 <Link href="/" className="glass-button text-xs sm:text-sm font-bold py-2.5 px-6">
