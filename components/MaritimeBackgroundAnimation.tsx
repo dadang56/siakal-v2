@@ -3,136 +3,150 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
-// SVG 1: Kapal Tanker Minyak (Oil & Chemical Tanker)
+// SVG 1: Kapal Tanker Minyak (Haluan Depan menghadap KANAN)
 function TankerVesselSVG() {
   return (
     <svg className="w-36 h-20 sm:w-48 sm:h-24" viewBox="0 0 160 80" fill="currentColor">
-      {/* Tanker Hull */}
-      <path d="M10 52 L25 68 L140 68 L155 52 L145 44 L15 44 Z" className="text-slate-800 dark:text-slate-300" opacity="0.95" />
+      {/* Tanker Hull - Bow on RIGHT (x=150), Stern on LEFT (x=10) */}
+      <path d="M5 52 L20 44 L145 44 L155 52 L140 68 L25 68 Z" className="text-slate-800 dark:text-slate-300" opacity="0.95" />
       {/* Red Waterline Bottom */}
-      <path d="M15 62 L25 68 L140 68 L150 62 Z" fill="#ef4444" opacity="0.8" />
-      {/* Deck Piping & Pipe Manifolds */}
-      <line x1="30" y1="44" x2="110" y2="44" stroke="#0284c7" strokeWidth="3" />
-      <rect x="40" y="38" width="6" height="8" fill="#0284c7" />
-      <rect x="60" y="38" width="6" height="8" fill="#0284c7" />
-      <rect x="80" y="38" width="6" height="8" fill="#0284c7" />
-      <rect x="100" y="38" width="6" height="8" fill="#0284c7" />
-      {/* Stern Superstructure Bridge (Anjungan Belakang) */}
-      <rect x="115" y="24" width="22" height="20" rx="1.5" className="text-slate-700 dark:text-slate-200" opacity="0.95" />
-      <rect x="120" y="14" width="14" height="10" rx="1" className="text-slate-700 dark:text-slate-200" opacity="0.95" />
+      <path d="M10 62 L25 68 L140 68 L148 62 Z" fill="#ef4444" opacity="0.8" />
+      
+      {/* Stern Superstructure Bridge (Belakang Kapal di KIRI) */}
+      <rect x="20" y="24" width="22" height="20" rx="1.5" className="text-slate-700 dark:text-slate-200" opacity="0.95" />
+      <rect x="24" y="14" width="14" height="10" rx="1" className="text-slate-700 dark:text-slate-200" opacity="0.95" />
       {/* Windows & Navigation Bridge */}
-      <rect x="122" y="17" width="10" height="3" fill="#38bdf8" />
+      <rect x="26" y="17" width="10" height="3" fill="#38bdf8" />
       {/* Funnel & Smoke */}
-      <rect x="125" y="6" width="5" height="8" fill="#dc2626" />
-      <circle cx="127" cy="2" r="2.5" fill="#94a3b8" opacity="0.5" />
-      <circle cx="123" cy="-3" r="3.5" fill="#94a3b8" opacity="0.3" />
-      {/* Bow Radar Mast */}
-      <line x1="25" y1="44" x2="25" y2="28" stroke="currentColor" strokeWidth="2" />
+      <rect x="28" y="6" width="5" height="8" fill="#dc2626" />
+      <circle cx="30" cy="2" r="2.5" fill="#94a3b8" opacity="0.5" />
+      <circle cx="26" cy="-3" r="3.5" fill="#94a3b8" opacity="0.3" />
+
+      {/* Deck Piping & Pipe Manifolds along Deck to the Right */}
+      <line x1="45" y1="44" x2="135" y2="44" stroke="#0284c7" strokeWidth="3" />
+      <rect x="55" y="38" width="6" height="8" fill="#0284c7" />
+      <rect x="75" y="38" width="6" height="8" fill="#0284c7" />
+      <rect x="95" y="38" width="6" height="8" fill="#0284c7" />
+      <rect x="115" y="38" width="6" height="8" fill="#0284c7" />
+
+      {/* Bow Radar Mast at Front (RIGHT) */}
+      <line x1="140" y1="44" x2="140" y2="28" stroke="currentColor" strokeWidth="2" />
+      
       {/* Label Badge */}
-      <text x="70" y="60" fontSize="7" fontWeight="bold" fill="#fff" letterSpacing="0.5">OIL TANKER</text>
+      <text x="75" y="60" fontSize="7" fontWeight="bold" fill="#fff" letterSpacing="0.5">OIL TANKER</text>
     </svg>
   );
 }
 
-// SVG 2: Kapal Pesiar Mewah (Luxury Cruise Liner)
+// SVG 2: Kapal Pesiar Mewah (Haluan Depan menghadap KANAN)
 function CruiseShipSVG() {
   return (
     <svg className="w-40 h-22 sm:w-52 sm:h-28" viewBox="0 0 170 85" fill="currentColor">
-      {/* Sleek Cruise Hull */}
-      <path d="M8 50 C25 50, 20 70, 40 70 L150 70 L165 50 Z" className="text-sky-900 dark:text-slate-200" opacity="0.95" />
-      <path d="M15 62 L35 70 L150 70 L160 62 Z" fill="#0284c7" opacity="0.8" />
+      {/* Sleek Cruise Hull - Bow on RIGHT (x=165), Stern on LEFT (x=5) */}
+      <path d="M5 50 L20 70 L130 70 C150 70, 145 50, 162 50 Z" className="text-sky-900 dark:text-slate-200" opacity="0.95" />
+      <path d="M10 62 L20 70 L135 70 L155 62 Z" fill="#0284c7" opacity="0.8" />
+
       {/* Multi-Tiered Passenger Decks & Balconies */}
-      <rect x="35" y="40" width="112" height="10" rx="1" fill="#f8fafc" stroke="#94a3b8" strokeWidth="0.5" />
-      <rect x="42" y="30" width="98" height="10" rx="1" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="0.5" />
-      <rect x="52" y="20" width="82" height="10" rx="1" fill="#e2e8f0" stroke="#94a3b8" strokeWidth="0.5" />
+      <rect x="23" y="40" width="112" height="10" rx="1" fill="#f8fafc" stroke="#94a3b8" strokeWidth="0.5" />
+      <rect x="30" y="30" width="98" height="10" rx="1" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="0.5" />
+      <rect x="36" y="20" width="82" height="10" rx="1" fill="#e2e8f0" stroke="#94a3b8" strokeWidth="0.5" />
+
       {/* Glowing Cabin Windows Row */}
       <g fill="#0284c7">
-        <circle cx="45" cy="45" r="1.5" /><circle cx="55" cy="45" r="1.5" /><circle cx="65" cy="45" r="1.5" />
-        <circle cx="75" cy="45" r="1.5" /><circle cx="85" cy="45" r="1.5" /><circle cx="95" cy="45" r="1.5" />
-        <circle cx="105" cy="45" r="1.5" /><circle cx="115" cy="45" r="1.5" /><circle cx="125" cy="45" r="1.5" />
+        <circle cx="35" cy="45" r="1.5" /><circle cx="45" cy="45" r="1.5" /><circle cx="55" cy="45" r="1.5" />
+        <circle cx="65" cy="45" r="1.5" /><circle cx="75" cy="45" r="1.5" /><circle cx="85" cy="45" r="1.5" />
+        <circle cx="95" cy="45" r="1.5" /><circle cx="105" cy="45" r="1.5" /><circle cx="115" cy="45" r="1.5" />
         
-        <rect x="50" y="33" width="4" height="4" rx="0.5" />
-        <rect x="62" y="33" width="4" height="4" rx="0.5" />
-        <rect x="74" y="33" width="4" height="4" rx="0.5" />
-        <rect x="86" y="33" width="4" height="4" rx="0.5" />
-        <rect x="98" y="33" width="4" height="4" rx="0.5" />
-        <rect x="110" y="33" width="4" height="4" rx="0.5" />
+        <rect x="40" y="33" width="4" height="4" rx="0.5" />
+        <rect x="52" y="33" width="4" height="4" rx="0.5" />
+        <rect x="64" y="33" width="4" height="4" rx="0.5" />
+        <rect x="76" y="33" width="4" height="4" rx="0.5" />
+        <rect x="88" y="33" width="4" height="4" rx="0.5" />
+        <rect x="100" y="33" width="4" height="4" rx="0.5" />
 
-        <rect x="60" y="23" width="14" height="4" rx="1" fill="#38bdf8" />
-        <rect x="82" y="23" width="14" height="4" rx="1" fill="#38bdf8" />
-        <rect x="104" y="23" width="14" height="4" rx="1" fill="#38bdf8" />
+        <rect x="48" y="23" width="14" height="4" rx="1" fill="#38bdf8" />
+        <rect x="70" y="23" width="14" height="4" rx="1" fill="#38bdf8" />
+        <rect x="92" y="23" width="14" height="4" rx="1" fill="#38bdf8" />
       </g>
       {/* Dual Red Funnels (Cerobong Pesiar) */}
-      <polygon points="75,20 78,10 86,10 83,20" fill="#dc2626" />
-      <polygon points="95,20 98,10 106,10 103,20" fill="#dc2626" />
+      <polygon points="65,20 68,10 76,10 73,20" fill="#dc2626" />
+      <polygon points="85,20 88,10 96,10 93,20" fill="#dc2626" />
+
       {/* Label Badge */}
       <text x="75" y="63" fontSize="7" fontWeight="bold" fill="#fff" letterSpacing="0.5">CRUISE LINER</text>
     </svg>
   );
 }
 
-// SVG 3: Kapal Kontainer Kargo (Container Ship)
+// SVG 3: Kapal Kontainer Kargo (Haluan Depan menghadap KANAN)
 function ContainerShipSVG() {
   return (
     <svg className="w-38 h-20 sm:w-50 sm:h-26" viewBox="0 0 165 80" fill="currentColor">
-      {/* Cargo Hull */}
-      <path d="M10 50 L25 68 L142 68 L158 50 Z" className="text-slate-900 dark:text-slate-300" opacity="0.95" />
-      {/* Stacked Colorful Containers */}
+      {/* Cargo Hull - Bow on RIGHT (x=155), Stern on LEFT (x=8) */}
+      <path d="M7 50 L23 68 L140 68 L155 50 Z" className="text-slate-900 dark:text-slate-300" opacity="0.95" />
+
+      {/* Aft Bridge Tower (Anjungan Belakang di KIRI) */}
+      <rect x="25" y="22" width="22" height="28" rx="1.5" fill="#475569" />
+      <rect x="27" y="26" width="18" height="4" fill="#38bdf8" />
+      <rect x="33" y="12" width="6" height="10" fill="#dc2626" />
+
+      {/* Stacked Colorful Containers towards the Front (RIGHT) */}
       <g stroke="#0f172a" strokeWidth="0.8">
         {/* Row 1 */}
-        <rect x="28" y="38" width="18" height="12" fill="#0284c7" />
-        <rect x="48" y="38" width="18" height="12" fill="#d97706" />
-        <rect x="68" y="38" width="18" height="12" fill="#16a34a" />
-        <rect x="88" y="38" width="18" height="12" fill="#dc2626" />
+        <rect x="55" y="38" width="18" height="12" fill="#0284c7" />
+        <rect x="75" y="38" width="18" height="12" fill="#d97706" />
+        <rect x="95" y="38" width="18" height="12" fill="#16a34a" />
+        <rect x="115" y="38" width="18" height="12" fill="#dc2626" />
 
         {/* Row 2 Stack */}
-        <rect x="32" y="26" width="18" height="12" fill="#ea580c" />
-        <rect x="52" y="26" width="18" height="12" fill="#2563eb" />
-        <rect x="72" y="26" width="18" height="12" fill="#9333ea" />
-        <rect x="92" y="26" width="18" height="12" fill="#16a34a" />
+        <rect x="59" y="26" width="18" height="12" fill="#ea580c" />
+        <rect x="79" y="26" width="18" height="12" fill="#2563eb" />
+        <rect x="99" y="26" width="18" height="12" fill="#9333ea" />
+        <rect x="119" y="26" width="18" height="12" fill="#16a34a" />
 
         {/* Row 3 Top Stack */}
-        <rect x="36" y="14" width="18" height="12" fill="#16a34a" />
-        <rect x="56" y="14" width="18" height="12" fill="#dc2626" />
-        <rect x="76" y="14" width="18" height="12" fill="#0284c7" />
+        <rect x="63" y="14" width="18" height="12" fill="#16a34a" />
+        <rect x="83" y="14" width="18" height="12" fill="#dc2626" />
+        <rect x="103" y="14" width="18" height="12" fill="#0284c7" />
       </g>
-      {/* Aft Bridge Tower (Anjungan Belakang) */}
-      <rect x="116" y="22" width="22" height="28" rx="1.5" fill="#475569" />
-      <rect x="118" y="26" width="18" height="4" fill="#38bdf8" />
-      <rect x="124" y="12" width="6" height="10" fill="#dc2626" />
+
       {/* Label Badge */}
-      <text x="65" y="61" fontSize="7" fontWeight="bold" fill="#fff" letterSpacing="0.5">CONTAINER SHIP</text>
+      <text x="80" y="61" fontSize="7" fontWeight="bold" fill="#fff" letterSpacing="0.5">CONTAINER SHIP</text>
     </svg>
   );
 }
 
-// SVG 4: Kapal Curah / Bulk Carrier (Bulk Carrier)
+// SVG 4: Kapal Curah / Bulk Carrier (Haluan Depan menghadap KANAN)
 function BulkCarrierSVG() {
   return (
     <svg className="w-36 h-20 sm:w-48 sm:h-24" viewBox="0 0 160 80" fill="currentColor">
-      {/* Bulk Carrier Hull */}
-      <path d="M10 48 L24 66 L142 66 L156 48 L145 42 L15 42 Z" className="text-slate-800 dark:text-slate-300" opacity="0.95" />
-      {/* Hatch Covers (Penutup Palka) */}
-      <rect x="30" y="40" width="16" height="4" fill="#d97706" rx="1" />
-      <rect x="52" y="40" width="16" height="4" fill="#d97706" rx="1" />
-      <rect x="74" y="40" width="16" height="4" fill="#d97706" rx="1" />
-      <rect x="96" y="40" width="16" height="4" fill="#d97706" rx="1" />
-      {/* 3 Tall Deck Cranes (Derek Pemuat Barang Curah) */}
-      <g stroke="#0284c7" strokeWidth="2.5">
-        <line x1="41" y1="40" x2="41" y2="22" />
-        <line x1="41" y1="22" x2="54" y2="16" />
-        
-        <line x1="63" y1="40" x2="63" y2="22" />
-        <line x1="63" y1="22" x2="76" y2="16" />
+      {/* Bulk Carrier Hull - Bow on RIGHT (x=150), Stern on LEFT (x=4) */}
+      <path d="M4 48 L15 42 L145 42 L156 48 L136 66 L18 66 Z" className="text-slate-800 dark:text-slate-300" opacity="0.95" />
 
-        <line x1="85" y1="40" x2="85" y2="22" />
-        <line x1="85" y1="22" x2="98" y2="16" />
+      {/* Accommodation House at Belakang (LEFT) */}
+      <rect x="20" y="22" width="22" height="20" rx="1.5" fill="#475569" />
+      <rect x="22" y="25" width="18" height="3" fill="#38bdf8" />
+
+      {/* Hatch Covers (Penutup Palka ke arah KANAN) */}
+      <rect x="48" y="40" width="16" height="4" fill="#d97706" rx="1" />
+      <rect x="70" y="40" width="16" height="4" fill="#d97706" rx="1" />
+      <rect x="92" y="40" width="16" height="4" fill="#d97706" rx="1" />
+      <rect x="114" y="40" width="16" height="4" fill="#d97706" rx="1" />
+
+      {/* 3 Tall Deck Cranes */}
+      <g stroke="#0284c7" strokeWidth="2.5">
+        <line x1="59" y1="40" x2="59" y2="22" />
+        <line x1="59" y1="22" x2="72" y2="16" />
+        
+        <line x1="81" y1="40" x2="81" y2="22" />
+        <line x1="81" y1="22" x2="94" y2="16" />
+
+        <line x1="103" y1="40" x2="103" y2="22" />
+        <line x1="103" y1="22" x2="116" y2="16" />
       </g>
-      {/* Accommodation House */}
-      <rect x="118" y="22" width="22" height="20" rx="1.5" fill="#475569" />
-      <rect x="120" y="25" width="18" height="3" fill="#38bdf8" />
+
       {/* Label Badge */}
-      <text x="60" y="58" fontSize="7" fontWeight="bold" fill="#fff" letterSpacing="0.5">BULK CARRIER</text>
+      <text x="75" y="58" fontSize="7" fontWeight="bold" fill="#fff" letterSpacing="0.5">BULK CARRIER</text>
     </svg>
   );
 }
@@ -227,7 +241,7 @@ export function MaritimeBackgroundAnimation() {
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. SINGLE SHIP SAILING FORWARD (EXACTLY ONE SHIP AT A TIME)               */}
+      {/* 2. SINGLE SHIP SAILING FORWARD (BOW FACING RIGHT, MOVING LEFT TO RIGHT)   */}
       {/* ========================================================================= */}
       <div className="fixed bottom-12 inset-x-0 h-28 pointer-events-none overflow-hidden z-0">
         <motion.div
