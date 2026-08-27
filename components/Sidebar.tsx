@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion, LayoutGroup } from 'framer-motion';
 import {
   LayoutDashboard,
   Users,
@@ -110,30 +111,36 @@ export function Sidebar({ role, prodi }: SidebarProps) {
           </span>
         </div>
 
-        <nav className="space-y-1">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
+        <LayoutGroup id="desktop-sidebar-nav">
+          <nav className="space-y-1">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              const Icon = item.icon;
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-bold transition-colors relative ${
-                  isActive
-                    ? 'text-sky-600 dark:text-sky-400 bg-sky-500/10 dark:bg-sky-500/15 border border-sky-500/30 shadow-sm'
-                    : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60'
-                }`}
-              >
-                <Icon className={`w-4.5 h-4.5 shrink-0 ${isActive ? 'text-sky-500' : 'text-slate-400'}`} />
-                <span className="truncate">{item.label}</span>
-                {isActive && (
-                  <div className="absolute left-0 w-1 h-6 bg-sky-500 rounded-r-full shadow-sm" />
-                )}
-              </Link>
-            );
-          })}
-        </nav>
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-bold transition-colors relative ${
+                    isActive
+                      ? 'text-sky-600 dark:text-sky-400 bg-sky-500/10 dark:bg-sky-500/15 border border-sky-500/30 shadow-sm'
+                      : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800/60'
+                  }`}
+                >
+                  <Icon className={`w-4.5 h-4.5 shrink-0 transition-colors ${isActive ? 'text-sky-500' : 'text-slate-400'}`} />
+                  <span className="truncate">{item.label}</span>
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeSidebarIndicator"
+                      className="absolute left-0 w-1 h-6 bg-sky-500 rounded-r-full shadow-sm"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+        </LayoutGroup>
       </div>
     </aside>
   );
