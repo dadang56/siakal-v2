@@ -59,22 +59,22 @@ export function LandingSlider() {
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
-          initial={{ opacity: 0, scale: 1.05 }}
+          initial={{ opacity: 0, scale: 1.03 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 1.5, ease: 'easeInOut' }}
+          transition={{ duration: 1.2, ease: 'easeInOut' }}
           className="absolute inset-0"
         >
           <img
             src={activeBg}
             alt="Landing Page Background"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover font-sans"
           />
         </motion.div>
       </AnimatePresence>
 
-      {/* Dark Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-950/40 backdrop-blur-[2px]" />
+      {/* Dimmed Dark Overlay (NO BLUR - Crystal Clear & Sharp Background Image) */}
+      <div className="absolute inset-0 bg-slate-950/50 bg-gradient-to-t from-slate-950 via-slate-950/55 to-slate-950/35 pointer-events-none" />
 
       {/* Slider Indicators / Dots */}
       {images.length > 1 && (
