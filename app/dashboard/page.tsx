@@ -141,7 +141,7 @@ export default function MainDashboardPage() {
               </div>
             </Link>
 
-            {/* MAHASISWA CARD - LINKS DIRECTLY TO DATABASE MAHASISWA & TARUNA */}
+            {/* MAHASISWA CARD - LINKS DIRECTLY TO DATABASE MAHASISWA */}
             <Link href="/dashboard/admin/mahasiswa" className="glass-panel p-4 space-y-1 border-l-4 border-l-blue-500 hover:border-blue-400 transition-all group block shadow-md">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400">MAHASISWA &rarr;</span>
@@ -152,10 +152,10 @@ export default function MainDashboardPage() {
               </div>
             </Link>
 
-            {/* TARUNA PRALA CARD */}
+            {/* MAHASISWA PRALA CARD */}
             <Link href="/dashboard/admin/prala" className="glass-panel p-4 space-y-1 border-l-4 border-l-indigo-500 hover:border-indigo-400 transition-all group block">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">TARUNA PRALA</span>
+                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">MAHASISWA PRALA</span>
                 <Anchor className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">110</div>
@@ -234,7 +234,7 @@ export default function MainDashboardPage() {
                     <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                       <Anchor className="w-4 h-4 text-sky-500" /> PRALA
                     </span>
-                    <span className="text-xs font-mono font-extrabold text-sky-500">110 Taruna</span>
+                    <span className="text-xs font-mono font-extrabold text-sky-500">110 Mahasiswa</span>
                   </div>
                   <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden flex">
                     <div className="bg-emerald-500 h-full" style={{ width: '77%' }} />

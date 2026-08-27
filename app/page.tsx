@@ -211,9 +211,9 @@ export default function LandingPage() {
                     type="button"
                     onClick={() => handleQuickDemo('mahasiswa')}
                     className="py-2 px-2 rounded-xl bg-blue-500/20 hover:bg-blue-500/40 text-blue-200 border border-blue-500/40 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
-                    title="Login sebagai Mahasiswa/Taruna"
+                    title="Login sebagai Mahasiswa"
                   >
-                    🎓 Taruna
+                    🎓 Mahasiswa
                   </button>
 
                   <button

@@ -37,7 +37,7 @@ export function Sidebar({ role, prodi }: SidebarProps) {
       case 'admin':
         return [
           { label: 'Beranda Admin', href: '/dashboard', icon: LayoutDashboard },
-          { label: 'Database Mahasiswa & Taruna', href: '/dashboard/admin/mahasiswa', icon: GraduationCap },
+          { label: 'Database Mahasiswa', href: '/dashboard/admin/mahasiswa', icon: GraduationCap },
           { label: 'Manajemen User', href: '/dashboard/admin/manajemen-user', icon: Users },
           { label: 'Master Data Prodi & Angkatan', href: '/dashboard/admin/prodi', icon: Building2 },
           { label: 'Periode Akademik', href: '/dashboard/admin/periode-akademik', icon: Calendar },

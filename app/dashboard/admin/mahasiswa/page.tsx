@@ -46,7 +46,6 @@ export default function AdminMahasiswaDatabasePage() {
       if (stored) {
         allUsers = JSON.parse(stored);
       }
-      // Remove all mahasiswas/alumnis and append updated
       const nonMhs = allUsers.filter((u) => u.role !== 'mahasiswa' && u.role !== 'alumni');
       const newList = [...nonMhs, ...updatedMahasiswas];
       localStorage.setItem('siakal_user_list', JSON.stringify(newList));
@@ -97,7 +96,7 @@ export default function AdminMahasiswaDatabasePage() {
     exportToExcel(
       [
         {
-          sheetName: 'Database Mahasiswa & Taruna',
+          sheetName: 'Database Mahasiswa',
           data: filteredMahasiswas.map((m) => ({
             'NIM / NIP': m.nim || m.usernameOrId,
             'Nama Lengkap': m.fullName,
@@ -108,7 +107,7 @@ export default function AdminMahasiswaDatabasePage() {
           })),
         },
       ],
-      'Database_Mahasiswa_Taruna_SIAKAL'
+      'Database_Mahasiswa_SIAKAL'
     );
   };
 
@@ -129,7 +128,7 @@ export default function AdminMahasiswaDatabasePage() {
         <div>
           <h1 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
             <GraduationCap className="w-6 h-6 text-blue-500 dark:text-blue-400" />
-            <span>Pusat Database Mahasiswa & Taruna</span>
+            <span>Pusat Database Mahasiswa</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 font-semibold">
             Pencarian biodata, NIM, program studi, status akademik, dan ekspor database mahasiswa.
@@ -191,7 +190,7 @@ export default function AdminMahasiswaDatabasePage() {
       {/* Database Table */}
       <div className="glass-panel p-6 overflow-hidden">
         <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white mb-4">
-          Daftar Mahasiswa & Taruna Terdaftar ({filteredMahasiswas.length} Orang)
+          Daftar Mahasiswa Terdaftar ({filteredMahasiswas.length} Orang)
         </h3>
 
         <div className="overflow-x-auto">
@@ -270,7 +269,7 @@ export default function AdminMahasiswaDatabasePage() {
 
             <form onSubmit={handleAddMahasiswa} className="space-y-3.5 text-xs sm:text-sm">
               <div>
-                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Nama Lengkap Mahasiswa / Taruna</label>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Nama Lengkap Mahasiswa</label>
                 <input
                   type="text"
                   required
