@@ -5,13 +5,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Navbar } from '@/components/Navbar';
 import { LandingSlider } from '@/components/LandingSlider';
-import { LogIn, Smile, ArrowRight, ShieldCheck } from 'lucide-react';
+import { LogIn, Smile, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 import { initialAccounts, UserAccount } from '@/lib/mockStore';
 
 export default function LandingPage() {
   const router = useRouter();
-  const [emailOrNim, setEmailOrNim] = useState('');
-  const [password, setPassword] = useState('');
+  const [emailOrNim, setEmailOrNim] = useState('admin');
+  const [password, setPassword] = useState('SIAKAL2026!');
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleLogin = (e: React.FormEvent) => {
@@ -75,12 +75,37 @@ export default function LandingPage() {
     router.push('/dashboard');
   };
 
+  const handleQuickDemo = (targetRole: UserAccount['role']) => {
+    let userList: UserAccount[] = initialAccounts;
+    try {
+      const stored = localStorage.getItem('siakal_user_list');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          userList = parsed;
+        }
+      }
+    } catch (err) {}
+
+    const demoAcc = userList.find((a) => a.role === targetRole) || initialAccounts.find((a) => a.role === targetRole) || initialAccounts[0];
+
+    try {
+      localStorage.setItem('siakal_user', JSON.stringify(demoAcc));
+    } catch (err) {}
+
+    if (demoAcc.role === 'mahasiswa' && demoAcc.isProfileCompleted === false) {
+      router.push('/dashboard/mahasiswa/lengkapi-biodata');
+    } else {
+      router.push('/dashboard');
+    }
+  };
+
   return (
     <div className="relative min-h-screen flex flex-col justify-between overflow-x-hidden text-slate-100 bg-slate-950 font-sans">
       {/* Dynamic Background Photo Carousel Slider */}
       <LandingSlider />
 
-      {/* Top Header Navbar - Pure White Brand Text & Borderless Header */}
+      {/* Top Header Navbar */}
       <Navbar hideThemeToggle={true} />
 
       {/* Minimalist Landing Page Hero & Premium Dark Glass Login Box */}
@@ -110,9 +135,9 @@ export default function LandingPage() {
 
           {/* Right Column: Premium Dark Glass Embedded Login Card Box */}
           <div className="lg:col-span-5 w-full max-w-md mx-auto">
-            <div className="glass-panel bg-slate-950/80 backdrop-blur-2xl p-6 sm:p-8 border border-white/20 shadow-2xl rounded-3xl relative overflow-hidden">
+            <div className="glass-panel bg-slate-950/85 backdrop-blur-2xl p-6 sm:p-8 border border-white/20 shadow-2xl rounded-3xl relative overflow-hidden space-y-5">
               
-              <div className="text-center mb-6">
+              <div className="text-center">
                 <div className="w-12 h-12 mx-auto mb-2 rounded-2xl bg-gradient-to-tr from-sky-500 to-blue-600 p-0.5 shadow-glow flex items-center justify-center font-black text-white text-xl">
                   S
                 </div>
@@ -121,7 +146,7 @@ export default function LandingPage() {
               </div>
 
               {/* Login Form */}
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={handleLogin} className="space-y-3.5">
                 {errorMsg && (
                   <div className="p-3 rounded-xl bg-red-500/20 border border-red-500/40 text-red-200 text-xs font-semibold">
                     {errorMsg}
@@ -158,17 +183,75 @@ export default function LandingPage() {
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25 transition-all active:scale-[0.98] cursor-pointer mt-2"
+                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-sky-500 via-blue-600 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-sky-500/25 transition-all active:scale-[0.98] cursor-pointer mt-1"
                 >
                   <LogIn className="w-4.5 h-4.5" />
                   <span>Masuk ke Sistem</span>
                 </button>
               </form>
 
-              {/* Sleek Minimalist Helper */}
-              <div className="mt-5 pt-4 border-t border-white/10 text-[11px] text-slate-400 flex items-center justify-center gap-1.5 font-semibold">
-                <ShieldCheck className="w-4 h-4 text-sky-400 shrink-0" />
-                <span>Masukan ID terdaftar (cth: <code className="text-white font-bold">admin</code>, NIM <code className="text-white font-bold">2101034</code>, NIP Dosen).</span>
+              {/* QUICK DEMO ACCOUNT BUTTONS FOR ALL ROLES */}
+              <div className="pt-4 border-t border-white/10 space-y-2.5">
+                <div className="flex items-center justify-center gap-1.5 text-[11px] font-extrabold text-sky-300 uppercase tracking-wider">
+                  <Zap className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Uji Coba Mode Demo (Klik 1-Kali Login):</span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-extrabold">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickDemo('admin')}
+                    className="py-2 px-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/40 text-sky-200 border border-sky-500/40 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                    title="Login sebagai Administrator"
+                  >
+                    🛡️ Admin
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleQuickDemo('mahasiswa')}
+                    className="py-2 px-2 rounded-xl bg-blue-500/20 hover:bg-blue-500/40 text-blue-200 border border-blue-500/40 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                    title="Login sebagai Mahasiswa/Taruna"
+                  >
+                    🎓 Taruna
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleQuickDemo('dosen')}
+                    className="py-2 px-2 rounded-xl bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-200 border border-indigo-500/40 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                    title="Login sebagai Dosen Pembimbing"
+                  >
+                    👨‍🏫 Dosen
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleQuickDemo('pembimbing_lapangan')}
+                    className="py-2 px-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/40 text-amber-200 border border-amber-500/40 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                    title="Login sebagai Pembimbing Lapangan"
+                  >
+                    ⚓ Pembimbing
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleQuickDemo('alumni')}
+                    className="py-2 px-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-200 border border-emerald-500/40 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                    title="Login sebagai Alumni"
+                  >
+                    👨‍🎓 Alumni
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleQuickDemo('unit_approver')}
+                    className="py-2 px-2 rounded-xl bg-purple-500/20 hover:bg-purple-500/40 text-purple-200 border border-purple-500/40 transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                    title="Login sebagai Unit Approver"
+                  >
+                    🏛️ Approver
+                  </button>
+                </div>
               </div>
 
             </div>
