@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Settings, Upload, Image as ImageIcon, CheckCircle2, Trash2, Plus, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Settings, Upload, Image as ImageIcon, CheckCircle2, Trash2, Plus, RefreshCw, AlertTriangle, Sparkles, Wand2 } from 'lucide-react';
 
-function compressImage(file: File, maxWidth = 800, quality = 0.7): Promise<string> {
+function compressImage(file: File, maxWidth = 800, quality = 0.8): Promise<string> {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -22,12 +22,54 @@ function compressImage(file: File, maxWidth = 800, quality = 0.7): Promise<strin
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx?.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', quality));
+        // Save background photo as PNG to prevent solid black fills
+        resolve(canvas.toDataURL('image/png'));
       };
       img.onerror = () => resolve(e.target?.result as string);
       img.src = e.target?.result as string;
     };
     reader.readAsDataURL(file);
+  });
+}
+
+// Automatic Black Background Removal Filter for Transparent PNG Logos
+function makeLogoTransparent(imageSrc: string, threshold = 45): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        resolve(imageSrc);
+        return;
+      }
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const maxVal = Math.max(r, g, b);
+
+        if (maxVal <= threshold) {
+          data[i + 3] = 0; // 100% Transparent
+        } else if (maxVal <= threshold + 35) {
+          // Smooth edge anti-aliasing transition
+          const alphaRatio = (maxVal - threshold) / 35;
+          data[i + 3] = Math.round(data[i + 3] * alphaRatio);
+        }
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(imageSrc);
+    img.src = imageSrc;
   });
 }
 
@@ -38,6 +80,7 @@ export default function AppSettingsPage() {
     'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1920&q=80',
   ]);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [isProcessingLogo, setIsProcessingLogo] = useState(false);
 
   // Modal confirm targets
   const [deleteSlideIndex, setDeleteSlideIndex] = useState<number | null>(null);
@@ -81,9 +124,32 @@ export default function AppSettingsPage() {
       return;
     }
 
-    const compressedLogo = await compressImage(file, 300, 0.8);
-    setLogoUrl(compressedLogo);
-    persistBranding(compressedLogo, backgrounds);
+    setIsProcessingLogo(true);
+    try {
+      const rawCompressed = await compressImage(file, 400, 0.9);
+      // Auto-remove black background for clean transparent PNG
+      const transparentLogo = await makeLogoTransparent(rawCompressed, 45);
+      setLogoUrl(transparentLogo);
+      persistBranding(transparentLogo, backgrounds);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsProcessingLogo(false);
+    }
+  };
+
+  const handleCleanCurrentLogo = async () => {
+    if (!logoUrl) return;
+    setIsProcessingLogo(true);
+    try {
+      const cleaned = await makeLogoTransparent(logoUrl, 55);
+      setLogoUrl(cleaned);
+      persistBranding(cleaned, backgrounds);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsProcessingLogo(false);
+    }
   };
 
   const handleBgFilesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,7 +160,7 @@ export default function AppSettingsPage() {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (file.type.startsWith('image/')) {
-        const compressed = await compressImage(file, 800, 0.7);
+        const compressed = await compressImage(file, 800, 0.8);
         compressedList.push(compressed);
       }
     }
@@ -148,7 +214,7 @@ export default function AppSettingsPage() {
         <button
           type="button"
           onClick={() => setShowResetConfirmModal(true)}
-          className="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:text-red-500 flex items-center gap-1.5 shrink-0 shadow-sm"
+          className="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:text-red-500 flex items-center gap-1.5 shrink-0 shadow-sm cursor-pointer"
           title="Reset ke Standar"
         >
           <RefreshCw className="w-4 h-4" />
@@ -186,31 +252,51 @@ export default function AppSettingsPage() {
               className="glass-panel p-5 border-2 border-dashed border-sky-500/40 hover:border-sky-500 cursor-pointer flex flex-col items-center justify-center text-center transition-all bg-sky-500/5 hover:bg-sky-500/10 rounded-xl"
             >
               <Upload className="w-7 h-7 text-sky-500 dark:text-sky-400 mb-1.5" />
-              <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">Klik untuk Upload File Logo Lokal</span>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">Format PNG Transparan direkomendasikan</span>
+              <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                {isProcessingLogo ? 'Memproses Logo Transparan...' : 'Klik untuk Upload File Logo Lokal'}
+              </span>
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
+                Sistem otomatis membersihkan background hitam menjadi PNG transparan 100%
+              </span>
             </label>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-center space-y-2 flex flex-col items-center justify-center h-full">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-center space-y-3 flex flex-col items-center justify-center h-full">
             <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pratinjau Logo</span>
-            <div className="w-24 h-24 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 flex items-center justify-center p-2 shadow-inner">
+            
+            {/* Transparent Checkerboard Pattern Background for Logo Preview */}
+            <div className="w-28 h-28 rounded-xl bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] dark:bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:12px_12px] bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-white/10 flex items-center justify-center p-2 shadow-inner relative overflow-hidden">
               {logoUrl ? (
-                <img src={logoUrl} alt="Pratinjau Logo" className="max-h-full max-w-full object-contain" />
+                <img src={logoUrl} alt="Pratinjau Logo" className="max-h-full max-w-full object-contain drop-shadow-md" />
               ) : (
                 <span className="text-xs text-slate-400 dark:text-slate-500 italic font-medium">Belum Ada Logo</span>
               )}
             </div>
+
             {logoUrl && (
-              <button
-                type="button"
-                onClick={() => {
-                  setLogoUrl('');
-                  persistBranding('', backgrounds);
-                }}
-                className="text-xs text-red-500 hover:underline font-bold"
-              >
-                Hapus Logo
-              </button>
+              <div className="space-y-1.5 w-full">
+                <button
+                  type="button"
+                  onClick={handleCleanCurrentLogo}
+                  disabled={isProcessingLogo}
+                  className="w-full py-1.5 px-2 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-extrabold border border-sky-500/30 flex items-center justify-center gap-1 transition-all cursor-pointer"
+                  title="Hapus background hitam yang menempel pada logo secara otomatis"
+                >
+                  <Wand2 className="w-3.5 h-3.5 text-sky-500" />
+                  <span>{isProcessingLogo ? 'Memproses...' : '✨ Hilangkan Background Hitam'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLogoUrl('');
+                    persistBranding('', backgrounds);
+                  }}
+                  className="text-xs text-red-500 hover:underline font-bold block mx-auto pt-1 cursor-pointer"
+                >
+                  Hapus Logo
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -273,7 +359,7 @@ export default function AppSettingsPage() {
       </div>
 
       <div className="flex justify-end pt-2">
-        <button onClick={handleSaveSettings} className="glass-button text-xs sm:text-sm font-bold flex items-center gap-2 py-3 px-6 shadow-xl">
+        <button onClick={handleSaveSettings} className="glass-button text-xs sm:text-sm font-bold flex items-center gap-2 py-3 px-6 shadow-xl cursor-pointer">
           <CheckCircle2 className="w-4.5 h-4.5" />
           <span>Simpan Perubahan Branding</span>
         </button>
