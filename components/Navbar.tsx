@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useTheme } from '@/components/ThemeProvider';
 import { Sun, Moon, LogOut } from 'lucide-react';
 
@@ -16,8 +17,11 @@ interface NavbarProps {
 }
 
 export function Navbar({ currentUser, onLogout, hideThemeToggle = false }: NavbarProps) {
+  const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const [customLogo, setCustomLogo] = useState<string>('');
+
+  const isLandingPage = pathname === '/';
 
   const loadCustomLogo = () => {
     try {
@@ -41,7 +45,13 @@ export function Navbar({ currentUser, onLogout, hideThemeToggle = false }: Navba
   const userRole = currentUser?.role || 'User';
 
   return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-slate-950/40 border-none shadow-none transition-colors duration-200">
+    <header
+      className={`sticky top-0 z-40 w-full backdrop-blur-xl transition-colors duration-200 ${
+        isLandingPage
+          ? 'bg-slate-950/40 border-none shadow-none'
+          : 'bg-white/95 dark:bg-slate-950/90 border-b border-slate-200/90 dark:border-white/10 shadow-sm dark:shadow-none'
+      }`}
+    >
       <div className="max-w-[1920px] mx-auto px-4 sm:px-8 lg:px-10 h-16 flex items-center justify-between">
         {/* Brand Logo & Name */}
         <Link href="/" className="flex items-center gap-3 group">
@@ -64,7 +74,7 @@ export function Navbar({ currentUser, onLogout, hideThemeToggle = false }: Navba
 
         {/* Right Section: Theme Switcher & User Profile */}
         <div className="flex items-center gap-4">
-          {/* Theme Switcher Toggle (Sun / Moon) - Hidden on Landing Page if hideThemeToggle is true */}
+          {/* Theme Switcher Toggle (Sun / Moon) */}
           {!hideThemeToggle && (
             <button
               type="button"
