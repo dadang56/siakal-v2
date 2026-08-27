@@ -87,18 +87,23 @@ export default function AdminUserManagementPage() {
   };
 
   const handleConfirmBatchImport = () => {
-    const newAccounts: UserAccount[] = importedPreview.map((row, idx) => ({
-      id: `imported-${Date.now()}-${idx}`,
-      email: row['Email'] || `user${idx}@siakal.poltek.ac.id`,
-      fullName: row['Nama Lengkap'] || 'Pengguna Baru',
-      role: (row['Role']?.toString().toLowerCase().replace(' ', '_') as any) || 'mahasiswa',
-      usernameOrId: row['Username/NIM/NIP']?.toString() || row['Email'],
-      initialPassword: row['Password Initial']?.toString() || 'SIAKAL2026!',
-      nim: row['Role']?.toString().toLowerCase() === 'mahasiswa' ? row['Username/NIM/NIP']?.toString() : undefined,
-      nip: row['Role']?.toString().toLowerCase() === 'dosen' ? row['Username/NIM/NIP']?.toString() : undefined,
-      prodi: row['Prodi'],
-      isProfileCompleted: true,
-    }));
+    const newAccounts: UserAccount[] = importedPreview.map((row, idx) => {
+      const r = (row['Role']?.toString().toLowerCase().replace(' ', '_') as any) || 'mahasiswa';
+      const isMhsOrAlumni = r === 'mahasiswa' || r === 'alumni';
+
+      return {
+        id: `imported-${Date.now()}-${idx}`,
+        email: row['Email'] || `user${idx}@siakal.poltek.ac.id`,
+        fullName: row['Nama Lengkap'] || 'Pengguna Baru',
+        role: r,
+        usernameOrId: row['Username/NIM/NIP']?.toString() || row['Email'],
+        initialPassword: row['Password Initial']?.toString() || 'SIAKAL2026!',
+        nim: r === 'mahasiswa' ? row['Username/NIM/NIP']?.toString() : undefined,
+        nip: r === 'dosen' ? row['Username/NIM/NIP']?.toString() : undefined,
+        prodi: isMhsOrAlumni ? row['Prodi'] : undefined,
+        isProfileCompleted: true,
+      };
+    });
 
     const updated = [...users, ...newAccounts];
     saveUsers(updated);
@@ -114,6 +119,8 @@ export default function AdminUserManagementPage() {
       return;
     }
 
+    const isMhsOrAlumni = newRole === 'mahasiswa' || newRole === 'alumni';
+
     const newUser: UserAccount = {
       id: `user-${Date.now()}`,
       fullName: newFullName,
@@ -123,7 +130,7 @@ export default function AdminUserManagementPage() {
       initialPassword: newPassword,
       nim: newRole === 'mahasiswa' ? newUsernameOrId : undefined,
       nip: newRole === 'dosen' ? newUsernameOrId : undefined,
-      prodi: newProdi,
+      prodi: isMhsOrAlumni ? newProdi : undefined,
       isProfileCompleted: true,
     };
 
@@ -140,10 +147,13 @@ export default function AdminUserManagementPage() {
     e.preventDefault();
     if (!editingUser) return;
 
+    const isMhsOrAlumni = editingUser.role === 'mahasiswa' || editingUser.role === 'alumni';
+
     const updatedUser = {
       ...editingUser,
       nim: editingUser.role === 'mahasiswa' ? editingUser.usernameOrId : editingUser.nim,
       nip: editingUser.role === 'dosen' ? editingUser.usernameOrId : editingUser.nip,
+      prodi: isMhsOrAlumni ? (editingUser.prodi || 'Studi Nautika') : undefined,
     };
 
     const updatedList = users.map((u) => (u.id === updatedUser.id ? updatedUser : u));
@@ -372,7 +382,40 @@ export default function AdminUserManagementPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* CONDITIONAL SHOW PRODI FIELD ONLY FOR MAHASISWA & ALUMNI */}
+              {editingUser.role === 'mahasiswa' || editingUser.role === 'alumni' ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Peran (Role Akun)</label>
+                    <select
+                      value={editingUser.role}
+                      onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as any })}
+                      className="w-full glass-input font-bold"
+                    >
+                      <option value="mahasiswa">Mahasiswa</option>
+                      <option value="dosen">Dosen</option>
+                      <option value="pembimbing_lapangan">Pembimbing Lapangan</option>
+                      <option value="alumni">Alumni</option>
+                      <option value="unit_approver">Unit Approver</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Program Studi</label>
+                    <select
+                      value={editingUser.prodi || 'Studi Nautika'}
+                      onChange={(e) => setEditingUser({ ...editingUser, prodi: e.target.value })}
+                      className="w-full glass-input font-semibold"
+                    >
+                      <option value="Studi Nautika">Studi Nautika</option>
+                      <option value="Permesinan Kapal">Permesinan Kapal</option>
+                      <option value="Manajemen Transportasi Perairan Daratan">MTPD</option>
+                      <option value="Teknologi Rekayasa Pelayaran & TSDP">TSDP</option>
+                    </select>
+                  </div>
+                </div>
+              ) : (
                 <div>
                   <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Peran (Role Akun)</label>
                   <select
@@ -388,22 +431,7 @@ export default function AdminUserManagementPage() {
                     <option value="admin">Admin</option>
                   </select>
                 </div>
-
-                <div>
-                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Program Studi / Unit</label>
-                  <select
-                    value={editingUser.prodi || 'Studi Nautika'}
-                    onChange={(e) => setEditingUser({ ...editingUser, prodi: e.target.value })}
-                    className="w-full glass-input font-semibold"
-                  >
-                    <option value="Studi Nautika">Studi Nautika</option>
-                    <option value="Permesinan Kapal">Permesinan Kapal</option>
-                    <option value="Manajemen Transportasi Perairan Daratan">MTPD</option>
-                    <option value="Teknologi Rekayasa Pelayaran & TSDP">TSDP</option>
-                    <option value="Unit Verifikator">Unit Verifikator</option>
-                  </select>
-                </div>
-              </div>
+              )}
 
               <div className="p-4 rounded-xl bg-sky-500/10 border border-sky-500/30 space-y-3">
                 <div className="font-extrabold text-sky-700 dark:text-sky-300 text-xs flex items-center gap-1.5">
@@ -537,7 +565,40 @@ export default function AdminUserManagementPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* CONDITIONAL SHOW PRODI FIELD ONLY FOR MAHASISWA & ALUMNI */}
+              {newRole === 'mahasiswa' || newRole === 'alumni' ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Peran (Role Akun)</label>
+                    <select
+                      value={newRole}
+                      onChange={(e) => setNewRole(e.target.value as any)}
+                      className="w-full glass-input font-bold"
+                    >
+                      <option value="mahasiswa">Mahasiswa</option>
+                      <option value="dosen">Dosen</option>
+                      <option value="pembimbing_lapangan">Pembimbing Lapangan</option>
+                      <option value="alumni">Alumni</option>
+                      <option value="unit_approver">Unit Approver</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Program Studi</label>
+                    <select
+                      value={newProdi}
+                      onChange={(e) => setNewProdi(e.target.value)}
+                      className="w-full glass-input font-semibold"
+                    >
+                      <option value="Studi Nautika">Studi Nautika</option>
+                      <option value="Permesinan Kapal">Permesinan Kapal</option>
+                      <option value="Manajemen Transportasi Perairan Daratan">MTPD</option>
+                      <option value="Teknologi Rekayasa Pelayaran & TSDP">TSDP</option>
+                    </select>
+                  </div>
+                </div>
+              ) : (
                 <div>
                   <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Peran (Role Akun)</label>
                   <select
@@ -553,22 +614,7 @@ export default function AdminUserManagementPage() {
                     <option value="admin">Admin</option>
                   </select>
                 </div>
-
-                <div>
-                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Program Studi / Unit</label>
-                  <select
-                    value={newProdi}
-                    onChange={(e) => setNewProdi(e.target.value)}
-                    className="w-full glass-input"
-                  >
-                    <option value="Studi Nautika">Studi Nautika</option>
-                    <option value="Permesinan Kapal">Permesinan Kapal</option>
-                    <option value="Manajemen Transportasi Perairan Daratan">MTPD</option>
-                    <option value="Teknologi Rekayasa Pelayaran & TSDP">TSDP</option>
-                    <option value="Unit Verifikator">Unit Verifikator</option>
-                  </select>
-                </div>
-              </div>
+              )}
 
               <div className="p-4 rounded-xl bg-sky-500/10 border border-sky-500/30 space-y-3">
                 <div className="font-extrabold text-sky-700 dark:text-sky-300 text-xs flex items-center gap-1.5">
