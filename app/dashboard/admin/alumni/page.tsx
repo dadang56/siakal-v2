@@ -1,132 +1,162 @@
 'use client';
 
 import React, { useState } from 'react';
-import { UserCheck, FileSpreadsheet, Search, Filter, PieChart, Briefcase, Award } from 'lucide-react';
+import { UserCheck, Search, Download, GraduationCap, Briefcase, Building2, MapPin } from 'lucide-react';
 import { exportToExcel } from '@/lib/utils/excel';
 
-export default function AdminAlumniPage() {
-  const [alumnis, setAlumnis] = useState([
+export default function AdminAlumniDatabasePage() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterProdi, setFilterProdi] = useState('Semua');
+
+  const [alumnis] = useState([
     {
       id: 'alm-1',
-      nim: '2001005',
       nama: 'Deni Kurniawan, A.Md.Tra.',
+      nim: '2001015',
       prodi: 'Studi Nautika',
       tahunLulus: 2024,
-      statusKerja: 'Bekerja',
-      perusahaan: 'PT PELNI Cabang Palembang',
-      jabatan: 'Perwira Kapal (Third Officer)',
-      gaji: 'Rp 10.000.000 - Rp 15.000.000',
+      statusKerja: 'Bekerja Sesuai Bidang',
+      perusahaan: 'PT Samudera Indonesia Tbk',
+      jabatan: 'Officer Perwira Kapal',
       masaTungguBulan: 2,
-      keselarasan: 'Sangat Sesuai',
+      keselarasan: 'Sangat Selaras',
     },
     {
       id: 'alm-2',
-      nim: '2002018',
-      nama: 'Rina Septiani, A.Md.Tra.',
-      prodi: 'MTPD',
+      nama: 'Siti Nurhaliza, A.Md.Tra.',
+      nim: '2003022',
+      prodi: 'Manajemen Transportasi Perairan Daratan',
       tahunLulus: 2024,
-      statusKerja: 'Wirausaha',
-      perusahaan: 'CV Logistik Mandiri',
-      jabatan: 'Owner / Direktur Utama',
-      gaji: '> Rp 15.000.000',
-      masaTungguBulan: 1,
-      keselarasan: 'Sesuai',
+      statusKerja: 'Bekerja Sesuai Bidang',
+      perusahaan: 'PT Pelindo Regional 2',
+      jabatan: 'Staf Operasional Pelabuhan',
+      masaTungguBulan: 3,
+      keselarasan: 'Sangat Selaras',
     },
   ]);
 
+  const filteredAlumnis = alumnis.filter((a) => {
+    const matchSearch =
+      a.nama.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      a.nim.includes(searchQuery) ||
+      a.perusahaan.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchProdi = filterProdi === 'Semua' || a.prodi === filterProdi;
+    return matchSearch && matchProdi;
+  });
+
   const handleExportExcel = () => {
-    const exportData = alumnis.map((a) => ({
-      'NIM': a.nim,
-      'Nama Alumni': a.nama,
-      'Prodi': a.prodi,
-      'Tahun Lulus': a.tahunLulus,
-      'Status Kerja': a.statusKerja,
-      'Nama Perusahaan': a.perusahaan,
-      'Jabatan': a.jabatan,
-      'Range Gaji': a.gaji,
-      'Masa Tunggu (Bulan)': a.masaTungguBulan,
-      'Keselarasan Bidang': a.keselarasan,
-    }));
-    exportToExcel([{ sheetName: 'Database Alumni & Tracer', data: exportData }], 'SIAKAL_Database_Alumni_TracerStudy');
+    exportToExcel(
+      [
+        {
+          sheetName: 'Database Alumni',
+          data: filteredAlumnis.map((a) => ({
+            NIM: a.nim,
+            'Nama Alumni': a.nama,
+            'Program Studi': a.prodi,
+            'Tahun Lulus': a.tahunLulus,
+            'Status Pekerjaan': a.statusKerja,
+            Perusahaan: a.perusahaan,
+            Jabatan: a.jabatan,
+            'Masa Tunggu (Bulan)': a.masaTungguBulan,
+            Keselarasan: a.keselarasan,
+          })),
+        },
+      ],
+      'Database_Alumni_Tracer_SIAKAL'
+    );
   };
 
   return (
     <div className="space-y-6">
-      {/* Top Banner */}
+      {/* Header Banner */}
       <div className="glass-panel p-6 border-l-4 border-l-sky-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-extrabold text-white flex items-center gap-2">
-            <UserCheck className="w-6 h-6 text-sky-400" />
-            <span>Database Master Alumni & Analytics Tracer Study</span>
+          <h1 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            <UserCheck className="w-6 h-6 text-sky-500 dark:text-sky-400" />
+            <span>Master Database Alumni & Tracer Study</span>
           </h1>
-          <p className="text-xs text-slate-300 mt-1">
-            Penelusuran rekam karir alumni, statistik keselarasan kerja, dan pelaporan akreditasi BAN-PT / LAMTEK.
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 font-medium">
+            Direktori data kelulusan alumni, penelusuran karir tempat kerja, masa tunggu dapat kerja, dan evaluasi keselarasan bidang studi.
           </p>
         </div>
 
-        <button onClick={handleExportExcel} className="glass-button text-xs flex items-center gap-1.5 shrink-0">
-          <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
-          <span>Export Database Alumni (Excel)</span>
+        <button onClick={handleExportExcel} className="glass-button text-xs sm:text-sm font-bold flex items-center gap-2 shrink-0 shadow-lg">
+          <Download className="w-4 h-4" />
+          <span>Ekspor Database (.XLSX)</span>
         </button>
       </div>
 
-      {/* Analytics Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="glass-panel p-4 text-center">
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Response Rate</span>
-          <span className="text-2xl font-extrabold text-sky-400 mt-1 block">94.8%</span>
+      {/* Filter & Search Bar */}
+      <div className="glass-panel p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="relative w-full sm:w-96">
+          <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Cari nama alumni, NIM, atau perusahaan..."
+            className="w-full glass-input pl-10 text-xs sm:text-sm"
+          />
         </div>
-        <div className="glass-panel p-4 text-center">
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Bekerja & Wirausaha</span>
-          <span className="text-2xl font-extrabold text-emerald-400 mt-1 block">92.5%</span>
-        </div>
-        <div className="glass-panel p-4 text-center">
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Rata-rata Masa Tunggu</span>
-          <span className="text-2xl font-extrabold text-amber-400 mt-1 block">1.8 Bulan</span>
-        </div>
-        <div className="glass-panel p-4 text-center">
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Keselarasan Bidang Studi</span>
-          <span className="text-2xl font-extrabold text-indigo-400 mt-1 block">96.0%</span>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 shrink-0">Filter Prodi:</span>
+          <select
+            value={filterProdi}
+            onChange={(e) => setFilterProdi(e.target.value)}
+            className="glass-input text-xs sm:text-sm"
+          >
+            <option value="Semua">Semua Prodi</option>
+            <option value="Studi Nautika">Studi Nautika</option>
+            <option value="Permesinan Kapal">Permesinan Kapal</option>
+            <option value="Manajemen Transportasi Perairan Daratan">MTPD</option>
+          </select>
         </div>
       </div>
 
-      {/* Alumni Table */}
+      {/* Table Cards List */}
       <div className="glass-panel p-6 overflow-hidden">
-        <h3 className="text-sm font-bold text-white mb-4">Daftar Rekam Karir Alumni Terdaftar</h3>
+        <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-4">
+          Daftar Alumni Terdata ({filteredAlumnis.length} Lulusan)
+        </h3>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs sm:text-sm">
             <thead>
-              <tr className="border-b border-white/10 text-slate-400 font-semibold uppercase tracking-wider">
-                <th className="pb-3 px-2">NIM & Nama Alumni</th>
-                <th className="pb-3 px-2">Prodi & Lulus</th>
-                <th className="pb-3 px-2">Status Karir</th>
-                <th className="pb-3 px-2">Perusahaan / Instansi</th>
-                <th className="pb-3 px-2">Jabatan</th>
-                <th className="pb-3 px-2 text-center">Masa Tunggu</th>
-                <th className="pb-3 px-2">Keselarasan</th>
+              <tr className="border-b border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-extrabold uppercase tracking-wider">
+                <th className="pb-3 px-3">Nama Alumni</th>
+                <th className="pb-3 px-3">Prodi & Lulus</th>
+                <th className="pb-3 px-3">Status Karir & Instansi</th>
+                <th className="pb-3 px-3">Masa Tunggu</th>
+                <th className="pb-3 px-3">Keselarasan</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
-              {alumnis.map((a) => (
-                <tr key={a.id} className="hover:bg-slate-900/40">
-                  <td className="py-3 px-2 font-bold text-white">
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
+              {filteredAlumnis.map((a) => (
+                <tr key={a.id} className="hover:bg-slate-100/80 dark:hover:bg-slate-800/50 transition-colors">
+                  <td className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white text-sm">
                     {a.nama}
-                    <div className="text-[10px] text-slate-400 font-mono font-normal">{a.nim}</div>
+                    <div className="text-xs text-slate-500 font-mono font-normal">NIM: {a.nim}</div>
                   </td>
-                  <td className="py-3 px-2 text-slate-300">
+                  <td className="py-3.5 px-3 text-slate-700 dark:text-slate-300 font-semibold">
                     {a.prodi}
-                    <div className="text-[10px] text-slate-400">Lulus {a.tahunLulus}</div>
+                    <div className="text-xs text-slate-500 font-normal">Lulusan {a.tahunLulus}</div>
                   </td>
-                  <td className="py-3 px-2">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300">
-                      {a.statusKerja}
+                  <td className="py-3.5 px-3">
+                    <div className="font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1">
+                      <Building2 className="w-3.5 h-3.5" />
+                      <span>{a.perusahaan}</span>
+                    </div>
+                    <div className="text-slate-700 dark:text-slate-300 font-medium text-xs mt-0.5">{a.jabatan}</div>
+                  </td>
+                  <td className="py-3.5 px-3 font-bold text-slate-800 dark:text-slate-200">
+                    {a.masaTungguBulan} Bulan
+                  </td>
+                  <td className="py-3.5 px-3">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                      {a.keselarasan}
                     </span>
                   </td>
-                  <td className="py-3 px-2 font-semibold text-slate-200">{a.perusahaan}</td>
-                  <td className="py-3 px-2 text-slate-300">{a.jabatan}</td>
-                  <td className="py-3 px-2 text-center font-bold text-amber-400">{a.masaTungguBulan} Bln</td>
-                  <td className="py-3 px-2 text-sky-400 font-semibold">{a.keselarasan}</td>
                 </tr>
               ))}
             </tbody>

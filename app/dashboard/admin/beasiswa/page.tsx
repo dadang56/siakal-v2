@@ -2,88 +2,89 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { GraduationCap, Plus, FileText, CheckCircle2, Users, FileCheck } from 'lucide-react';
+import { GraduationCap, Plus, FileCheck, Calendar, Users, Award } from 'lucide-react';
 import { initialScholarshipOffers, ScholarshipOffer } from '@/lib/mockStore';
-import { Modal } from '@/components/Modal';
 
 export default function AdminBeasiswaPage() {
   const [offers, setOffers] = useState<ScholarshipOffer[]>(initialScholarshipOffers);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [showModal, setShowModal] = useState(false);
   const [namaBeasiswa, setNamaBeasiswa] = useState('');
   const [jenisBeasiswa, setJenisBeasiswa] = useState('Prestasi Akademik');
-  const [sasaran, setSasaran] = useState('Seluruh Mahasiswa');
+  const [sasaran, setSasaran] = useState('');
   const [ketentuan, setKetentuan] = useState('');
   const [kuota, setKuota] = useState(10);
+  const [tglBuka, setTglBuka] = useState('2026-08-01');
+  const [tglTutup, setTglTutup] = useState('2026-09-15');
 
-  const handleCreateOffer = (e: React.FormEvent) => {
+  const handleAddOffer = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!namaBeasiswa) return;
     const newOffer: ScholarshipOffer = {
       id: `scholar-${Date.now()}`,
       namaBeasiswa,
       jenisBeasiswa,
       sasaran,
       ketentuan,
-      persyaratan: ['Scan KTP & Kartu Mahasiswa', 'Transkrip Nilai Legalisir'],
+      persyaratan: ['Scan KTP & Kartu Mahasiswa', 'Transkrip Nilai Legalisir', 'Surat Rekomendasi Dosen'],
       kuota,
-      tanggalBuka: new Date().toISOString().split('T')[0],
-      tanggalTutup: '2026-10-31',
+      tanggalBuka: tglBuka,
+      tanggalTutup: tglTutup,
       status: 'Buka',
     };
+
     setOffers([...offers, newOffer]);
+    setShowModal(false);
     setNamaBeasiswa('');
-    setKetentuan('');
-    setIsModalOpen(false);
+    setSasaran('');
   };
 
   return (
     <div className="space-y-6">
-      <div className="glass-panel p-6 border-l-4 border-l-sky-500 flex items-center justify-between">
+      {/* Banner */}
+      <div className="glass-panel p-6 border-l-4 border-l-sky-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-extrabold text-white flex items-center gap-2">
-            <GraduationCap className="w-6 h-6 text-sky-400" />
-            <span>Manajemen Penawaran Beasiswa & Rapat Seleksi</span>
+          <h1 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            <GraduationCap className="w-6 h-6 text-sky-500 dark:text-sky-400" />
+            <span>Manajemen Penawaran & Rapat Seleksi Beasiswa</span>
           </h1>
-          <p className="text-xs text-slate-300 mt-1">
-            Buat penawaran beasiswa baru, verifikasi berkas pendaftar, dan unggah 3 Dokumen Rapat Seleksi (Notulen, Daftar Hadir, & Berita Acara).
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 font-medium">
+            Buat penawaran beasiswa baru, unggah berkas notulen/daftar hadir/berita acara rapat keputusan, dan tetapkan penerima beasiswa.
           </p>
         </div>
 
-        <button onClick={() => setIsModalOpen(true)} className="glass-button text-xs flex items-center gap-1.5">
+        <button onClick={() => setShowModal(true)} className="glass-button text-xs sm:text-sm font-bold flex items-center gap-2 shrink-0 shadow-lg">
           <Plus className="w-4 h-4" />
           <span>Buat Penawaran Beasiswa</span>
         </button>
       </div>
 
-      {/* List Offers */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* List Beasiswa Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {offers.map((off) => (
-          <div key={off.id} className="glass-panel p-6 space-y-3 flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 uppercase">
+          <div key={off.id} className="glass-panel p-6 space-y-4 relative overflow-hidden flex flex-col justify-between">
+            <div className="space-y-2">
+              <div className="flex items-start justify-between gap-2">
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/30">
                   {off.jenisBeasiswa}
                 </span>
-                <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
-                  Kuota: {off.kuota} Mahasiswa
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                  Status: {off.status}
                 </span>
               </div>
 
-              <h3 className="font-bold text-base text-white">{off.namaBeasiswa}</h3>
-              <p className="text-xs text-slate-400 mt-1">Sasaran: <strong className="text-slate-200">{off.sasaran}</strong></p>
-              <p className="text-xs text-slate-300 mt-2 line-clamp-2">{off.ketentuan}</p>
+              <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">{off.namaBeasiswa}</h3>
+              <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-medium"><strong>Sasaran:</strong> {off.sasaran}</p>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{off.ketentuan}</p>
             </div>
 
-            <div className="pt-4 border-t border-white/10 flex items-center justify-between">
-              <span className="text-[11px] text-slate-400">Tutup: {off.tanggalTutup}</span>
+            <div className="pt-4 border-t border-slate-200 dark:border-white/10 flex items-center justify-between gap-2">
+              <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Tutup: {off.tanggalTutup} &bull; Kuota: {off.kuota}</span>
 
               <Link
                 href="/dashboard/admin/beasiswa/seleksi"
-                className="glass-button text-xs py-1.5 px-3 flex items-center gap-1.5"
+                className="glass-button text-xs font-bold py-2 px-4 flex items-center gap-1.5 shadow-md"
               >
-                <FileCheck className="w-3.5 h-3.5" />
-                <span>Portal Seleksi Rapat & Berkas</span>
+                <FileCheck className="w-4 h-4" />
+                <span>Portal Seleksi & Rapat</span>
               </Link>
             </div>
           </div>
@@ -91,76 +92,87 @@ export default function AdminBeasiswaPage() {
       </div>
 
       {/* Modal Add Offer */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Buat Penawaran Beasiswa Baru">
-        <form onSubmit={handleCreateOffer} className="space-y-4 text-xs">
-          <div>
-            <label className="block font-semibold text-slate-200 mb-1">Nama Beasiswa *</label>
-            <input
-              type="text"
-              required
-              value={namaBeasiswa}
-              onChange={(e) => setNamaBeasiswa(e.target.value)}
-              placeholder="Contoh: Beasiswa Unggulan Perhubungan 2026"
-              className="w-full glass-input text-xs"
-            />
-          </div>
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
+          <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-lg p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-white/20">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Buat Penawaran Beasiswa Baru</h3>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block font-semibold text-slate-200 mb-1">Jenis Beasiswa</label>
-              <select
-                value={jenisBeasiswa}
-                onChange={(e) => setJenisBeasiswa(e.target.value)}
-                className="w-full glass-input text-xs bg-slate-900 text-white"
-              >
-                <option value="Prestasi Akademik">Prestasi Akademik</option>
-                <option value="Bantuan Kurang Mampu">Bantuan Kurang Mampu</option>
-                <option value="Kehormatan Ketarunaan">Kehormatan Ketarunaan</option>
-                <option value="Ikatan Dinas">Ikatan Dinas</option>
-              </select>
-            </div>
+            <form onSubmit={handleAddOffer} className="space-y-3 text-xs sm:text-sm">
+              <div>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Nama Beasiswa</label>
+                <input
+                  type="text"
+                  required
+                  value={namaBeasiswa}
+                  onChange={(e) => setNamaBeasiswa(e.target.value)}
+                  placeholder="Contoh: Beasiswa Unggulan Kemendikbudristek 2026"
+                  className="w-full glass-input"
+                />
+              </div>
 
-            <div>
-              <label className="block font-semibold text-slate-200 mb-1">Kuota Penerima *</label>
-              <input
-                type="number"
-                required
-                value={kuota}
-                onChange={(e) => setKuota(parseInt(e.target.value))}
-                className="w-full glass-input text-xs"
-              />
-            </div>
-          </div>
+              <div>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Sasaran Mahasiswa</label>
+                <input
+                  type="text"
+                  required
+                  value={sasaran}
+                  onChange={(e) => setSasaran(e.target.value)}
+                  placeholder="Contoh: Seluruh Mahasiswa D3/D4 Aktif"
+                  className="w-full glass-input"
+                />
+              </div>
 
-          <div>
-            <label className="block font-semibold text-slate-200 mb-1">Sasaran Penerima</label>
-            <input
-              type="text"
-              value={sasaran}
-              onChange={(e) => setSasaran(e.target.value)}
-              placeholder="Contoh: Seluruh Mahasiswa Prodi Nautika & Permesinan"
-              className="w-full glass-input text-xs"
-            />
-          </div>
+              <div>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Ketentuan & Syarat Utuk</label>
+                <textarea
+                  required
+                  rows={2}
+                  value={ketentuan}
+                  onChange={(e) => setKetentuan(e.target.value)}
+                  placeholder="IPK Minimal 3.25, Sertifikat TOEFL, Surat Rekomendasi..."
+                  className="w-full glass-input"
+                />
+              </div>
 
-          <div>
-            <label className="block font-semibold text-slate-200 mb-1">Ketentuan & Syarat</label>
-            <textarea
-              value={ketentuan}
-              onChange={(e) => setKetentuan(e.target.value)}
-              placeholder="Jelaskan kriteria kelayakan pendaftar..."
-              rows={3}
-              className="w-full glass-input text-xs"
-            />
-          </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Kuota Penerima</label>
+                  <input
+                    type="number"
+                    required
+                    value={kuota}
+                    onChange={(e) => setKuota(Number(e.target.value))}
+                    className="w-full glass-input"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Tanggal Tutup</label>
+                  <input
+                    type="date"
+                    required
+                    value={tglTutup}
+                    onChange={(e) => setTglTutup(e.target.value)}
+                    className="w-full glass-input"
+                  />
+                </div>
+              </div>
 
-          <div className="pt-2 flex justify-end">
-            <button type="submit" className="glass-button text-xs">
-              Terbitkan Penawaran Beasiswa
-            </button>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold"
+                >
+                  Batal
+                </button>
+                <button type="submit" className="glass-button text-xs sm:text-sm font-bold">
+                  Terbitkan Penawaran
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
-      </Modal>
+        </div>
+      )}
     </div>
   );
 }
