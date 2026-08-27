@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Building2, Plus, Trash2, Edit3, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Building2, Plus, Trash2, Edit3, AlertTriangle } from 'lucide-react';
 import { initialProdiList } from '@/lib/mockStore';
 
 export default function AdminProdiPage() {
@@ -60,55 +60,64 @@ export default function AdminProdiPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Banner Header */}
-      <div className="glass-panel p-6 border-l-4 border-l-sky-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="space-y-6 max-w-6xl">
+      {/* Top Banner Header */}
+      <div className="glass-panel p-6 border-l-4 border-l-sky-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
         <div>
-          <h1 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-            <Building2 className="w-6 h-6 text-sky-500 dark:text-sky-400" />
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2.5">
+            <Building2 className="w-6 h-6 text-sky-500 dark:text-sky-400 shrink-0" />
             <span>Daftar Program Studi</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 font-semibold">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 font-semibold">
             Kelola jenjang pendidikan, nama program studi, dan kode prodi institusi.
           </p>
         </div>
 
-        <button onClick={() => setShowAddModal(true)} className="glass-button text-xs sm:text-sm font-bold flex items-center gap-2 shrink-0 shadow-lg py-2.5 px-4">
+        <button onClick={() => setShowAddModal(true)} className="glass-button text-xs sm:text-sm font-extrabold flex items-center gap-2 shrink-0 shadow-lg py-2.5 px-4 cursor-pointer">
           <Plus className="w-4 h-4" />
           <span>+ Tambah Program Studi</span>
         </button>
       </div>
 
-      {/* Tabel Program Studi */}
-      <div className="glass-panel p-6 overflow-hidden">
-        <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white mb-4">
-          Daftar Program Studi Aktif ({prodis.length} Prodi)
-        </h3>
+      {/* Clean & Spacious Table Container */}
+      <div className="glass-panel p-6 shadow-sm overflow-hidden space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-wide">
+            Daftar Program Studi Aktif ({prodis.length} Prodi)
+          </h3>
+        </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs sm:text-sm border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-extrabold uppercase tracking-wider">
+              <tr className="border-b border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 font-extrabold uppercase tracking-wider text-[11px]">
                 <th className="pb-3 px-4">Jenjang</th>
                 <th className="pb-3 px-4">Nama Program Studi</th>
                 <th className="pb-3 px-4">Kode Prodi</th>
                 <th className="pb-3 px-4 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
+            <tbody className="divide-y divide-slate-100 dark:divide-white/5">
               {prodis.map((p) => (
-                <tr key={p.id} className="hover:bg-slate-100/80 dark:hover:bg-slate-800/50 transition-colors">
+                <tr key={p.id} className="hover:bg-slate-100/60 dark:hover:bg-slate-800/40 transition-colors">
                   <td className="py-4 px-4 whitespace-nowrap">
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/30">
+                    <span className="px-3 py-1 rounded-full text-[10px] font-extrabold bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20">
                       {p.jenjang}
                     </span>
                   </td>
-                  <td className="py-4 px-4 font-extrabold text-slate-900 dark:text-white text-sm whitespace-nowrap">{p.nama}</td>
-                  <td className="py-4 px-4 font-mono text-slate-700 dark:text-slate-300 font-bold whitespace-nowrap">{p.kode}</td>
+
+                  <td className="py-4 px-4 font-extrabold text-slate-900 dark:text-white text-sm whitespace-nowrap">
+                    {p.nama}
+                  </td>
+
+                  <td className="py-4 px-4 font-mono font-extrabold text-slate-600 dark:text-slate-300 text-xs whitespace-nowrap">
+                    {p.kode}
+                  </td>
+
                   <td className="py-4 px-4 text-right whitespace-nowrap space-x-1.5">
                     <button
                       onClick={() => setEditingProdi({ ...p })}
-                      className="p-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-sky-400 transition-colors inline-flex items-center border border-sky-500/20"
+                      className="p-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-sky-400 transition-colors inline-flex items-center border border-sky-500/20 cursor-pointer"
                       title="Edit Data Prodi"
                     >
                       <Edit3 className="w-4 h-4" />
@@ -116,7 +125,7 @@ export default function AdminProdiPage() {
 
                     <button
                       onClick={() => setDeleteTargetId(p.id)}
-                      className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors inline-flex items-center"
+                      className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors inline-flex items-center cursor-pointer"
                       title="Hapus Prodi"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -129,22 +138,11 @@ export default function AdminProdiPage() {
         </div>
       </div>
 
-      {/* Info Box Angkatan */}
-      <div className="glass-panel p-6 border-l-4 border-l-amber-500">
-        <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-1.5">
-          <CheckCircle2 className="w-5 h-5 text-amber-500 dark:text-amber-400" />
-          <span>Range Tahun Angkatan Otomatis</span>
-        </h3>
-        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
-          Sistem secara otomatis telah menyediakan range Tahun Angkatan dari <strong className="text-slate-900 dark:text-white">Tahun 2000 s/d 2300</strong> untuk pemetaan biodata mahasiswa dan penelusuran tracer study alumni.
-        </p>
-      </div>
-
       {/* Modal Add Prodi */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
           <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-md p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-white/20">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Tambah Program Studi Baru</h3>
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Tambah Program Studi Baru</h3>
 
             <form onSubmit={handleAddProdi} className="space-y-3.5 text-xs sm:text-sm">
               <div>
@@ -204,7 +202,7 @@ export default function AdminProdiPage() {
       {editingProdi && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
           <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-md p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-white/20">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
               <Edit3 className="w-5 h-5 text-sky-500" />
               <span>Edit Data Program Studi</span>
             </h3>
