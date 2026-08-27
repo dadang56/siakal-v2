@@ -235,3 +235,23 @@ export const initialClearanceUnits = [
   { unitCode: 13, name: 'AKTIFITAS' },
   { unitCode: 14, name: 'KA. PUSBANGKAR' },
 ];
+
+// Initial Program Studi List
+export const initialProdiList = [
+  { id: 'prodi-1', jenjang: 'Diploma III', nama: 'Studi Nautika', kode: 'PRODI-NT-01' },
+  { id: 'prodi-2', jenjang: 'Diploma III', nama: 'Permesinan Kapal', kode: 'PRODI-PK-02' },
+  { id: 'prodi-3', jenjang: 'Diploma III', nama: 'Manajemen Transportasi Perairan Daratan (MTPD)', kode: 'PRODI-MTPD-03' },
+  { id: 'prodi-4', jenjang: 'Diploma IV', nama: 'Teknologi Rekayasa Pelayaran & TSDP', kode: 'PRODI-TSDP-04' },
+];
+
+// Initial Periode Akademik List
+export const initialPeriodeList = [
+  { id: 'p-1', tahun: '2024/2025', semester: 'Ganjil', isAktif: false },
+  { id: 'p-2', tahun: '2024/2025', semester: 'Genap', isAktif: false },
+  { id: 'p-3', tahun: '2025/2026', semester: 'Ganjil', isAktif: true },
+  { id: 'p-4', tahun: '2025/2026', semester: 'Genap', isAktif: false },
+  { id: 'p-5', tahun: '2026/2027', semester: 'Ganjil', isAktif: false },
+];
+
+// Initial Angkatan List
+export const initialAngkatanList = Array.from({ length: 301 }, (_, i) => 2000 + i);

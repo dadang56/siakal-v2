@@ -1,80 +1,78 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Building2, Plus, Calendar, Edit, Trash2 } from 'lucide-react';
-import { Modal } from '@/components/Modal';
+import { Building2, Plus, Trash2, CheckCircle2 } from 'lucide-react';
+import { initialProdiList, initialAngkatanList } from '@/lib/mockStore';
 
-export default function MasterProdiAngkatanPage() {
-  const [prodis, setProdis] = useState([
-    { id: '1', jenjang: 'Diploma III', namaProdi: 'Studi Nautika', kodeProdi: 'PRODI-NT-01' },
-    { id: '2', jenjang: 'Diploma III', namaProdi: 'Permesinan Kapal', kodeProdi: 'PRODI-PK-02' },
-    { id: '3', jenjang: 'Diploma III', namaProdi: 'Manajemen Transportasi Perairan Daratan', kodeProdi: 'PRODI-MTPD-03' },
-    { id: '4', jenjang: 'Diploma IV', namaProdi: 'Teknik Transportasi SDP', kodeProdi: 'PRODI-TSDP-04' },
-  ]);
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [jenjang, setJenjang] = useState('Diploma III');
+export default function AdminProdiPage() {
+  const [prodis, setProdis] = useState(initialProdiList);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [namaProdi, setNamaProdi] = useState('');
+  const [jenjang, setJenjang] = useState<'Diploma III' | 'Diploma IV'>('Diploma III');
   const [kodeProdi, setKodeProdi] = useState('');
 
   const handleAddProdi = (e: React.FormEvent) => {
     e.preventDefault();
     if (!namaProdi || !kodeProdi) return;
-    setProdis([
-      ...prodis,
-      { id: `prodi-${Date.now()}`, jenjang, namaProdi, kodeProdi },
-    ]);
+    setProdis([...prodis, { id: `prodi-${Date.now()}`, nama: namaProdi, jenjang, kode: kodeProdi }]);
     setNamaProdi('');
     setKodeProdi('');
-    setIsModalOpen(false);
+    setShowAddModal(false);
+  };
+
+  const handleDeleteProdi = (id: string) => {
+    setProdis(prodis.filter((p) => p.id !== id));
   };
 
   return (
     <div className="space-y-6">
-      <div className="glass-panel p-6 border-l-4 border-l-sky-500 flex items-center justify-between">
+      {/* Banner */}
+      <div className="glass-panel p-6 border-l-4 border-l-sky-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-extrabold text-white flex items-center gap-2">
-            <Building2 className="w-6 h-6 text-sky-400" />
+          <h1 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            <Building2 className="w-6 h-6 text-sky-500 dark:text-sky-400" />
             <span>Master Data Program Studi & Angkatan (2000 - 2300)</span>
           </h1>
-          <p className="text-xs text-slate-300 mt-1">
+          <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 font-medium">
             Kelola jenjang program studi, nama prodi, kode prodi, dan range angkatan akademik.
           </p>
         </div>
 
-        <button onClick={() => setIsModalOpen(true)} className="glass-button text-xs flex items-center gap-1.5">
+        <button onClick={() => setShowAddModal(true)} className="glass-button text-xs font-bold flex items-center gap-2 shrink-0 shadow-lg">
           <Plus className="w-4 h-4" />
           <span>Tambah Program Studi</span>
         </button>
       </div>
 
-      {/* Program Studi Table */}
+      {/* Tabel Program Studi */}
       <div className="glass-panel p-6 overflow-hidden">
-        <h3 className="text-sm font-bold text-white mb-4">Daftar Program Studi Terdaftar</h3>
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Daftar Program Studi Aktif</h3>
+
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-white/10 text-slate-400 font-semibold uppercase tracking-wider">
-                <th className="pb-3 px-2">Jenjang</th>
-                <th className="pb-3 px-2">Nama Program Studi</th>
-                <th className="pb-3 px-2">Kode Prodi</th>
-                <th className="pb-3 px-2 text-right">Aksi</th>
+              <tr className="border-b border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 font-bold uppercase tracking-wider">
+                <th className="pb-3 px-3">Jenjang</th>
+                <th className="pb-3 px-3">Nama Program Studi</th>
+                <th className="pb-3 px-3">Kode Prodi</th>
+                <th className="pb-3 px-3 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
               {prodis.map((p) => (
-                <tr key={p.id} className="hover:bg-slate-900/40">
-                  <td className="py-3 px-2">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/20 text-sky-300">
+                <tr key={p.id} className="hover:bg-slate-100/70 dark:hover:bg-slate-900/40 transition-colors">
+                  <td className="py-3.5 px-3">
+                    <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/30">
                       {p.jenjang}
                     </span>
                   </td>
-                  <td className="py-3 px-2 font-bold text-white">{p.namaProdi}</td>
-                  <td className="py-3 px-2 text-slate-400 font-mono">{p.kodeProdi}</td>
-                  <td className="py-3 px-2 text-right">
+                  <td className="py-3.5 px-3 font-bold text-slate-900 dark:text-white">{p.nama}</td>
+                  <td className="py-3.5 px-3 font-mono text-slate-600 dark:text-slate-300 font-semibold">{p.kode}</td>
+                  <td className="py-3.5 px-3 text-right">
                     <button
-                      onClick={() => setProdis(prodis.filter((x) => x.id !== p.id))}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10"
+                      onClick={() => handleDeleteProdi(p.id)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                      title="Hapus Prodi"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -86,65 +84,76 @@ export default function MasterProdiAngkatanPage() {
         </div>
       </div>
 
-      {/* Range Angkatan Info */}
-      <div className="glass-panel p-6">
-        <h3 className="text-sm font-bold text-white mb-2 flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-amber-400" />
-          <span>Range Tahun Angkatan Terkonfigurasi</span>
+      {/* Info Box Angkatan */}
+      <div className="glass-panel p-6 border-l-4 border-l-amber-500">
+        <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-2">
+          <CheckCircle2 className="w-5 h-5 text-amber-500 dark:text-amber-400" />
+          <span>Range Tahun Angkatan Otomatis</span>
         </h3>
-        <p className="text-xs text-slate-300">
-          Sistem secara otomatis telah menyediakan range Tahun Angkatan dari <strong>Tahun 2000 s/d 2300</strong> untuk pemetaan biodata mahasiswa dan penelusuran tracer study alumni.
+        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+          Sistem secara otomatis telah menyediakan range Tahun Angkatan dari <strong className="text-slate-900 dark:text-white">Tahun 2000 s/d 2300</strong> untuk pemetaan biodata mahasiswa dan penelusuran tracer study alumni.
         </p>
       </div>
 
       {/* Modal Add Prodi */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Tambah Program Studi Baru">
-        <form onSubmit={handleAddProdi} className="space-y-4 text-xs">
-          <div>
-            <label className="block font-semibold text-slate-200 mb-1">Jenjang Program</label>
-            <select
-              value={jenjang}
-              onChange={(e) => setJenjang(e.target.value)}
-              className="w-full glass-input text-xs bg-slate-900 text-white"
-            >
-              <option value="Diploma III">Diploma III</option>
-              <option value="Diploma IV">Diploma IV</option>
-              <option value="Sarjana Terapan">Sarjana Terapan</option>
-              <option value="Magister Terapan">Magister Terapan</option>
-            </select>
-          </div>
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
+          <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-md p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-white/20">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Tambah Program Studi Baru</h3>
 
-          <div>
-            <label className="block font-semibold text-slate-200 mb-1">Nama Program Studi *</label>
-            <input
-              type="text"
-              required
-              value={namaProdi}
-              onChange={(e) => setNamaProdi(e.target.value)}
-              placeholder="Contoh: Studi Nautika"
-              className="w-full glass-input text-xs"
-            />
-          </div>
+            <form onSubmit={handleAddProdi} className="space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Nama Program Studi</label>
+                <input
+                  type="text"
+                  required
+                  value={namaProdi}
+                  onChange={(e) => setNamaProdi(e.target.value)}
+                  placeholder="Contoh: Studi Nautika"
+                  className="w-full glass-input"
+                />
+              </div>
 
-          <div>
-            <label className="block font-semibold text-slate-200 mb-1">Kode Prodi *</label>
-            <input
-              type="text"
-              required
-              value={kodeProdi}
-              onChange={(e) => setKodeProdi(e.target.value)}
-              placeholder="Contoh: PRODI-NT-01"
-              className="w-full glass-input text-xs"
-            />
-          </div>
+              <div>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Jenjang Pendidikan</label>
+                <select
+                  value={jenjang}
+                  onChange={(e) => setJenjang(e.target.value as any)}
+                  className="w-full glass-input"
+                >
+                  <option value="Diploma III">Diploma III</option>
+                  <option value="Diploma IV">Diploma IV</option>
+                </select>
+              </div>
 
-          <div className="pt-2 flex justify-end">
-            <button type="submit" className="glass-button text-xs">
-              Simpan Program Studi
-            </button>
+              <div>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Kode Prodi</label>
+                <input
+                  type="text"
+                  required
+                  value={kodeProdi}
+                  onChange={(e) => setKodeProdi(e.target.value)}
+                  placeholder="Contoh: PRODI-NT-01"
+                  className="w-full glass-input"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold"
+                >
+                  Batal
+                </button>
+                <button type="submit" className="glass-button text-xs font-bold">
+                  Simpan Prodi
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
-      </Modal>
+        </div>
+      )}
     </div>
   );
 }
