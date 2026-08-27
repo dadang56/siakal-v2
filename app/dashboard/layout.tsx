@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Navbar } from '@/components/Navbar';
 import { Sidebar } from '@/components/Sidebar';
 import { MobileDock } from '@/components/MobileDock';
+import { MaritimeBackgroundAnimation } from '@/components/MaritimeBackgroundAnimation';
 import { initialAccounts, UserAccount } from '@/lib/mockStore';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -54,13 +55,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-200">
+    <div className="min-h-screen bg-slate-100 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-200 relative overflow-x-hidden">
+      {/* Dynamic Maritime Animated Background (Kemudi Kapal, Kompas, Propeller, Jangkar) */}
+      <MaritimeBackgroundAnimation />
+
       <Navbar
         currentUser={{ name: currentUser.fullName, role: currentUser.role, email: currentUser.email }}
         onLogout={handleLogout}
       />
 
-      <div className="flex-1 flex max-w-[1920px] w-full mx-auto px-4 sm:px-8 lg:px-10 py-6 gap-8">
+      <div className="flex-1 flex max-w-[1920px] w-full mx-auto px-4 sm:px-8 lg:px-10 py-6 gap-8 relative z-10">
         {/* Desktop Sidebar */}
         <Sidebar role={currentUser.role} prodi={currentUser.prodi} />
 
