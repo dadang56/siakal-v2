@@ -10,7 +10,7 @@ import {
   GraduationCap,
   FileCheck,
   Users,
-  Menu,
+  Grid,
   X,
   Building2,
   Calendar,
@@ -20,6 +20,7 @@ import {
   Archive,
   UserCheck,
   Settings,
+  ChevronRight,
 } from 'lucide-react';
 
 interface MobileDockProps {
@@ -106,59 +107,62 @@ export function MobileDock({ role, prodi }: MobileDockProps) {
 
   const allNavItems = getAllNavItems();
 
-  // Quick 4 items for bottom dock bar
+  // Quick Dock items
   const quickDockItems = [
     { label: 'Beranda', href: '/dashboard', icon: LayoutDashboard },
-    { label: role === 'admin' ? 'Mahasiswa' : 'Prala/Magang', href: role === 'admin' ? '/dashboard/admin/mahasiswa' : '/dashboard/prala/bimbingan', icon: role === 'admin' ? Users : Anchor },
+    { label: role === 'admin' ? 'Mahasiswa' : 'PRALA', href: role === 'admin' ? '/dashboard/admin/mahasiswa' : '/dashboard/prala/bimbingan', icon: role === 'admin' ? Users : Anchor },
     { label: role === 'admin' ? 'Clearance' : 'Beasiswa', href: role === 'admin' ? '/dashboard/admin/clearance-out' : '/dashboard/beasiswa', icon: role === 'admin' ? FileCheck : GraduationCap },
   ];
 
   return (
     <>
-      {/* FULL RESPONSIVE LIQUID GLASS MOBILE NAVIGATION DRAWER SHEET */}
+      {/* ULTRA-CLEAN APPLE-STYLE MOBILE NAVIGATION SHEET */}
       <AnimatePresence>
         {isMenuOpen && (
           <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end">
-            {/* Backdrop Overlay */}
+            {/* Dark Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsMenuOpen(false)}
-              className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-950/70 backdrop-blur-md"
             />
 
-            {/* Bottom Drawer Card */}
+            {/* Apple iOS Style Bottom Sheet */}
             <motion.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative z-10 bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border-t border-slate-200 dark:border-white/20 rounded-t-3xl p-5 shadow-2xl max-h-[85vh] overflow-y-auto space-y-4"
+              transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+              className="relative z-10 bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl border-t border-slate-200 dark:border-white/20 rounded-t-[32px] p-6 shadow-2xl max-h-[85vh] overflow-y-auto space-y-4"
             >
-              {/* Drawer Header */}
-              <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center text-white font-black text-sm shadow-md">
+              {/* Drag Pill Handle */}
+              <div className="w-12 h-1.5 bg-slate-300 dark:bg-white/20 rounded-full mx-auto -mt-2 mb-3" />
+
+              {/* Sheet Header */}
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3.5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-400 to-blue-600 flex items-center justify-center text-white font-black text-base shadow-md">
                     S
                   </div>
                   <div>
-                    <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Menu Navigasi SIAKAL</h3>
-                    <p className="text-[11px] text-sky-600 dark:text-sky-400 font-bold capitalize">Akses Sebagai: {role.replace('_', ' ')}</p>
+                    <h3 className="text-base font-black text-slate-900 dark:text-white">Menu Navigasi Mobile</h3>
+                    <p className="text-xs text-sky-600 dark:text-sky-400 font-extrabold capitalize">Role: {role.replace('_', ' ')}</p>
                   </div>
                 </div>
 
                 <button
                   type="button"
                   onClick={() => setIsMenuOpen(false)}
-                  className="p-2 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-white/15 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition-colors"
+                  className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-white/15 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-200 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Navigation Grid Links */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+              <div className="grid grid-cols-1 gap-2.5 pt-1">
                 {allNavItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = pathname === item.href;
@@ -168,32 +172,36 @@ export function MobileDock({ role, prodi }: MobileDockProps) {
                       key={item.href}
                       href={item.href}
                       onClick={() => setIsMenuOpen(false)}
-                      className={`flex items-center gap-3 p-3 rounded-2xl text-xs font-bold transition-all border ${
+                      className={`flex items-center justify-between p-3.5 rounded-2xl text-xs sm:text-sm font-bold transition-all border ${
                         isActive
                           ? 'bg-sky-500/15 dark:bg-sky-500/20 text-sky-700 dark:text-sky-300 border-sky-500/40 shadow-sm'
-                          : 'bg-slate-100/70 dark:bg-slate-900/60 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-white/10 hover:border-sky-500/30'
+                          : 'bg-slate-100/80 dark:bg-slate-900/70 text-slate-800 dark:text-slate-200 border-slate-200/80 dark:border-white/10 active:scale-[0.98]'
                       }`}
                     >
-                      <div className={`p-2 rounded-xl shrink-0 ${isActive ? 'bg-sky-500 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'}`}>
-                        <Icon className="w-4 h-4" />
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2.5 rounded-xl shrink-0 ${isActive ? 'bg-sky-500 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'}`}>
+                          <Icon className="w-4.5 h-4.5" />
+                        </div>
+                        <span className="truncate">{item.label}</span>
                       </div>
-                      <span className="truncate">{item.label}</span>
+
+                      <ChevronRight className={`w-4 h-4 ${isActive ? 'text-sky-500' : 'text-slate-400'}`} />
                     </Link>
                   );
                 })}
               </div>
 
-              <div className="pt-2 text-center text-[11px] text-slate-500 dark:text-slate-400 font-medium border-t border-slate-200 dark:border-white/10">
-                Politeknik Transportasi SDP Palembang &bull; SIAKAL Mobile 2026
+              <div className="pt-3 text-center text-[11px] text-slate-500 dark:text-slate-400 font-semibold border-t border-slate-200 dark:border-white/10">
+                Politeknik Transportasi SDP Palembang &bull; SIAKAL V2
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
 
-      {/* FLOATING MOBILE DOCK BAR AT BOTTOM OF SCREEN */}
-      <div className="md:hidden fixed bottom-4 left-4 right-4 z-40">
-        <div className="glass-panel bg-white/90 dark:bg-slate-950/90 border border-slate-200 dark:border-white/20 shadow-2xl p-1.5 flex items-center justify-around rounded-2xl relative">
+      {/* FLOATING APPLE DOCK PILL BAR AT BOTTOM OF MOBILE SCREEN */}
+      <div className="md:hidden fixed bottom-4 inset-x-4 z-40">
+        <div className="glass-panel bg-white/95 dark:bg-slate-950/95 border border-slate-200/90 dark:border-white/20 shadow-2xl p-1.5 flex items-center justify-around rounded-2xl relative max-w-md mx-auto">
           {quickDockItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
@@ -203,7 +211,7 @@ export function MobileDock({ role, prodi }: MobileDockProps) {
                 href={item.href}
                 className={`flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl text-[10px] font-bold transition-colors ${
                   isActive
-                    ? 'text-sky-600 dark:text-sky-400 font-extrabold bg-sky-500/10 rounded-xl'
+                    ? 'text-sky-600 dark:text-sky-400 font-extrabold bg-sky-500/10 dark:bg-sky-500/20'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
@@ -217,9 +225,9 @@ export function MobileDock({ role, prodi }: MobileDockProps) {
           <button
             type="button"
             onClick={() => setIsMenuOpen(true)}
-            className="flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl text-[10px] font-extrabold text-sky-600 dark:text-sky-400 bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 transition-all cursor-pointer"
+            className="flex flex-col items-center gap-1 py-1.5 px-3.5 rounded-xl text-[10px] font-extrabold text-sky-600 dark:text-sky-400 bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 transition-all cursor-pointer active:scale-95"
           >
-            <Menu className="w-5 h-5 text-sky-500" />
+            <Grid className="w-5 h-5 text-sky-500" />
             <span>Semua Menu</span>
           </button>
         </div>
