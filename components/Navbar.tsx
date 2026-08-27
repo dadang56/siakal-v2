@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from '@/components/ThemeProvider';
-import { Sun, Moon, LogOut, Menu } from 'lucide-react';
+import { Sun, Moon, LogOut } from 'lucide-react';
+import { DEFAULT_POLTEKTRANS_LOGO } from '@/lib/defaultBranding';
 
 interface NavbarProps {
   currentUser?: {
@@ -19,18 +20,21 @@ interface NavbarProps {
 export function Navbar({ currentUser, onLogout, hideThemeToggle = false }: NavbarProps) {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
-  const [customLogo, setCustomLogo] = useState<string>('');
+  const [customLogo, setCustomLogo] = useState<string>(DEFAULT_POLTEKTRANS_LOGO);
 
   const isPublicPage = pathname === '/' || pathname === '/kepuasan-pengguna' || pathname === '/login';
 
   const loadCustomLogo = () => {
     try {
       const stored = localStorage.getItem('siakal_custom_logo');
-      if (stored) setCustomLogo(stored);
-      else setCustomLogo('');
+      if (stored && stored.trim().length > 0) {
+        setCustomLogo(stored);
+        return;
+      }
     } catch (e) {
       console.error(e);
     }
+    setCustomLogo(DEFAULT_POLTEKTRANS_LOGO);
   };
 
   useEffect(() => {
@@ -54,26 +58,27 @@ export function Navbar({ currentUser, onLogout, hideThemeToggle = false }: Navba
     >
       <div className="max-w-[1920px] mx-auto px-3 sm:px-8 lg:px-10 h-16 flex items-center justify-between">
         {/* Brand Logo & Name */}
-        <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group">
-          {customLogo ? (
-            <img src={customLogo} alt="Logo Kampus Resmi" className="h-9 sm:h-10 w-auto max-w-[130px] sm:max-w-[160px] object-contain drop-shadow-sm" />
-          ) : (
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-sky-400 to-blue-500 p-0.5 shadow-glow shrink-0">
-              <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center font-black text-white text-base sm:text-lg shadow-inner">
-                S
-              </div>
-            </div>
-          )}
-          <div className="flex flex-col">
+        <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
+          <img
+            src={customLogo || DEFAULT_POLTEKTRANS_LOGO}
+            alt="Logo Resmi Kampus Poltektrans SDP Palembang"
+            className="h-8 sm:h-10 w-auto max-w-[120px] sm:max-w-[170px] object-contain drop-shadow-md transition-transform group-hover:scale-105"
+            onError={(e) => {
+              // Fallback if uploaded image URL fails
+              (e.target as HTMLImageElement).src = DEFAULT_POLTEKTRANS_LOGO;
+            }}
+          />
+
+          <div className="flex flex-col justify-center">
             <span
-              className={`font-black text-base sm:text-xl tracking-wider transition-colors ${
+              className={`font-black text-base sm:text-xl tracking-wider leading-none transition-colors ${
                 isPublicPage ? 'text-white drop-shadow-md' : 'text-slate-900 dark:text-slate-100 group-hover:text-sky-600 dark:group-hover:text-sky-400'
               }`}
             >
               SIAKAL
             </span>
             <span
-              className={`text-[10px] sm:text-[11px] font-semibold truncate max-w-[180px] sm:max-w-none ${
+              className={`text-[9px] sm:text-[11px] font-bold leading-tight mt-0.5 truncate max-w-[140px] sm:max-w-none ${
                 isPublicPage ? 'text-slate-200 drop-shadow-sm' : 'text-slate-500 dark:text-slate-400'
               }`}
             >
