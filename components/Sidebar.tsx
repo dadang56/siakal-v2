@@ -100,11 +100,11 @@ export function Sidebar({ role, prodi }: SidebarProps) {
   const navItems = getNavItems();
 
   return (
-    <aside className="hidden md:flex flex-col w-64 glass-panel bg-white/90 dark:bg-slate-900/80 border border-slate-200/90 dark:border-white/10 p-4 shrink-0 min-h-[calc(100vh-5rem)] shadow-sm">
-      <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-3 mb-3">
+    <aside className="hidden md:flex flex-col w-72 glass-panel bg-white/90 dark:bg-slate-900/80 border border-slate-200/90 dark:border-white/10 p-5 shrink-0 min-h-[calc(100vh-5.5rem)] shadow-sm">
+      <div className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-3 mb-4">
         MENU NAVIGATION ({role.replace('_', ' ')})
       </div>
-      <nav className="flex flex-col gap-1 flex-1 relative">
+      <nav className="flex flex-col gap-1.5 flex-1 relative">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
@@ -112,7 +112,7 @@ export function Sidebar({ role, prodi }: SidebarProps) {
             <Link
               key={item.href}
               href={item.href}
-              className={`relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors duration-150 group ${
+              className={`relative flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-bold transition-colors duration-150 group ${
                 isActive
                   ? 'text-sky-700 dark:text-sky-300 font-extrabold'
                   : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
@@ -127,7 +127,7 @@ export function Sidebar({ role, prodi }: SidebarProps) {
                 />
               )}
 
-              <Icon className={`w-4 h-4 z-10 ${isActive ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200'}`} />
+              <Icon className={`w-5 h-5 z-10 ${isActive ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200'}`} />
               <span className="z-10">{item.label}</span>
             </Link>
           );

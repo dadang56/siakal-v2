@@ -46,7 +46,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         onLogout={handleLogout}
       />
 
-      <div className="flex-1 flex max-w-7xl w-full mx-auto px-2 sm:px-6 lg:px-8 py-4 sm:py-6 gap-6">
+      <div className="flex-1 flex max-w-[1920px] w-full mx-auto px-4 sm:px-8 lg:px-10 py-6 gap-8">
         {/* Desktop Sidebar */}
         <Sidebar role={currentUser.role} prodi={currentUser.prodi} />
 

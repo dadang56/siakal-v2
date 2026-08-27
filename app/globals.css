@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 dark:bg-[#080d1a] text-slate-900 dark:text-slate-100 antialiased selection:bg-sky-500 selection:text-white transition-colors duration-200 min-h-screen font-sans;
+    @apply bg-slate-50 dark:bg-[#080d1a] text-slate-900 dark:text-slate-100 antialiased selection:bg-sky-500 selection:text-white transition-colors duration-200 min-h-screen font-sans text-sm sm:text-base;
   }
 }
 
@@ -14,17 +14,17 @@
 }
 
 .glass-button {
-  @apply bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-semibold px-4 py-2.5 rounded-xl shadow-md hover:shadow-sky-500/25 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer flex items-center justify-center gap-2;
+  @apply bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold px-5 py-3 rounded-xl shadow-md hover:shadow-sky-500/25 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer flex items-center justify-center gap-2 text-xs sm:text-sm;
 }
 
 .glass-input {
-  @apply bg-slate-50/80 dark:bg-slate-900/80 border border-slate-300 dark:border-white/15 focus:border-sky-500 dark:focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-4 py-2.5 text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition-all duration-200 text-xs font-medium;
+  @apply bg-slate-50/80 dark:bg-slate-900/80 border border-slate-300 dark:border-white/15 focus:border-sky-500 dark:focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-4 py-3 text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition-all duration-200 text-xs sm:text-sm font-medium;
 }
 
 /* Scrollbar Customization */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
