@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, Upload, Download, Plus, Trash2, CheckCircle2, UserCheck, Search } from 'lucide-react';
+import { Users, Upload, Download, Plus, Trash2, CheckCircle2, Search, Key, Copy, Eye, EyeOff, Check } from 'lucide-react';
 import { initialAccounts, UserAccount } from '@/lib/mockStore';
 import { readExcelFile, downloadUserImportTemplate, exportToExcel } from '@/lib/utils/excel';
 
@@ -9,6 +9,8 @@ export default function AdminUserManagementPage() {
   const [users, setUsers] = useState<UserAccount[]>(initialAccounts);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRole, setFilterRole] = useState<string>('semua');
+  const [visiblePasswords, setVisiblePasswords] = useState<{ [key: string]: boolean }>({});
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Excel Import state
   const [importedPreview, setImportedPreview] = useState<any[]>([]);
@@ -19,8 +21,8 @@ export default function AdminUserManagementPage() {
   const [newFullName, setNewFullName] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newRole, setNewRole] = useState<UserAccount['role']>('mahasiswa');
-  const [newNim, setNewNim] = useState('');
-  const [newNip, setNewNip] = useState('');
+  const [newUsernameOrId, setNewUsernameOrId] = useState('');
+  const [newPassword, setNewPassword] = useState('SIAKAL2026!');
   const [newProdi, setNewProdi] = useState('Studi Nautika');
 
   useEffect(() => {
@@ -40,6 +42,19 @@ export default function AdminUserManagementPage() {
   const handleDeleteUser = (id: string) => {
     const updated = users.filter((u) => u.id !== id);
     saveUsers(updated);
+  };
+
+  const togglePasswordVisibility = (id: string) => {
+    setVisiblePasswords((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleCopyCredentials = (u: UserAccount) => {
+    const loginId = u.usernameOrId || u.nim || u.nip || u.email;
+    const pwd = u.initialPassword || 'SIAKAL2026!';
+    const textToCopy = `ID Masuk: ${loginId}\nPassword: ${pwd}\nEmail: ${u.email}`;
+    navigator.clipboard.writeText(textToCopy);
+    setCopiedId(u.id);
+    setTimeout(() => setCopiedId(null), 2500);
   };
 
   const handleDownloadTemplate = () => {
@@ -67,8 +82,10 @@ export default function AdminUserManagementPage() {
       email: row['Email'] || `user${idx}@siakal.poltek.ac.id`,
       fullName: row['Nama Lengkap'] || 'Pengguna Baru',
       role: (row['Role']?.toString().toLowerCase().replace(' ', '_') as any) || 'mahasiswa',
-      nim: row['Username/NIM/NIP']?.toString(),
-      nip: row['Username/NIM/NIP']?.toString(),
+      usernameOrId: row['Username/NIM/NIP']?.toString() || row['Email'],
+      initialPassword: row['Password Initial']?.toString() || 'SIAKAL2026!',
+      nim: row['Role']?.toString().toLowerCase() === 'mahasiswa' ? row['Username/NIM/NIP']?.toString() : undefined,
+      nip: row['Role']?.toString().toLowerCase() === 'dosen' ? row['Username/NIM/NIP']?.toString() : undefined,
       prodi: row['Prodi'],
       isProfileCompleted: true,
     }));
@@ -82,21 +99,31 @@ export default function AdminUserManagementPage() {
 
   const handleAddSingleUser = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!newFullName || !newUsernameOrId || !newPassword) {
+      alert('Mohon isi Nama, Username/ID Masuk, dan Password!');
+      return;
+    }
+
     const newUser: UserAccount = {
       id: `user-${Date.now()}`,
       fullName: newFullName,
-      email: newEmail,
+      email: newEmail || `${newUsernameOrId}@siakal.poltek.ac.id`,
       role: newRole,
-      nim: newNim,
-      nip: newNip,
+      usernameOrId: newUsernameOrId,
+      initialPassword: newPassword,
+      nim: newRole === 'mahasiswa' ? newUsernameOrId : undefined,
+      nip: newRole === 'dosen' ? newUsernameOrId : undefined,
       prodi: newProdi,
       isProfileCompleted: true,
     };
+
     const updated = [...users, newUser];
     saveUsers(updated);
     setShowAddModal(false);
     setNewFullName('');
     setNewEmail('');
+    setNewUsernameOrId('');
+    setNewPassword('SIAKAL2026!');
   };
 
   const handleExportUsers = () => {
@@ -108,8 +135,8 @@ export default function AdminUserManagementPage() {
             'Nama Lengkap': u.fullName,
             Email: u.email,
             Role: u.role,
-            NIM: u.nim || '-',
-            NIP: u.nip || '-',
+            'Username / ID Masuk': u.usernameOrId || u.nim || u.nip || u.email,
+            'Password Awal': u.initialPassword || 'SIAKAL2026!',
             Prodi: u.prodi || '-',
           })),
         },
@@ -119,11 +146,11 @@ export default function AdminUserManagementPage() {
   };
 
   const filteredUsers = users.filter((u) => {
+    const loginId = u.usernameOrId || u.nim || u.nip || '';
     const matchSearch =
       u.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (u.nim && u.nim.includes(searchQuery)) ||
-      (u.nip && u.nip.includes(searchQuery));
+      loginId.toLowerCase().includes(searchQuery.toLowerCase());
     const matchRole = filterRole === 'semua' || u.role === filterRole;
     return matchSearch && matchRole;
   });
@@ -135,10 +162,10 @@ export default function AdminUserManagementPage() {
         <div>
           <h1 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
             <Users className="w-6 h-6 text-sky-500 dark:text-sky-400" />
-            <span>Pusat Manajemen User & Import Data Excel</span>
+            <span>Pusat Manajemen User, ID Masuk & Password</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 font-medium">
-            Kelola seluruh akun pengguna (Admin, Mahasiswa, Dosen, Pembimbing Lapangan, Alumni, & 14 Unit Approver). Buat akun massal via Impor Excel.
+            Kelola seluruh akun pengguna, tentukan <strong className="text-slate-900 dark:text-white">ID Masuk (NIM/NIP/Username)</strong> dan <strong className="text-slate-900 dark:text-white">Kata Sandi (Password)</strong> untuk login.
           </p>
         </div>
 
@@ -156,7 +183,7 @@ export default function AdminUserManagementPage() {
 
           <button onClick={() => setShowAddModal(true)} className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-md">
             <Plus className="w-4 h-4" />
-            <span>Tambah User</span>
+            <span>+ Tambah User & Password</span>
           </button>
         </div>
       </div>
@@ -169,7 +196,7 @@ export default function AdminUserManagementPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari nama, email, NIM, NIP..."
+            placeholder="Cari nama, ID masuk, email, NIM, NIP..."
             className="w-full glass-input pl-10 text-xs sm:text-sm"
           />
         </div>
@@ -190,57 +217,97 @@ export default function AdminUserManagementPage() {
             <option value="unit_approver">Unit Approver</option>
           </select>
 
-          <button onClick={handleExportUsers} className="px-3 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs shrink-0">
+          <button onClick={handleExportUsers} className="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs shrink-0">
             Ekspor .XLSX
           </button>
         </div>
       </div>
 
-      {/* Table List User */}
+      {/* Table List User with Credentials */}
       <div className="glass-panel p-6 overflow-hidden">
         <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-4">
-          Daftar Akun Terdaftar ({filteredUsers.length} Users)
+          Daftar Akun Terdaftar & Akses Password ({filteredUsers.length} Users)
         </h3>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs sm:text-sm">
             <thead>
               <tr className="border-b border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-extrabold uppercase tracking-wider">
-                <th className="pb-3 px-3">Nama Lengkap</th>
-                <th className="pb-3 px-3">Email / NIM / NIP</th>
+                <th className="pb-3 px-3">Nama Lengkap & Email</th>
                 <th className="pb-3 px-3">Role</th>
+                <th className="pb-3 px-3">ID / Username Masuk</th>
+                <th className="pb-3 px-3">Kata Sandi (Password)</th>
                 <th className="pb-3 px-3">Prodi / Unit</th>
                 <th className="pb-3 px-3 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-white/5">
-              {filteredUsers.map((u) => (
-                <tr key={u.id} className="hover:bg-slate-100/80 dark:hover:bg-slate-800/50 transition-colors">
-                  <td className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white text-sm">
-                    {u.fullName}
-                  </td>
-                  <td className="py-3.5 px-3 text-slate-700 dark:text-slate-300 font-mono font-medium">
-                    {u.email} {u.nim ? `(${u.nim})` : u.nip ? `(${u.nip})` : ''}
-                  </td>
-                  <td className="py-3.5 px-3">
-                    <span className="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/30">
-                      {u.role.replace('_', ' ')}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-3 text-slate-700 dark:text-slate-300 font-semibold">
-                    {u.prodi || u.namaLengkapGelar || '-'}
-                  </td>
-                  <td className="py-3.5 px-3 text-right">
-                    <button
-                      onClick={() => handleDeleteUser(u.id)}
-                      className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
-                      title="Hapus Akun"
-                    >
-                      <Trash2 className="w-4.5 h-4.5" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {filteredUsers.map((u) => {
+                const loginId = u.usernameOrId || u.nim || u.nip || u.email;
+                const pwd = u.initialPassword || 'SIAKAL2026!';
+                const isPwdShown = visiblePasswords[u.id];
+
+                return (
+                  <tr key={u.id} className="hover:bg-slate-100/80 dark:hover:bg-slate-800/50 transition-colors">
+                    <td className="py-3.5 px-3">
+                      <div className="font-extrabold text-slate-900 dark:text-white text-sm">{u.fullName}</div>
+                      <div className="text-xs text-slate-500 font-mono font-medium">{u.email}</div>
+                    </td>
+
+                    <td className="py-3.5 px-3">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/30">
+                        {u.role.replace('_', ' ')}
+                      </span>
+                    </td>
+
+                    <td className="py-3.5 px-3">
+                      <div className="font-mono font-extrabold text-sky-600 dark:text-sky-400 bg-sky-500/10 px-2.5 py-1 rounded-lg inline-block border border-sky-500/20">
+                        {loginId}
+                      </div>
+                    </td>
+
+                    <td className="py-3.5 px-3">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-300 dark:border-white/10 min-w-[100px]">
+                          {isPwdShown ? pwd : '••••••••'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => togglePasswordVisibility(u.id)}
+                          className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                          title="Lihat Password"
+                        >
+                          {isPwdShown ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </td>
+
+                    <td className="py-3.5 px-3 text-slate-700 dark:text-slate-300 font-semibold">
+                      {u.prodi || u.namaLengkapGelar || '-'}
+                    </td>
+
+                    <td className="py-3.5 px-3 text-right space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => handleCopyCredentials(u)}
+                        className="px-2.5 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-800 dark:text-slate-200 font-bold text-xs inline-flex items-center gap-1 shadow-sm"
+                        title="Salin ID & Password"
+                      >
+                        {copiedId === u.id ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{copiedId === u.id ? 'Tersalin' : 'Salin Akses'}</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleDeleteUser(u.id)}
+                        className="p-1.5 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                        title="Hapus Akun"
+                      >
+                        <Trash2 className="w-4.5 h-4.5" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -252,7 +319,7 @@ export default function AdminUserManagementPage() {
           <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-3xl max-h-[85vh] flex flex-col p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-white/20">
             <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-              <span>Pratinjau Data Impor Excel ({importedPreview.length} Baris Data)</span>
+              <span>Pratinjau Impor Excel ({importedPreview.length} Baris Data)</span>
             </h3>
 
             <div className="flex-1 overflow-y-auto border border-slate-200 dark:border-white/10 rounded-xl p-3 bg-slate-50 dark:bg-slate-950">
@@ -262,7 +329,8 @@ export default function AdminUserManagementPage() {
                     <th className="p-2">Nama</th>
                     <th className="p-2">Email</th>
                     <th className="p-2">Role</th>
-                    <th className="p-2">NIM/NIP</th>
+                    <th className="p-2">ID Masuk</th>
+                    <th className="p-2">Password Initial</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-white/5">
@@ -271,7 +339,8 @@ export default function AdminUserManagementPage() {
                       <td className="p-2 font-bold text-slate-900 dark:text-white">{row['Nama Lengkap']}</td>
                       <td className="p-2 text-slate-700 dark:text-slate-300">{row['Email']}</td>
                       <td className="p-2 text-sky-600 font-semibold">{row['Role']}</td>
-                      <td className="p-2 text-slate-600 dark:text-slate-400">{row['Username/NIM/NIP'] || '-'}</td>
+                      <td className="p-2 font-mono font-bold text-amber-500">{row['Username/NIM/NIP'] || '-'}</td>
+                      <td className="p-2 font-mono font-bold text-slate-600 dark:text-slate-300">{row['Password Initial'] || 'SIAKAL2026!'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -293,65 +362,108 @@ export default function AdminUserManagementPage() {
         </div>
       )}
 
-      {/* Modal Single Add User */}
+      {/* Modal Single Add User (WITH EXPLICIT USERNAME/ID & PASSWORD FIELDS) */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
-          <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-md p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-white/20">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Tambah User Manual</h3>
+          <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-lg p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-white/20">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Key className="w-5 h-5 text-sky-500" />
+                <span>Tambah User Baru & Pengaturan Password</span>
+              </h3>
+            </div>
 
-            <form onSubmit={handleAddSingleUser} className="space-y-3 text-xs sm:text-sm">
+            <form onSubmit={handleAddSingleUser} className="space-y-3.5 text-xs sm:text-sm">
               <div>
-                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Nama Lengkap</label>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Nama Lengkap Pengguna</label>
                 <input
                   type="text"
                   required
                   value={newFullName}
                   onChange={(e) => setNewFullName(e.target.value)}
-                  placeholder="Contoh: Capt. Ahmad Subarjo"
+                  placeholder="Contoh: Capt. Ahmad Subarjo, M.Mar."
                   className="w-full glass-input"
                 />
               </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Peran (Role Akun)</label>
+                  <select
+                    value={newRole}
+                    onChange={(e) => setNewRole(e.target.value as any)}
+                    className="w-full glass-input font-bold"
+                  >
+                    <option value="mahasiswa">Mahasiswa</option>
+                    <option value="dosen">Dosen</option>
+                    <option value="pembimbing_lapangan">Pembimbing Lapangan</option>
+                    <option value="alumni">Alumni</option>
+                    <option value="unit_approver">Unit Approver</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Program Studi / Unit</label>
+                  <select
+                    value={newProdi}
+                    onChange={(e) => setNewProdi(e.target.value)}
+                    className="w-full glass-input"
+                  >
+                    <option value="Studi Nautika">Studi Nautika</option>
+                    <option value="Permesinan Kapal">Permesinan Kapal</option>
+                    <option value="Manajemen Transportasi Perairan Daratan">MTPD</option>
+                    <option value="Teknologi Rekayasa Pelayaran & TSDP">TSDP</option>
+                    <option value="Unit Verifikator">Unit Verifikator</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* ID MASUK & PASSWORD FIELDS */}
+              <div className="p-4 rounded-xl bg-sky-500/10 border border-sky-500/30 space-y-3">
+                <div className="font-extrabold text-sky-700 dark:text-sky-300 text-xs flex items-center gap-1.5">
+                  <Key className="w-4 h-4" />
+                  <span>Kredensial Log In (ID & Password Akun)</span>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
+                    {newRole === 'mahasiswa' ? 'NIM (Digunakan sebagai ID Log In)' : newRole === 'dosen' ? 'NIP (Digunakan sebagai ID Log In)' : 'Username / ID Masuk'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newUsernameOrId}
+                    onChange={(e) => setNewUsernameOrId(e.target.value)}
+                    placeholder={newRole === 'mahasiswa' ? 'Masukkan NIM (cth: 2101034)' : newRole === 'dosen' ? 'Masukkan NIP (cth: 19850315...)' : 'Username (cth: supervisor_pelni)'}
+                    className="w-full glass-input font-mono font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Kata Sandi Awal (Password Initial)</label>
+                  <input
+                    type="text"
+                    required
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="SIAKAL2026!"
+                    className="w-full glass-input font-mono font-bold"
+                  />
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 block">Password ini digunakan user saat login pertama kali.</span>
+                </div>
+              </div>
+
               <div>
-                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Email Official</label>
+                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Email Official (Opsional)</label>
                 <input
                   type="email"
-                  required
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   placeholder="user@poltek.ac.id"
                   className="w-full glass-input"
                 />
               </div>
-
-              <div>
-                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Peran (Role)</label>
-                <select
-                  value={newRole}
-                  onChange={(e) => setNewRole(e.target.value as any)}
-                  className="w-full glass-input"
-                >
-                  <option value="mahasiswa">Mahasiswa</option>
-                  <option value="dosen">Dosen</option>
-                  <option value="pembimbing_lapangan">Pembimbing Lapangan</option>
-                  <option value="alumni">Alumni</option>
-                  <option value="unit_approver">Unit Approver</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-
-              {newRole === 'mahasiswa' && (
-                <div>
-                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">NIM Mahasiswa</label>
-                  <input
-                    type="text"
-                    value={newNim}
-                    onChange={(e) => setNewNim(e.target.value)}
-                    placeholder="2101099"
-                    className="w-full glass-input"
-                  />
-                </div>
-              )}
 
               <div className="flex justify-end gap-2 pt-2">
                 <button
@@ -362,7 +474,7 @@ export default function AdminUserManagementPage() {
                   Batal
                 </button>
                 <button type="submit" className="glass-button text-xs sm:text-sm font-bold">
-                  Simpan Akun
+                  Simpan & Buat Akun
                 </button>
               </div>
             </form>

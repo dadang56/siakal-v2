@@ -4,6 +4,8 @@ export interface UserAccount {
   email: string;
   fullName: string;
   role: 'admin' | 'mahasiswa' | 'dosen' | 'pembimbing_lapangan' | 'alumni' | 'unit_approver';
+  usernameOrId?: string; // NIM, NIP, or Username ID for logging in
+  initialPassword?: string; // Default password
   nip?: string;
   namaLengkapGelar?: string;
   ttdImageUrl?: string;
@@ -113,6 +115,8 @@ export const initialAccounts: UserAccount[] = [
     email: 'admin@siakal.poltek.ac.id',
     fullName: 'Administrator SIAKAL V2',
     role: 'admin',
+    usernameOrId: 'admin',
+    initialPassword: 'SIAKAL2026!',
     isProfileCompleted: true,
   },
   {
@@ -120,6 +124,8 @@ export const initialAccounts: UserAccount[] = [
     email: 'ahmad.fauzi@mhs.poltek.ac.id',
     fullName: 'Ahmad Fauzi',
     role: 'mahasiswa',
+    usernameOrId: '2101034',
+    initialPassword: 'SIAKAL2026!',
     nim: '2101034',
     prodi: 'Studi Nautika',
     angkatan: 2023,
@@ -130,6 +136,8 @@ export const initialAccounts: UserAccount[] = [
     email: 'bambang@mhs.poltek.ac.id',
     fullName: 'Bambang Pratama',
     role: 'mahasiswa',
+    usernameOrId: '2102011',
+    initialPassword: 'SIAKAL2026!',
     nim: '2102011',
     prodi: 'Manajemen Transportasi Perairan Daratan',
     angkatan: 2023,
@@ -140,6 +148,8 @@ export const initialAccounts: UserAccount[] = [
     email: 'budi.santoso@dosen.poltek.ac.id',
     fullName: 'Capt. Budi Santoso, M.Mar.',
     role: 'dosen',
+    usernameOrId: '198503152010121002',
+    initialPassword: 'Dosen2026!',
     nip: '198503152010121002',
     prodi: 'Studi Nautika',
     isProfileCompleted: true,
@@ -149,6 +159,8 @@ export const initialAccounts: UserAccount[] = [
     email: 'supervisor@ptpelni.co.id',
     fullName: 'Hendra Gunawan (PT PELNI)',
     role: 'pembimbing_lapangan',
+    usernameOrId: 'supervisor_pelni',
+    initialPassword: 'Pelni2026!',
     isProfileCompleted: true,
   },
   {
@@ -156,6 +168,8 @@ export const initialAccounts: UserAccount[] = [
     email: 'deni@alumni.poltek.ac.id',
     fullName: 'Deni Kurniawan, A.Md.Tra.',
     role: 'alumni',
+    usernameOrId: '2001015',
+    initialPassword: 'Alumni2026!',
     prodi: 'Studi Nautika',
     angkatan: 2020,
     isProfileCompleted: true,
@@ -165,6 +179,8 @@ export const initialAccounts: UserAccount[] = [
     email: 'perpus@poltek.ac.id',
     fullName: 'Unit Perpustakaan',
     role: 'unit_approver',
+    usernameOrId: 'perpus_03',
+    initialPassword: 'Perpus2026!',
     nip: '198704202012011003',
     namaLengkapGelar: 'Dra. Sri Wahyuni, M.IP.',
     ttdImageUrl: 'https://api.dicebear.com/7.x/shapes/svg?seed=signature-perpus',
