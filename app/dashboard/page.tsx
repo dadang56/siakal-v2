@@ -47,6 +47,20 @@ export default function MainDashboardPage() {
     return initialAccounts;
   });
 
+  // Clearance Requests list
+  const [clearanceList, setClearanceList] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('siakal_clearance_list');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) return parsed;
+        }
+      } catch (e) {}
+    }
+    return [];
+  });
+
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem('siakal_user');
@@ -62,6 +76,9 @@ export default function MainDashboardPage() {
 
       const storedUsers = localStorage.getItem('siakal_user_list');
       if (storedUsers) setUserList(JSON.parse(storedUsers));
+
+      const storedClearance = localStorage.getItem('siakal_clearance_list');
+      if (storedClearance) setClearanceList(JSON.parse(storedClearance));
     } catch (e) {
       setCurrentUser({ fullName: 'Administrator SIAKAL', role: 'admin' });
     }
@@ -70,20 +87,40 @@ export default function MainDashboardPage() {
   const role = currentUser?.role || 'admin';
   const isAdmin = role === 'admin';
 
-  // Dynamic calculations synced with Master Data
+  // 1. EXACT ACTUAL DATA CALCULATIONS FROM LOCALSTORAGE DATABASE
   const prodiCount = prodis.length;
   
-  // Calculate real student counts from Database
-  const mahasiswas = userList.filter((u) => u.role === 'mahasiswa' || u.role === 'alumni');
-  const realMhsCount = userList.filter((u) => u.role === 'mahasiswa').length;
-  const displayTotalMahasiswa = realMhsCount > 0 ? realMhsCount * 50 + 20 : 420;
+  // Mahasiswa & Alumni filters
+  const mahasiswas = userList.filter((u) => u.role === 'mahasiswa');
+  const alumnis = userList.filter((u) => u.role === 'alumni');
+  const totalMahasiswa = mahasiswas.length;
+  const totalAlumni = alumnis.length;
 
-  // Calculate per prodi distribution dynamically
+  // PRALA Mahasiswa (Nautika & Permesinan)
+  const pralaMahasiswas = mahasiswas.filter(
+    (u) => u.prodi && (u.prodi.toLowerCase().includes('nautika') || u.prodi.toLowerCase().includes('permesinan'))
+  );
+  const totalPrala = pralaMahasiswas.length;
+
+  // Magang MTPD Mahasiswa
+  const magangMahasiswas = mahasiswas.filter(
+    (u) => u.prodi && (u.prodi.toLowerCase().includes('mtpd') || u.prodi.toLowerCase().includes('manajemen transportasi'))
+  );
+  const totalMagang = magangMahasiswas.length;
+
+  // Clearance Out Actual Rate
+  const approvedClearance = clearanceList.filter((c) => c.statusKeseluruhan === 'Approved').length;
+  const totalClearance = clearanceList.length;
+  const clearanceRatePercentage = totalClearance > 0 ? Math.round((approvedClearance / totalClearance) * 100) : 100;
+
+  // Calculate per prodi distribution 100% EXACTLY from registered Mahasiswa list
   const prodiDistribution = prodis.map((p, idx) => {
-    const matchedCount = mahasiswas.filter((u) => u.prodi && u.prodi.toLowerCase().includes(p.nama.toLowerCase())).length;
-    const sampleMultiplier = [150, 130, 100, 40][idx % 4] || 90;
-    const dynamicCount = matchedCount > 0 ? matchedCount * 30 : sampleMultiplier;
-    const percentage = Math.min(100, Math.round((dynamicCount / displayTotalMahasiswa) * 100));
+    // Match exact prodi name
+    const exactCount = mahasiswas.filter(
+      (u) => u.prodi && u.prodi.toLowerCase().includes(p.nama.toLowerCase())
+    ).length;
+
+    const percentage = totalMahasiswa > 0 ? Math.round((exactCount / totalMahasiswa) * 100) : 0;
 
     const colorClasses = [
       { text: 'text-sky-500', bg: 'bg-sky-500' },
@@ -96,7 +133,7 @@ export default function MainDashboardPage() {
     return {
       id: p.id,
       nama: `${p.jenjang === 'Diploma III' ? 'D3' : 'D4'} ${p.nama}`,
-      count: dynamicCount,
+      count: exactCount,
       percentage,
       colors: colorClasses,
     };
@@ -108,7 +145,7 @@ export default function MainDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Top Minimalist Header */}
-      <div className="glass-panel p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="glass-panel p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
             Dashboard Executive
@@ -128,10 +165,10 @@ export default function MainDashboardPage() {
       {/* ========================================================================= */}
       {isAdmin ? (
         <div className="space-y-6">
-          {/* A. CLICKABLE METRICS STAT CARDS LINKED TO REAL DATABASE PAGES */}
+          {/* A. 100% EXACT ACTUAL METRICS STAT CARDS */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
             {/* PRODI CARD */}
-            <Link href="/dashboard/admin/prodi" className="glass-panel p-4 space-y-1 border-l-4 border-l-sky-500 hover:border-sky-400 transition-all group block">
+            <Link href="/dashboard/admin/prodi" className="glass-panel p-4 space-y-1 border-l-4 border-l-sky-500 hover:border-sky-400 transition-all group block shadow-sm">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">PRODI</span>
                 <Building2 className="w-4 h-4 text-sky-500 group-hover:scale-110 transition-transform" />
@@ -141,59 +178,67 @@ export default function MainDashboardPage() {
               </div>
             </Link>
 
-            {/* MAHASISWA CARD - LINKS DIRECTLY TO DATABASE MAHASISWA */}
-            <Link href="/dashboard/admin/mahasiswa" className="glass-panel p-4 space-y-1 border-l-4 border-l-blue-500 hover:border-blue-400 transition-all group block shadow-md">
+            {/* MAHASISWA CARD - EXACT ACTUAL COUNT */}
+            <Link href="/dashboard/admin/mahasiswa" className="glass-panel p-4 space-y-1 border-l-4 border-l-blue-500 hover:border-blue-400 transition-all group block shadow-sm">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400">MAHASISWA &rarr;</span>
                 <Users className="w-4 h-4 text-blue-500 group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">
-                {displayTotalMahasiswa}
+                {totalMahasiswa}
               </div>
             </Link>
 
-            {/* MAHASISWA PRALA CARD */}
-            <Link href="/dashboard/admin/prala" className="glass-panel p-4 space-y-1 border-l-4 border-l-indigo-500 hover:border-indigo-400 transition-all group block">
+            {/* MAHASISWA PRALA CARD - EXACT ACTUAL COUNT */}
+            <Link href="/dashboard/admin/prala" className="glass-panel p-4 space-y-1 border-l-4 border-l-indigo-500 hover:border-indigo-400 transition-all group block shadow-sm">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">MAHASISWA PRALA</span>
                 <Anchor className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition-transform" />
               </div>
-              <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">110</div>
+              <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">
+                {totalPrala}
+              </div>
             </Link>
 
-            {/* MAGANG MTPD CARD */}
-            <Link href="/dashboard/admin/magang" className="glass-panel p-4 space-y-1 border-l-4 border-l-amber-500 hover:border-amber-400 transition-all group block">
+            {/* MAGANG MTPD CARD - EXACT ACTUAL COUNT */}
+            <Link href="/dashboard/admin/magang" className="glass-panel p-4 space-y-1 border-l-4 border-l-amber-500 hover:border-amber-400 transition-all group block shadow-sm">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">MAGANG MTPD</span>
                 <Briefcase className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" />
               </div>
-              <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">85</div>
+              <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">
+                {totalMagang}
+              </div>
             </Link>
 
-            {/* SERAPAN ALUMNI CARD */}
-            <Link href="/dashboard/admin/alumni" className="glass-panel p-4 space-y-1 border-l-4 border-l-emerald-500 hover:border-emerald-400 transition-all group block">
+            {/* ALUMNI CARD - EXACT ACTUAL ALUMNI COUNT */}
+            <Link href="/dashboard/admin/alumni" className="glass-panel p-4 space-y-1 border-l-4 border-l-emerald-500 hover:border-emerald-400 transition-all group block shadow-sm">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">SERAPAN ALUMNI</span>
+                <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">ALUMNI</span>
                 <UserCheck className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform" />
               </div>
-              <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">94.2%</div>
+              <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">
+                {totalAlumni}
+              </div>
             </Link>
 
-            {/* CLEARANCE OUT CARD */}
-            <Link href="/dashboard/admin/clearance-out" className="glass-panel p-4 space-y-1 border-l-4 border-l-purple-500 hover:border-purple-400 transition-all group block">
+            {/* CLEARANCE OUT CARD - EXACT ACTUAL RATE */}
+            <Link href="/dashboard/admin/clearance-out" className="glass-panel p-4 space-y-1 border-l-4 border-l-purple-500 hover:border-purple-400 transition-all group block shadow-sm">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">CLEARANCE OUT</span>
                 <FileCheck className="w-4 h-4 text-purple-500 group-hover:scale-110 transition-transform" />
               </div>
-              <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">88%</div>
+              <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white font-mono">
+                {clearanceRatePercentage}%
+              </div>
             </Link>
           </div>
 
-          {/* B. MINIMALIST DYNAMIC CHARTS & PROGRESS BARS */}
+          {/* B. MINIMALIST 100% DYNAMIC CHARTS */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
-            {/* Grafik 1: Distribusi Mahasiswa */}
-            <div className="glass-panel p-6 space-y-4">
+            {/* Grafik 1: Distribusi Mahasiswa (100% DYNAMIC EXACT NUMBERS) */}
+            <div className="glass-panel p-6 space-y-4 shadow-sm">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                   <BarChart3 className="w-4.5 h-4.5 text-sky-500" />
@@ -210,10 +255,15 @@ export default function MainDashboardPage() {
                   <div key={item.id} className="space-y-1">
                     <div className="flex justify-between text-xs font-bold text-slate-800 dark:text-slate-200">
                       <span>{item.nama}</span>
-                      <span className={`font-mono ${item.colors.text}`}>{item.count} Mahasiswa ({item.percentage}%)</span>
+                      <span className={`font-mono ${item.colors.text}`}>
+                        {item.count} Mahasiswa ({item.percentage}%)
+                      </span>
                     </div>
                     <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                      <div className={`${item.colors.bg} h-full rounded-full transition-all duration-500`} style={{ width: `${item.percentage}%` }} />
+                      <div
+                        className={`${item.colors.bg} h-full rounded-full transition-all duration-500`}
+                        style={{ width: `${Math.max(item.percentage, item.count > 0 ? 5 : 0)}%` }}
+                      />
                     </div>
                   </div>
                 ))}
@@ -221,10 +271,10 @@ export default function MainDashboardPage() {
             </div>
 
             {/* Grafik 2: Status PRALA & Magang */}
-            <div className="glass-panel p-6 space-y-4">
+            <div className="glass-panel p-6 space-y-4 shadow-sm">
               <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                 <PieChart className="w-4.5 h-4.5 text-indigo-500" />
-                <span>Status PRALA & Magang</span>
+                <span>Status PRALA & Magang MTPD</span>
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
@@ -234,15 +284,14 @@ export default function MainDashboardPage() {
                     <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                       <Anchor className="w-4 h-4 text-sky-500" /> PRALA
                     </span>
-                    <span className="text-xs font-mono font-extrabold text-sky-500">110 Mahasiswa</span>
+                    <span className="text-xs font-mono font-extrabold text-sky-500">{totalPrala} Mahasiswa</span>
                   </div>
                   <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden flex">
-                    <div className="bg-emerald-500 h-full" style={{ width: '77%' }} />
-                    <div className="bg-amber-500 h-full" style={{ width: '23%' }} />
+                    <div className="bg-emerald-500 h-full" style={{ width: totalPrala > 0 ? '100%' : '0%' }} />
                   </div>
                   <div className="flex justify-between text-[11px] font-bold">
-                    <span className="text-emerald-500">77% TRB Terunggah</span>
-                    <span className="text-amber-500">23% Belum</span>
+                    <span className="text-emerald-500">{totalPrala} Terdaftar</span>
+                    <span className="text-slate-500">PRALA Aktif</span>
                   </div>
                 </Link>
 
@@ -252,15 +301,14 @@ export default function MainDashboardPage() {
                     <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                       <Briefcase className="w-4 h-4 text-amber-500" /> Magang MTPD
                     </span>
-                    <span className="text-xs font-mono font-extrabold text-amber-500">85 Mahasiswa</span>
+                    <span className="text-xs font-mono font-extrabold text-amber-500">{totalMagang} Mahasiswa</span>
                   </div>
                   <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden flex">
-                    <div className="bg-emerald-500 h-full" style={{ width: '85%' }} />
-                    <div className="bg-amber-500 h-full" style={{ width: '15%' }} />
+                    <div className="bg-emerald-500 h-full" style={{ width: totalMagang > 0 ? '100%' : '0%' }} />
                   </div>
                   <div className="flex justify-between text-[11px] font-bold">
-                    <span className="text-emerald-500">85% Terploting</span>
-                    <span className="text-amber-500">15% Pending</span>
+                    <span className="text-emerald-500">{totalMagang} Ter-ploting</span>
+                    <span className="text-slate-500">Magang MTPD</span>
                   </div>
                 </Link>
               </div>
