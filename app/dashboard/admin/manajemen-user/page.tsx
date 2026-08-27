@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, Upload, Download, Plus, Trash2, CheckCircle2, Search, Key, Copy, Eye, EyeOff, Check, AlertTriangle } from 'lucide-react';
+import { Users, Upload, Download, Plus, Trash2, CheckCircle2, Search, Key, Copy, Eye, EyeOff, Check, AlertTriangle, FileSpreadsheet } from 'lucide-react';
 import { initialAccounts, UserAccount } from '@/lib/mockStore';
 import { readExcelFile, downloadUserImportTemplate, exportToExcel } from '@/lib/utils/excel';
 
@@ -160,58 +160,53 @@ export default function AdminUserManagementPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner Header */}
-      <div className="glass-panel p-6 border-l-4 border-l-sky-500 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      {/* Top Banner Header - Clean & Minimalist */}
+      <div className="glass-panel p-6 border-l-4 border-l-sky-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
             <Users className="w-6 h-6 text-sky-500 dark:text-sky-400" />
-            <span>Pusat Manajemen User, ID Masuk & Password</span>
+            <span>Manajemen User & Hak Akses</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 font-medium">
-            Kelola seluruh akun pengguna, tentukan <strong className="text-slate-900 dark:text-white">ID Masuk (NIM/NIP/Username)</strong> dan <strong className="text-slate-900 dark:text-white">Kata Sandi (Password)</strong> untuk login.
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 font-semibold">
+            Kelola akun pengguna, ID Masuk (NIM/NIP), dan kata sandi login sistem.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <button onClick={handleDownloadTemplate} className="px-4 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:text-sky-600 font-bold text-xs sm:text-sm flex items-center gap-2 shadow-sm border border-slate-300 dark:border-white/10">
-            <Download className="w-4 h-4" />
-            <span>Unduh Template Excel</span>
-          </button>
-
-          <label className="glass-button text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer shadow-md">
+        <div className="flex items-center gap-2 shrink-0">
+          <label className="px-4 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:text-sky-600 font-bold text-xs sm:text-sm flex items-center gap-2 shadow-sm border border-slate-300 dark:border-white/10 cursor-pointer">
             <Upload className="w-4 h-4" />
-            <span>Impor Massal (Excel)</span>
+            <span>Impor Excel</span>
             <input type="file" accept=".xlsx,.xls" onChange={handleExcelFileUpload} className="hidden" />
           </label>
 
-          <button onClick={() => setShowAddModal(true)} className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-md">
+          <button onClick={() => setShowAddModal(true)} className="glass-button text-xs sm:text-sm font-bold flex items-center gap-2 py-2.5 px-4 shadow-lg">
             <Plus className="w-4 h-4" />
-            <span>+ Tambah User & Password</span>
+            <span>Tambah User</span>
           </button>
         </div>
       </div>
 
       {/* Filter & Search Bar */}
       <div className="glass-panel p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="relative w-full sm:w-96">
+        <div className="relative w-full sm:w-80">
           <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari nama, ID masuk, email, NIM, NIP..."
+            placeholder="Cari nama, ID masuk, email..."
             className="w-full glass-input pl-10 text-xs sm:text-sm"
           />
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 shrink-0">Filter Peran:</span>
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">Filter Role:</span>
           <select
             value={filterRole}
             onChange={(e) => setFilterRole(e.target.value)}
-            className="glass-input text-xs sm:text-sm"
+            className="glass-input text-xs"
           >
-            <option value="semua">Semua Peran</option>
+            <option value="semua">Semua Role</option>
             <option value="admin">Admin</option>
             <option value="mahasiswa">Mahasiswa</option>
             <option value="dosen">Dosen</option>
@@ -220,28 +215,35 @@ export default function AdminUserManagementPage() {
             <option value="unit_approver">Unit Approver</option>
           </select>
 
-          <button onClick={handleExportUsers} className="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs shrink-0">
-            Ekspor .XLSX
+          <button onClick={handleExportUsers} className="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs shrink-0 flex items-center gap-1.5 border border-slate-300 dark:border-white/10">
+            <Download className="w-3.5 h-3.5" />
+            <span>Ekspor .XLSX</span>
           </button>
         </div>
       </div>
 
-      {/* Table List User with Credentials */}
+      {/* Table List User with Generous Padding & Spacious Layout */}
       <div className="glass-panel p-6 overflow-hidden">
-        <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-4">
-          Daftar Akun Terdaftar & Akses Password ({filteredUsers.length} Users)
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
+            Daftar Akun Terdaftar ({filteredUsers.length} Users)
+          </h3>
+          <button onClick={handleDownloadTemplate} className="text-xs text-sky-600 dark:text-sky-400 font-bold hover:underline flex items-center gap-1">
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>Download Template Excel Impor</span>
+          </button>
+        </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs sm:text-sm">
+          <table className="w-full text-left text-xs sm:text-sm border-collapse">
             <thead>
               <tr className="border-b border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-extrabold uppercase tracking-wider">
-                <th className="pb-3 px-3">Nama Lengkap & Email</th>
-                <th className="pb-3 px-3">Role</th>
-                <th className="pb-3 px-3">ID / Username Masuk</th>
-                <th className="pb-3 px-3">Kata Sandi (Password)</th>
-                <th className="pb-3 px-3">Prodi / Unit</th>
-                <th className="pb-3 px-3 text-right">Aksi</th>
+                <th className="pb-3 px-4">Nama Lengkap & Email</th>
+                <th className="pb-3 px-4">Role</th>
+                <th className="pb-3 px-4">ID Masuk</th>
+                <th className="pb-3 px-4">Kata Sandi</th>
+                <th className="pb-3 px-4">Prodi / Unit</th>
+                <th className="pb-3 px-4 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-white/5">
@@ -252,26 +254,30 @@ export default function AdminUserManagementPage() {
 
                 return (
                   <tr key={u.id} className="hover:bg-slate-100/80 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="py-3.5 px-3">
+                    {/* User Name & Email */}
+                    <td className="py-4 px-4 whitespace-nowrap">
                       <div className="font-extrabold text-slate-900 dark:text-white text-sm">{u.fullName}</div>
                       <div className="text-xs text-slate-500 font-mono font-medium">{u.email}</div>
                     </td>
 
-                    <td className="py-3.5 px-3">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/30">
+                    {/* Role Badge */}
+                    <td className="py-4 px-4 whitespace-nowrap">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-extrabold uppercase tracking-wider bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/30 inline-block">
                         {u.role.replace('_', ' ')}
                       </span>
                     </td>
 
-                    <td className="py-3.5 px-3">
-                      <div className="font-mono font-extrabold text-sky-600 dark:text-sky-400 bg-sky-500/10 px-2.5 py-1 rounded-lg inline-block border border-sky-500/20">
+                    {/* Login ID */}
+                    <td className="py-4 px-4 whitespace-nowrap">
+                      <span className="font-mono font-extrabold text-sky-600 dark:text-sky-400 bg-sky-500/10 px-2.5 py-1 rounded-lg border border-sky-500/20 text-xs inline-block">
                         {loginId}
-                      </div>
+                      </span>
                     </td>
 
-                    <td className="py-3.5 px-3">
+                    {/* Password */}
+                    <td className="py-4 px-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-300 dark:border-white/10 min-w-[100px]">
+                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-300 dark:border-white/10 text-xs min-w-[90px] text-center inline-block">
                           {isPwdShown ? pwd : '••••••••'}
                         </span>
                         <button
@@ -285,27 +291,29 @@ export default function AdminUserManagementPage() {
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-3 text-slate-700 dark:text-slate-300 font-semibold">
+                    {/* Prodi / Unit */}
+                    <td className="py-4 px-4 whitespace-nowrap text-slate-700 dark:text-slate-300 font-semibold">
                       {u.prodi || u.namaLengkapGelar || '-'}
                     </td>
 
-                    <td className="py-3.5 px-3 text-right space-x-2">
+                    {/* Actions: Copy & Delete */}
+                    <td className="py-4 px-4 whitespace-nowrap text-right space-x-1.5">
                       <button
                         type="button"
                         onClick={() => handleCopyCredentials(u)}
-                        className="px-2.5 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-800 dark:text-slate-200 font-bold text-xs inline-flex items-center gap-1 shadow-sm"
-                        title="Salin ID & Password"
+                        className="p-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-sky-500/20 text-slate-700 dark:text-slate-300 hover:text-sky-600 transition-colors inline-flex items-center"
+                        title="Salin ID Masuk & Password"
                       >
-                        {copiedId === u.id ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                        <span>{copiedId === u.id ? 'Tersalin' : 'Salin Akses'}</span>
+                        {copiedId === u.id ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                       </button>
 
                       <button
+                        type="button"
                         onClick={() => setDeleteTargetId(u.id)}
-                        className="p-1.5 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
-                        title="Hapus Akun"
+                        className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors inline-flex items-center"
+                        title="Hapus Akun Pengguna"
                       >
-                        <Trash2 className="w-4.5 h-4.5" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
                   </tr>
@@ -372,7 +380,7 @@ export default function AdminUserManagementPage() {
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3">
               <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Key className="w-5 h-5 text-sky-500" />
-                <span>Tambah User Baru & Pengaturan Password</span>
+                <span>Tambah User Baru & Password</span>
               </h3>
             </div>
 
@@ -430,7 +438,7 @@ export default function AdminUserManagementPage() {
 
                 <div>
                   <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
-                    {newRole === 'mahasiswa' ? 'NIM (Digunakan sebagai ID Log In)' : newRole === 'dosen' ? 'NIP (Digunakan sebagai ID Log In)' : 'Username / ID Masuk'}
+                    {newRole === 'mahasiswa' ? 'NIM (ID Log In)' : newRole === 'dosen' ? 'NIP (ID Log In)' : 'Username / ID Masuk'}
                   </label>
                   <input
                     type="text"
