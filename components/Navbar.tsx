@@ -40,7 +40,7 @@ export function Navbar({ currentUser, onLogout }: NavbarProps) {
   const userRole = currentUser?.role || 'User';
 
   return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-white/85 dark:bg-slate-950/85 border-b border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none transition-colors duration-200">
+    <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-white/90 dark:bg-slate-950/90 border-b border-slate-200/90 dark:border-white/10 shadow-sm dark:shadow-none transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand Logo & Name */}
         <Link href="/" className="flex items-center gap-3 group">
@@ -48,16 +48,16 @@ export function Navbar({ currentUser, onLogout }: NavbarProps) {
             <img src={customLogo} alt="Logo Kampus Resmi" className="h-10 w-auto max-w-[140px] object-contain" />
           ) : (
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-blue-600 p-0.5 shadow-glow">
-              <div className="w-full h-full bg-slate-900 dark:bg-slate-950 rounded-[10px] flex items-center justify-center font-bold text-sky-400 text-lg">
+              <div className="w-full h-full bg-white dark:bg-slate-950 rounded-[10px] flex items-center justify-center font-bold text-sky-600 dark:text-sky-400 text-lg shadow-inner">
                 S
               </div>
             </div>
           )}
           <div className="flex flex-col">
-            <span className="font-bold text-lg tracking-wider text-slate-900 dark:text-slate-100 group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors">
-              SIAKAL <span className="text-sky-600 dark:text-sky-400 text-xs font-semibold px-1.5 py-0.5 rounded-full bg-sky-500/10 border border-sky-500/30">V2</span>
+            <span className="font-extrabold text-lg tracking-wider text-slate-900 dark:text-slate-100 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
+              SIAKAL <span className="text-sky-600 dark:text-sky-400 text-xs font-bold px-1.5 py-0.5 rounded-full bg-sky-500/10 border border-sky-500/30">V2</span>
             </span>
-            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Ketarunaan & Alumni SDP Palembang</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">Ketarunaan & Alumni SDP Palembang</span>
           </div>
         </Link>
 
@@ -67,7 +67,7 @@ export function Navbar({ currentUser, onLogout }: NavbarProps) {
           <button
             type="button"
             onClick={() => setTheme(isDark ? 'light' : 'dark')}
-            className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-white/15 text-slate-700 dark:text-slate-300 hover:text-sky-500 dark:hover:text-sky-400 transition-all active:scale-95 shadow-sm cursor-pointer"
+            className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-white/15 text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-200/80 dark:hover:bg-slate-800 transition-all active:scale-95 shadow-sm cursor-pointer"
             title="Ganti Mode Terang / Gelap"
           >
             {isDark ? (
@@ -82,9 +82,9 @@ export function Navbar({ currentUser, onLogout }: NavbarProps) {
             <div className="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-white/10">
               <div className="hidden sm:flex flex-col text-right">
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{userName}</span>
-                <span className="text-[10px] text-sky-600 dark:text-sky-400 capitalize font-medium">{userRole.replace('_', ' ')}</span>
+                <span className="text-[10px] text-sky-600 dark:text-sky-400 capitalize font-bold">{userRole.replace('_', ' ')}</span>
               </div>
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center text-white font-semibold text-sm shadow-md">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
                 {userName.charAt(0).toUpperCase()}
               </div>
               {onLogout && (
@@ -99,7 +99,7 @@ export function Navbar({ currentUser, onLogout }: NavbarProps) {
               )}
             </div>
           ) : (
-            <Link href="/login" className="glass-button text-xs flex items-center gap-2">
+            <Link href="/login" className="glass-button text-xs flex items-center gap-2 font-bold shadow-md">
               <User className="w-3.5 h-3.5" />
               <span>Portal Masuk</span>
             </Link>

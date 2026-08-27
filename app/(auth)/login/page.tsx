@@ -50,7 +50,7 @@ export default function LoginPage() {
       <Navbar />
 
       <main className="relative z-10 max-w-md w-full mx-auto px-4 py-12 flex-1 flex items-center justify-center">
-        <div className="glass-panel w-full p-6 sm:p-8 border border-slate-200 dark:border-white/20 shadow-2xl relative overflow-hidden">
+        <div className="glass-panel bg-white/95 dark:bg-slate-900/90 w-full p-6 sm:p-8 border border-slate-200/90 dark:border-white/20 shadow-2xl relative overflow-hidden">
           
           {/* Header Branding */}
           <div className="text-center mb-6">
@@ -58,15 +58,15 @@ export default function LoginPage() {
               S
             </div>
             <h2 className="text-xl font-extrabold text-slate-900 dark:text-white">Portal Masuk SIAKAL V2</h2>
-            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">Sistem Informasi Akademik Ketarunaan & Alumni</p>
+            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 font-medium">Sistem Informasi Akademik Ketarunaan & Alumni</p>
           </div>
 
           {/* Role Selector Pills */}
           <div className="mb-6">
-            <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-2">
-              Pilih Peran Akun Anda:
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
+              PILIH PERAN AKUN ANDA:
             </label>
-            <div className="grid grid-cols-3 gap-1.5 bg-slate-200/80 dark:bg-slate-950/60 p-1.5 rounded-xl border border-slate-300 dark:border-white/10">
+            <div className="grid grid-cols-3 gap-1.5 bg-slate-100 dark:bg-slate-950/80 p-1.5 rounded-xl border border-slate-200 dark:border-white/10 shadow-inner">
               {rolePills.map((pill) => (
                 <button
                   key={pill.role}
@@ -75,10 +75,10 @@ export default function LoginPage() {
                     setSelectedRole(pill.role);
                     setErrorMsg('');
                   }}
-                  className={`py-1.5 px-2 rounded-lg text-[10px] font-semibold transition-all ${
+                  className={`py-2 px-1.5 rounded-lg text-[10px] font-bold transition-all ${
                     selectedRole === pill.role
-                      ? 'bg-sky-500 text-white shadow-md'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                      ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-md shadow-sky-500/25 border border-sky-400'
+                      : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-slate-800/80'
                   }`}
                 >
                   {pill.label}
@@ -90,13 +90,13 @@ export default function LoginPage() {
           {/* Login Form */}
           <form onSubmit={handleLogin} className="space-y-4">
             {errorMsg && (
-              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-300 text-xs">
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-300 text-xs font-semibold">
                 {errorMsg}
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5">
                 Email / NIM / NIP
               </label>
               <input
@@ -105,12 +105,12 @@ export default function LoginPage() {
                 value={emailOrNim}
                 onChange={(e) => setEmailOrNim(e.target.value)}
                 placeholder={`Masukkan ${selectedRole === 'mahasiswa' ? 'NIM / Email' : 'NIP / Email'}`}
-                className="w-full glass-input text-xs"
+                className="w-full glass-input"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1.5">
                 Kata Sandi (Password)
               </label>
               <input
@@ -119,11 +119,11 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full glass-input text-xs"
+                className="w-full glass-input"
               />
             </div>
 
-            <button type="submit" className="w-full glass-button text-xs py-3 mt-2 flex items-center justify-center gap-2">
+            <button type="submit" className="w-full glass-button text-xs py-3 mt-2 font-bold shadow-lg">
               <LogIn className="w-4 h-4" />
               <span>Masuk ke Sistem</span>
             </button>
@@ -131,10 +131,10 @@ export default function LoginPage() {
 
           {/* Public Survey Shortcut */}
           <div className="mt-6 pt-4 border-t border-slate-200 dark:border-white/10 text-center">
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2">Anda Pengguna Lulusan / Atasan Tempat Kerja Alumni?</p>
+            <p className="text-[11px] text-slate-600 dark:text-slate-400 mb-2 font-medium">Anda Pengguna Lulusan / Atasan Tempat Kerja Alumni?</p>
             <Link
               href="/kepuasan-pengguna"
-              className="w-full py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/10 dark:hover:bg-white/20 border border-slate-300 dark:border-white/15 text-xs font-medium text-sky-600 dark:text-sky-300 flex items-center justify-center gap-2 transition-all"
+              className="w-full py-2.5 px-3 rounded-xl bg-sky-50 hover:bg-sky-100 dark:bg-white/10 dark:hover:bg-white/20 border border-sky-200 dark:border-white/15 text-xs font-bold text-sky-700 dark:text-sky-300 flex items-center justify-center gap-2 transition-all shadow-sm"
             >
               <Smile className="w-4 h-4 text-amber-500" />
               <span>Kuesioner Kepuasan Pengguna (Bebas Login)</span>
@@ -145,7 +145,7 @@ export default function LoginPage() {
         </div>
       </main>
 
-      <footer className="relative z-10 border-t border-slate-200 dark:border-white/10 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md py-4 text-center text-xs text-slate-500 dark:text-slate-400">
+      <footer className="relative z-10 border-t border-slate-200/80 dark:border-white/10 bg-white/90 dark:bg-slate-950/80 backdrop-blur-md py-4 text-center text-xs text-slate-600 dark:text-slate-400 font-medium">
         &copy; 2026 SIAKAL V2 &bull; Politeknik Transportasi SDP Palembang
       </footer>
     </div>

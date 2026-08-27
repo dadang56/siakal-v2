@@ -4,13 +4,13 @@
 
 @layer base {
   body {
-    @apply bg-slate-100 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 antialiased selection:bg-sky-500 selection:text-white transition-colors duration-200 min-h-screen font-sans;
+    @apply bg-slate-50 dark:bg-[#080d1a] text-slate-900 dark:text-slate-100 antialiased selection:bg-sky-500 selection:text-white transition-colors duration-200 min-h-screen font-sans;
   }
 }
 
 /* Glassmorphism Liquid Glass Dual-Theme System */
 .glass-panel {
-  @apply bg-white/85 dark:bg-slate-900/75 border border-slate-200/80 dark:border-white/10 shadow-lg dark:shadow-2xl backdrop-blur-xl rounded-2xl transition-all duration-200 text-slate-900 dark:text-slate-100;
+  @apply bg-white/90 dark:bg-slate-900/80 border border-slate-200/80 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] backdrop-blur-xl rounded-2xl transition-all duration-200 text-slate-900 dark:text-slate-100;
 }
 
 .glass-button {
@@ -18,9 +18,10 @@
 }
 
 .glass-input {
-  @apply bg-white dark:bg-slate-900/80 border border-slate-300 dark:border-white/15 focus:border-sky-500 dark:focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-4 py-2.5 text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition-all duration-200 text-xs;
+  @apply bg-slate-50/80 dark:bg-slate-900/80 border border-slate-300 dark:border-white/15 focus:border-sky-500 dark:focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-4 py-2.5 text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition-all duration-200 text-xs font-medium;
 }
 
+/* Scrollbar Customization */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
