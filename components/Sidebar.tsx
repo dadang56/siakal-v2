@@ -60,79 +60,86 @@ export function Sidebar({ role, prodi }: SidebarProps) {
           items.push({ label: 'Bimbingan & Unggah TRB PDF', href: '/dashboard/prala/bimbingan', icon: Anchor });
         }
         if (isMTPD || !prodi) {
-          items.push({ label: 'Magang & PKL MTPD (4 Bulan)', href: '/dashboard/magang', icon: Briefcase });
+          items.push({ label: 'Status Ploting Magang MTPD', href: '/dashboard/magang', icon: Briefcase });
         }
         items.push({ label: 'Pengajuan Beasiswa', href: '/dashboard/beasiswa', icon: GraduationCap });
-        items.push({ label: 'Prestasi Akademik & Non-Akademik', href: '/dashboard/prestasi', icon: Trophy });
-        items.push({ label: 'Clearance Out (FM.AT.01.017-01)', href: '/dashboard/clearance-out/pengajuan', icon: FileCheck });
+        items.push({ label: 'Input Prestasi Mahasiswa', href: '/dashboard/prestasi', icon: Trophy });
+        items.push({ label: 'Surat Bebas Administrasi', href: '/dashboard/clearance-out/pengajuan', icon: FileCheck });
+        items.push({ label: 'Tracer Study Alumni', href: '/dashboard/tracer-study', icon: UserCheck });
         return items;
 
       case 'dosen':
         return [
           { label: 'Beranda Dosen', href: '/dashboard', icon: LayoutDashboard },
-          { label: 'Bimbingan & Reviu TRB PRALA', href: '/dashboard/prala/bimbingan', icon: Anchor },
+          { label: 'Bimbingan TRB PRALA', href: '/dashboard/prala/bimbingan', icon: Anchor },
+          { label: 'Clearance Out Verification', href: '/dashboard/clearance-out/approval', icon: FileCheck },
         ];
 
       case 'pembimbing_lapangan':
         return [
           { label: 'Beranda Pembimbing', href: '/dashboard', icon: LayoutDashboard },
-          { label: 'Verifikasi Laporan Akhir Magang', href: '/dashboard/pembimbing-lapangan', icon: Briefcase },
+          { label: 'Monitoring Magang MTPD', href: '/dashboard/pembimbing-lapangan', icon: Briefcase },
         ];
 
       case 'alumni':
         return [
           { label: 'Beranda Alumni', href: '/dashboard', icon: LayoutDashboard },
-          { label: 'Form Tracer Study Alumni', href: '/dashboard/tracer-study', icon: GraduationCap },
+          { label: 'Pengisian Tracer Study', href: '/dashboard/tracer-study', icon: UserCheck },
+          { label: 'Surat Bebas Administrasi', href: '/dashboard/clearance-out/pengajuan', icon: FileCheck },
         ];
 
       case 'unit_approver':
         return [
-          { label: 'Beranda Permit', href: '/dashboard', icon: LayoutDashboard },
-          { label: 'Pengaturan Profil NIP & TTD PNG', href: '/dashboard/profil-unit', icon: Settings },
-          { label: 'Portal Verifikasi Permit CO', href: '/dashboard/clearance-out/approval', icon: FileCheck },
+          { label: 'Beranda Unit Verifikator', href: '/dashboard', icon: LayoutDashboard },
+          { label: 'Persetujuan Clearance Out', href: '/dashboard/clearance-out/approval', icon: FileCheck },
+          { label: 'Profil & Spesimen TTD', href: '/dashboard/profil-unit', icon: Settings },
         ];
 
       default:
-        return [{ label: 'Beranda Utama', href: '/dashboard', icon: LayoutDashboard }];
+        return [{ label: 'Beranda', href: '/dashboard', icon: LayoutDashboard }];
     }
   };
 
   const navItems = getNavItems();
 
   return (
-    <aside className="hidden md:flex flex-col w-72 glass-panel bg-white/90 dark:bg-slate-900/80 border border-slate-200/90 dark:border-white/10 p-5 shrink-0 min-h-[calc(100vh-5.5rem)] shadow-sm">
-      <div className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-3 mb-4">
-        MENU NAVIGATION ({role.replace('_', ' ')})
-      </div>
-      <nav className="flex flex-col gap-1.5 flex-1 relative">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`relative flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-bold transition-colors duration-150 group ${
-                isActive
-                  ? 'text-sky-700 dark:text-sky-300 font-extrabold'
-                  : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
-              }`}
-            >
-              {/* Active Pill Layout Animation */}
-              {isActive && (
-                <motion.div
-                  layoutId="sidebarActivePill"
-                  className="absolute inset-0 bg-sky-500/15 dark:bg-sky-500/20 border border-sky-500/40 rounded-xl shadow-sm"
-                  transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-                />
-              )}
+    <aside className="w-72 hidden md:block shrink-0">
+      <div className="glass-panel p-4 sticky top-20 space-y-4 max-h-[calc(100vh-6rem)] overflow-y-auto">
+        <div className="px-3 py-2">
+          <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            Menu Navigation ({role.replace('_', ' ')})
+          </span>
+        </div>
 
-              <Icon className={`w-5 h-5 z-10 ${isActive ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-slate-200'}`} />
-              <span className="z-10">{item.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
+        <nav className="space-y-1">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            const Icon = item.icon;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-3.5 py-3 rounded-xl text-sm font-bold transition-all relative ${
+                  isActive
+                    ? 'text-sky-600 dark:text-sky-400 bg-sky-500/10 border border-sky-500/30 shadow-sm'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                }`}
+              >
+                <Icon className={`w-4.5 h-4.5 shrink-0 ${isActive ? 'text-sky-500' : 'text-slate-400'}`} />
+                <span className="truncate">{item.label}</span>
+                {isActive && (
+                  <motion.div
+                    layoutId="activeIndicator"
+                    className="absolute left-0 w-1 h-6 bg-sky-500 rounded-r-full"
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+      </div>
     </aside>
   );
 }

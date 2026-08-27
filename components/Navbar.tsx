@@ -12,9 +12,10 @@ interface NavbarProps {
     email?: string;
   };
   onLogout?: () => void;
+  hideThemeToggle?: boolean;
 }
 
-export function Navbar({ currentUser, onLogout }: NavbarProps) {
+export function Navbar({ currentUser, onLogout, hideThemeToggle = false }: NavbarProps) {
   const { theme, setTheme } = useTheme();
   const [customLogo, setCustomLogo] = useState<string>('');
 
@@ -40,7 +41,7 @@ export function Navbar({ currentUser, onLogout }: NavbarProps) {
   const userRole = currentUser?.role || 'User';
 
   return (
-    <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-white/90 dark:bg-slate-950/90 border-b border-slate-200/90 dark:border-white/10 shadow-sm dark:shadow-none transition-colors duration-200">
+    <header className="sticky top-0 z-40 w-full backdrop-blur-xl bg-slate-950/40 border-none shadow-none transition-colors duration-200">
       <div className="max-w-[1920px] mx-auto px-4 sm:px-8 lg:px-10 h-16 flex items-center justify-between">
         {/* Brand Logo & Name */}
         <Link href="/" className="flex items-center gap-3 group">
@@ -55,27 +56,29 @@ export function Navbar({ currentUser, onLogout }: NavbarProps) {
           )}
           <div className="flex flex-col">
             <span className="font-extrabold text-lg sm:text-xl tracking-wider text-slate-900 dark:text-slate-100 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
-              SIAKAL <span className="text-sky-600 dark:text-sky-400 text-xs font-bold px-2 py-0.5 rounded-full bg-sky-500/10 border border-sky-500/30">V2</span>
+              SIAKAL
             </span>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Ketarunaan & Alumni SDP Palembang</span>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">Ketarunaan & Alumni Poltektrans SDP Palembang</span>
           </div>
         </Link>
 
         {/* Right Section: Theme Switcher & User Profile */}
         <div className="flex items-center gap-4">
-          {/* Theme Switcher Toggle (Sun / Moon) */}
-          <button
-            type="button"
-            onClick={() => setTheme(isDark ? 'light' : 'dark')}
-            className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-white/15 text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-200/80 dark:hover:bg-slate-800 transition-all active:scale-95 shadow-sm cursor-pointer"
-            title="Ganti Mode Terang / Gelap"
-          >
-            {isDark ? (
-              <Sun className="w-5 h-5 text-amber-400" />
-            ) : (
-              <Moon className="w-5 h-5 text-slate-700" />
-            )}
-          </button>
+          {/* Theme Switcher Toggle (Sun / Moon) - Hidden on Landing Page if hideThemeToggle is true */}
+          {!hideThemeToggle && (
+            <button
+              type="button"
+              onClick={() => setTheme(isDark ? 'light' : 'dark')}
+              className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-white/15 text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-200/80 dark:hover:bg-slate-800 transition-all active:scale-95 shadow-sm cursor-pointer"
+              title="Ganti Mode Terang / Gelap"
+            >
+              {isDark ? (
+                <Sun className="w-5 h-5 text-amber-400" />
+              ) : (
+                <Moon className="w-5 h-5 text-slate-700" />
+              )}
+            </button>
+          )}
 
           {/* User Info / Profile */}
           {currentUser && currentUser.name && (
