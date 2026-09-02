@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Settings, Upload, Image as ImageIcon, CheckCircle2, Trash2, Plus, RefreshCw, AlertTriangle, Sparkles, Wand2 } from 'lucide-react';
+import { DEFAULT_POLTEKTRANS_LOGO, DEFAULT_BACKGROUND_SLIDES } from '@/lib/defaultBranding';
 
-function compressImage(file: File, maxWidth = 800, quality = 0.8): Promise<string> {
+// Optimized High-Compression Image Generator for LocalStorage Quota Safety
+function compressImage(file: File, maxWidth = 900, quality = 0.65, isLogo = false): Promise<string> {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -22,8 +24,12 @@ function compressImage(file: File, maxWidth = 800, quality = 0.8): Promise<strin
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx?.drawImage(img, 0, 0, width, height);
-        // Save background photo as PNG to prevent solid black fills
-        resolve(canvas.toDataURL('image/png'));
+
+        if (isLogo) {
+          resolve(canvas.toDataURL('image/png'));
+        } else {
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        }
       };
       img.onerror = () => resolve(e.target?.result as string);
       img.src = e.target?.result as string;
@@ -74,11 +80,8 @@ function makeLogoTransparent(imageSrc: string, threshold = 45): Promise<string> 
 }
 
 export default function AppSettingsPage() {
-  const [logoUrl, setLogoUrl] = useState('');
-  const [backgrounds, setBackgrounds] = useState<string[]>([
-    'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1920&q=80',
-    'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1920&q=80',
-  ]);
+  const [logoUrl, setLogoUrl] = useState<string>('');
+  const [backgrounds, setBackgrounds] = useState<string[]>(DEFAULT_BACKGROUND_SLIDES);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [isProcessingLogo, setIsProcessingLogo] = useState(false);
 
@@ -105,13 +108,25 @@ export default function AppSettingsPage() {
 
   const persistBranding = (newLogo: string, newBgs: string[]) => {
     try {
-      localStorage.setItem('siakal_custom_logo', newLogo);
-      localStorage.setItem('siakal_custom_backgrounds', JSON.stringify(newBgs));
+      if (newLogo && newLogo.trim().length > 0) {
+        localStorage.setItem('siakal_custom_logo', newLogo);
+      } else {
+        localStorage.removeItem('siakal_custom_logo');
+      }
+
+      if (newBgs && newBgs.length > 0) {
+        localStorage.setItem('siakal_custom_backgrounds', JSON.stringify(newBgs));
+      } else {
+        localStorage.removeItem('siakal_custom_backgrounds');
+      }
+
+      // Broadcast custom event so LandingSlider & Navbar update in real-time
       window.dispatchEvent(new Event('siakal_branding_updated'));
       setSavedSuccess(true);
-      setTimeout(() => setSavedSuccess(false), 3000);
+      setTimeout(() => setSavedSuccess(false), 3500);
     } catch (err) {
-      console.error('LocalStorage error:', err);
+      console.error('LocalStorage quota error:', err);
+      alert('Gagal menyimpan memori lokal browser. Foto otomatis diperkecil agar muat.');
     }
   };
 
@@ -126,7 +141,7 @@ export default function AppSettingsPage() {
 
     setIsProcessingLogo(true);
     try {
-      const rawCompressed = await compressImage(file, 400, 0.9);
+      const rawCompressed = await compressImage(file, 350, 0.9, true);
       // Auto-remove black background for clean transparent PNG
       const transparentLogo = await makeLogoTransparent(rawCompressed, 45);
       setLogoUrl(transparentLogo);
@@ -160,7 +175,8 @@ export default function AppSettingsPage() {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (file.type.startsWith('image/')) {
-        const compressed = await compressImage(file, 800, 0.8);
+        // Compress photo to lightweight ~40-60KB JPEG to fit in localStorage quota easily
+        const compressed = await compressImage(file, 900, 0.65, false);
         compressedList.push(compressed);
       }
     }
@@ -183,14 +199,12 @@ export default function AppSettingsPage() {
   const confirmResetToDefault = () => {
     localStorage.removeItem('siakal_custom_logo');
     localStorage.removeItem('siakal_custom_backgrounds');
-    const defaultBgs = [
-      'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1920&q=80',
-      'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1920&q=80',
-    ];
     setLogoUrl('');
-    setBackgrounds(defaultBgs);
+    setBackgrounds(DEFAULT_BACKGROUND_SLIDES);
     window.dispatchEvent(new Event('siakal_branding_updated'));
     setShowResetConfirmModal(false);
+    setSavedSuccess(true);
+    setTimeout(() => setSavedSuccess(false), 3000);
   };
 
   const handleSaveSettings = () => {
@@ -198,24 +212,22 @@ export default function AppSettingsPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      {/* Header Banner */}
-      <div className="glass-panel p-6 border-l-4 border-l-sky-500 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 max-w-5xl mx-auto pb-10">
+      {/* Top Banner Header */}
+      <div className="glass-panel p-6 border-l-4 border-l-sky-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-            <Settings className="w-6 h-6 text-sky-500 dark:text-sky-400" />
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+            <Settings className="w-6 h-6 text-sky-500" />
             <span>Pengaturan Branding & Landing Page Dinamis</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 font-medium">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 font-semibold">
             Unggah Logo Kampus resmi dan atur multi-foto latar belakang dari perangkat komputer Anda.
           </p>
         </div>
 
         <button
-          type="button"
           onClick={() => setShowResetConfirmModal(true)}
-          className="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:text-red-500 flex items-center gap-1.5 shrink-0 shadow-sm cursor-pointer"
-          title="Reset ke Standar"
+          className="px-4 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-red-500 font-bold text-xs flex items-center gap-2 border border-slate-300 dark:border-white/10 transition-colors shadow-sm shrink-0"
         >
           <RefreshCw className="w-4 h-4" />
           <span>Reset Defaults</span>
@@ -223,67 +235,71 @@ export default function AppSettingsPage() {
       </div>
 
       {savedSuccess && (
-        <div className="p-4 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 text-xs sm:text-sm font-bold text-center shadow-lg">
-          ✓ Pengaturan Logo & Multi-Foto Background Lokal Berhasil Disimpan!
+        <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs sm:text-sm font-extrabold flex items-center gap-2 shadow-lg">
+          <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+          <span>Perubahan Branding & Latar Belakang Berhasil Disimpan 100%!</span>
         </div>
       )}
 
-      {/* 1. UPLOAD LOGO KAMPUS DARI LOCAL FILE */}
+      {/* SECTION 1: UPLOAD LOGO KAMPUS */}
       <div className="glass-panel p-6 space-y-4">
-        <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-          <Upload className="w-4.5 h-4.5 text-sky-500 dark:text-sky-400" />
+        <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200 dark:border-white/10 pb-3">
+          <Upload className="w-5 h-5 text-sky-500" />
           <span>1. Upload Logo Kampus Resmi (File Lokal)</span>
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
-          <div className="sm:col-span-2">
-            <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+          <div className="md:col-span-8 space-y-3">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
               Pilih Gambar Logo dari Komputer (.PNG / .JPG / .SVG)
             </label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleLogoFileUpload}
-              className="hidden"
-              id="local-logo-input"
-            />
-            <label
-              htmlFor="local-logo-input"
-              className="glass-panel p-5 border-2 border-dashed border-sky-500/40 hover:border-sky-500 cursor-pointer flex flex-col items-center justify-center text-center transition-all bg-sky-500/5 hover:bg-sky-500/10 rounded-xl"
-            >
-              <Upload className="w-7 h-7 text-sky-500 dark:text-sky-400 mb-1.5" />
-              <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
-                {isProcessingLogo ? 'Memproses Logo Transparan...' : 'Klik untuk Upload File Logo Lokal'}
-              </span>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
-                Sistem otomatis membersihkan background hitam menjadi PNG transparan 100%
-              </span>
-            </label>
+
+            <div className="relative">
+              <input
+                type="file"
+                accept="image/png, image/jpeg, image/jpg, image/svg+xml"
+                onChange={handleLogoFileUpload}
+                className="hidden"
+                id="logo-upload-input"
+              />
+              <label
+                htmlFor="logo-upload-input"
+                className="flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-dashed border-sky-500/40 hover:border-sky-500 bg-slate-50 dark:bg-slate-900/50 hover:bg-sky-500/5 cursor-pointer transition-all text-center group"
+              >
+                <Upload className="w-8 h-8 text-sky-500 mb-2 group-hover:scale-110 transition-transform" />
+                <span className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">
+                  {isProcessingLogo ? 'Sedang Memproses & Membersihkan Background Logo...' : 'Klik untuk Upload File Logo Lokal'}
+                </span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-semibold">
+                  Sistem otomatis membersihkan background hitam menjadi PNG transparan 100%
+                </span>
+              </label>
+            </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/10 text-center space-y-3 flex flex-col items-center justify-center h-full">
-            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pratinjau Logo</span>
-            
-            {/* Transparent Checkerboard Pattern Background for Logo Preview */}
-            <div className="w-28 h-28 rounded-xl bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] dark:bg-[radial-gradient(#334155_1px,transparent_1px)] [background-size:12px_12px] bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-white/10 flex items-center justify-center p-2 shadow-inner relative overflow-hidden">
-              {logoUrl ? (
-                <img src={logoUrl} alt="Pratinjau Logo" className="max-h-full max-w-full object-contain drop-shadow-md" />
-              ) : (
-                <span className="text-xs text-slate-400 dark:text-slate-500 italic font-medium">Belum Ada Logo</span>
-              )}
+          {/* Logo Preview Card */}
+          <div className="md:col-span-4 flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-white/10 space-y-3 text-center">
+            <span className="text-xs font-extrabold uppercase text-slate-500 dark:text-slate-400 tracking-wider">
+              PRATINJAU LOGO
+            </span>
+            <div className="w-28 h-28 rounded-2xl bg-slate-200/60 dark:bg-slate-950 p-3 flex items-center justify-center border border-slate-300 dark:border-white/10 shadow-inner overflow-hidden">
+              <img
+                src={logoUrl || DEFAULT_POLTEKTRANS_LOGO}
+                alt="Logo Preview"
+                className="max-h-full max-w-full object-contain"
+              />
             </div>
 
             {logoUrl && (
-              <div className="space-y-1.5 w-full">
+              <div className="space-y-2 w-full">
                 <button
                   type="button"
                   onClick={handleCleanCurrentLogo}
                   disabled={isProcessingLogo}
-                  className="w-full py-1.5 px-2 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-extrabold border border-sky-500/30 flex items-center justify-center gap-1 transition-all cursor-pointer"
-                  title="Hapus background hitam yang menempel pada logo secara otomatis"
+                  className="w-full py-2 px-3 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-700 dark:text-sky-300 border border-sky-500/30 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Wand2 className="w-3.5 h-3.5 text-sky-500" />
-                  <span>{isProcessingLogo ? 'Memproses...' : '✨ Hilangkan Background Hitam'}</span>
+                  <span>✨ Hilangkan Background Hitam</span>
                 </button>
 
                 <button
@@ -292,7 +308,7 @@ export default function AppSettingsPage() {
                     setLogoUrl('');
                     persistBranding('', backgrounds);
                   }}
-                  className="text-xs text-red-500 hover:underline font-bold block mx-auto pt-1 cursor-pointer"
+                  className="text-xs text-red-500 hover:underline font-bold"
                 >
                   Hapus Logo
                 </button>
@@ -302,81 +318,86 @@ export default function AppSettingsPage() {
         </div>
       </div>
 
-      {/* 2. UPLOAD MULTI-FOTO BACKGROUND CAROUSEL DARI LOCAL FILE */}
+      {/* SECTION 2: CAROUSEL MULTI-FOTO BACKGROUND */}
       <div className="glass-panel p-6 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <ImageIcon className="w-4.5 h-4.5 text-amber-500 dark:text-amber-400" />
-              <span>2. Carousel Multi-Foto Background Fluid Landing Page</span>
-            </h3>
-          </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-white/10 pb-3">
+          <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            <ImageIcon className="w-5 h-5 text-amber-500" />
+            <span>2. Carousel Multi-Foto Background Fluid Landing Page</span>
+          </h3>
 
-          <div>
+          <div className="relative">
             <input
               type="file"
-              accept="image/*"
               multiple
+              accept="image/*"
               onChange={handleBgFilesUpload}
               className="hidden"
-              id="local-bg-files-input"
+              id="bg-upload-input"
             />
             <label
-              htmlFor="local-bg-files-input"
-              className="glass-button text-xs font-bold py-2.5 px-4 cursor-pointer inline-flex items-center gap-2 shadow-md"
+              htmlFor="bg-upload-input"
+              className="glass-button text-xs font-bold py-2.5 px-4 flex items-center gap-2 cursor-pointer shadow-md"
             >
-              <Plus className="w-4.5 h-4.5" />
-              <span>Upload Foto dari Komputer</span>
+              <Plus className="w-4 h-4" />
+              <span>+ Upload Foto dari Komputer</span>
             </label>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+        {/* Gallery Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
           {backgrounds.map((bg, idx) => (
             <div
               key={idx}
-              className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 group h-44 bg-slate-900 shadow-md"
+              className="group relative rounded-2xl overflow-hidden border border-slate-300 dark:border-white/15 bg-slate-950 aspect-video shadow-md"
             >
-              <img src={bg} alt={`Background Slide ${idx + 1}`} className="w-full h-full object-cover" />
+              <img src={bg} alt={`Slide ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               
-              <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                <button
-                  type="button"
-                  onClick={() => setDeleteSlideIndex(idx)}
-                  className="px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg cursor-pointer"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span>Hapus Slide Ini</span>
-                </button>
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-80" />
+              
+              <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-slate-950/70 backdrop-blur-md text-white text-[11px] font-extrabold">
+                Slide {idx + 1}
               </div>
 
-              <span className="absolute bottom-2 left-2 text-[10px] font-bold bg-slate-950/80 backdrop-blur-md px-2.5 py-0.5 rounded-full text-sky-400 border border-white/10">
-                Slide {idx + 1}
-              </span>
+              <button
+                type="button"
+                onClick={() => setDeleteSlideIndex(idx)}
+                className="absolute top-3 right-3 p-2 rounded-xl bg-red-600/90 text-white hover:bg-red-500 transition-all opacity-90 sm:opacity-0 group-hover:opacity-100 shadow-md cursor-pointer"
+                title="Hapus Slide Ini"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="flex justify-end pt-2">
-        <button onClick={handleSaveSettings} className="glass-button text-xs sm:text-sm font-bold flex items-center gap-2 py-3 px-6 shadow-xl cursor-pointer">
-          <CheckCircle2 className="w-4.5 h-4.5" />
+      {/* SAVE BUTTON */}
+      <div className="flex justify-end pt-4">
+        <button
+          type="button"
+          onClick={handleSaveSettings}
+          className="glass-button py-3.5 px-8 text-sm font-extrabold shadow-xl flex items-center gap-2"
+        >
+          <CheckCircle2 className="w-5 h-5" />
           <span>Simpan Perubahan Branding</span>
         </button>
       </div>
 
-      {/* POPUP MODAL KONFIRMASI HAPUS SLIDE FOTO */}
+      {/* CONFIRM DELETE SLIDE MODAL */}
       {deleteSlideIndex !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
-          <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-sm p-6 space-y-4 shadow-2xl border border-red-500/30 text-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+          <div className="glass-panel w-full max-w-sm p-6 text-center space-y-4 border border-slate-300 dark:border-white/20 shadow-2xl relative bg-white dark:bg-slate-950">
             <div className="w-12 h-12 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">
               <AlertTriangle className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Konfirmasi Hapus Slide Foto</h3>
-            <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
-              Apakah Anda yakin ingin menghapus Slide Foto Carousel ini? Foto tidak akan ditampilkan lagi di landing page.
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Hapus Slide Latar Belakang?</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 font-semibold">
+              Apakah Anda yakin ingin menghapus Slide #{deleteSlideIndex + 1} ini dari carousel landing page?
             </p>
-            <div className="flex justify-center gap-3 pt-2">
+
+            <div className="flex items-center justify-center gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setDeleteSlideIndex(null)}
@@ -384,30 +405,32 @@ export default function AppSettingsPage() {
               >
                 Batal
               </button>
+
               <button
                 type="button"
                 onClick={confirmRemoveBg}
-                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-lg"
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-md transition-all"
               >
-                Ya, Hapus Sekarang
+                Ya, Hapus Slide
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* POPUP MODAL KONFIRMASI RESET DEFAULTS */}
+      {/* CONFIRM RESET DEFAULT MODAL */}
       {showResetConfirmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
-          <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-sm p-6 space-y-4 shadow-2xl border border-amber-500/30 text-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+          <div className="glass-panel w-full max-w-sm p-6 text-center space-y-4 border border-slate-300 dark:border-white/20 shadow-2xl relative bg-white dark:bg-slate-950">
             <div className="w-12 h-12 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center mx-auto">
               <RefreshCw className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Konfirmasi Reset Pengaturan</h3>
-            <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
-              Apakah Anda yakin ingin mengembalikan logo & foto carousel ke pengaturan standar bawaan?
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Reset ke Branding Bawaan?</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 font-semibold">
+              Logo dan foto latar belakang custom akan dikembalikan ke pengaturan awal institusi Poltektrans SDP.
             </p>
-            <div className="flex justify-center gap-3 pt-2">
+
+            <div className="flex items-center justify-center gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setShowResetConfirmModal(false)}
@@ -415,17 +438,19 @@ export default function AppSettingsPage() {
               >
                 Batal
               </button>
+
               <button
                 type="button"
                 onClick={confirmResetToDefault}
-                className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-lg"
+                className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-md transition-all"
               >
-                Ya, Reset Sekarang
+                Ya, Reset Bawaan
               </button>
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }
