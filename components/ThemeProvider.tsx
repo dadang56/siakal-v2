@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'dark' | 'light';
+type Theme = 'light';
 
 interface ThemeContextType {
   theme: Theme;
@@ -10,43 +10,26 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: 'dark',
+  theme: 'light',
   setTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('dark');
+  const [theme] = useState<Theme>('light');
 
   useEffect(() => {
-    const saved = localStorage.getItem('siakal_theme') as Theme;
-    if (saved === 'light' || saved === 'dark') {
-      setThemeState(saved);
-      if (saved === 'dark') {
-        document.documentElement.classList.add('dark');
-        document.documentElement.classList.remove('light');
-      } else {
-        document.documentElement.classList.remove('dark');
-        document.documentElement.classList.add('light');
-      }
-    } else {
-      document.documentElement.classList.add('dark');
-    }
+    // Force Light Theme permanently - remove dark mode class from HTML root
+    document.documentElement.classList.remove('dark');
+    document.documentElement.classList.add('light');
+    try {
+      localStorage.setItem('siakal_theme', 'light');
+    } catch (e) {}
   }, []);
 
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
-    try {
-      localStorage.setItem('siakal_theme', newTheme);
-    } catch (err) {
-      console.error(err);
-    }
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
-    }
+  const setTheme = () => {
+    // Locked to Light Theme
+    document.documentElement.classList.remove('dark');
+    document.documentElement.classList.add('light');
   };
 
   return (

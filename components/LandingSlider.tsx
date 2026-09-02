@@ -49,15 +49,14 @@ export function LandingSlider() {
   }, [images]);
 
   const rawBg = images[currentIndex] || DEFAULT_BACKGROUND_SLIDES[0];
-  // Convert any Google Drive URL into a direct stream CDN link
   const activeBg = getGoogleDriveDirectLink(rawBg);
 
   return (
-    <div className="absolute inset-0 z-0 overflow-hidden bg-slate-950">
+    <div className="absolute inset-0 z-0 overflow-hidden bg-slate-100">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
-          initial={{ opacity: 0, scale: 1.03 }}
+          initial={{ opacity: 0, scale: 1.02 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1.2, ease: 'easeInOut' }}
@@ -66,17 +65,16 @@ export function LandingSlider() {
           <img
             src={activeBg}
             alt="Landing Page Background"
-            className="w-full h-full object-cover font-sans"
+            className="w-full h-full object-cover font-sans brightness-105 contrast-105"
             onError={(e) => {
-              // Fallback if image fails to load
               (e.target as HTMLImageElement).src = DEFAULT_BACKGROUND_SLIDES[0];
             }}
           />
         </motion.div>
       </AnimatePresence>
 
-      {/* Dimmed Dark Overlay (NO BLUR - Crystal Clear & Sharp Background Image) */}
-      <div className="absolute inset-0 bg-slate-950/50 bg-gradient-to-t from-slate-950 via-slate-950/55 to-slate-950/35 pointer-events-none" />
+      {/* Subtle Light Glass Overlay for High Contrast Readable Text without Darkening Photos */}
+      <div className="absolute inset-0 bg-white/20 bg-gradient-to-t from-slate-100/80 via-white/20 to-slate-900/10 pointer-events-none" />
 
       {/* Slider Indicators / Dots */}
       {images.length > 1 && (
@@ -85,8 +83,8 @@ export function LandingSlider() {
             <button
               key={idx}
               onClick={() => setCurrentIndex(idx)}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                idx === currentIndex ? 'w-8 bg-sky-400' : 'w-2 bg-white/30 hover:bg-white/60'
+              className={`h-2.5 rounded-full transition-all duration-300 ${
+                idx === currentIndex ? 'w-8 bg-sky-600 shadow-md' : 'w-2.5 bg-slate-800/40 hover:bg-slate-800/80'
               }`}
               title={`Foto ${idx + 1}`}
             />

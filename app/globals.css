@@ -4,21 +4,21 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 dark:bg-[#080d1a] text-slate-900 dark:text-slate-100 antialiased selection:bg-sky-500 selection:text-white transition-colors duration-200 min-h-screen font-sans text-sm sm:text-base;
+    @apply bg-slate-50 text-slate-900 antialiased selection:bg-sky-500 selection:text-white transition-colors duration-200 min-h-screen font-sans text-sm sm:text-base;
   }
 }
 
-/* Glassmorphism Liquid Glass Dual-Theme System */
+/* Glassmorphism Liquid Glass Pure Light Theme System */
 .glass-panel {
-  @apply bg-white/90 dark:bg-slate-900/80 border border-slate-200/80 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_10px_30px_rgba(0,0,0,0.5)] backdrop-blur-xl rounded-2xl transition-all duration-200 text-slate-900 dark:text-slate-100;
+  @apply bg-white/95 border border-slate-200/90 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-xl rounded-2xl transition-all duration-200 text-slate-900;
 }
 
 .glass-button {
-  @apply bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-bold px-5 py-3 rounded-xl shadow-md hover:shadow-sky-500/25 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer flex items-center justify-center gap-2 text-xs sm:text-sm;
+  @apply bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 text-white font-extrabold px-5 py-3 rounded-xl shadow-md hover:shadow-sky-500/25 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none cursor-pointer flex items-center justify-center gap-2 text-xs sm:text-sm;
 }
 
 .glass-input {
-  @apply bg-slate-50/80 dark:bg-slate-900/80 border border-slate-300 dark:border-white/15 focus:border-sky-500 dark:focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20 rounded-xl px-4 py-3 text-slate-900 dark:text-slate-100 placeholder-slate-400 outline-none transition-all duration-200 text-xs sm:text-sm font-medium;
+  @apply bg-slate-100/90 border border-slate-300 focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/20 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 outline-none transition-all duration-200 text-xs sm:text-sm font-semibold shadow-inner;
 }
 
 /* Scrollbar Customization */
@@ -30,5 +30,5 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 dark:bg-slate-800 rounded-full hover:bg-sky-500 transition-colors;
+  @apply bg-slate-300 rounded-full hover:bg-sky-500 transition-colors;
 }
