@@ -46,12 +46,6 @@ export default function AdminMahasiswaDatabasePage() {
     } catch (e) {}
   }, []);
 
-  // Generate Angkatan Years Range: 1950 to 3000
-  const yearRangeOptions: number[] = [];
-  for (let y = 3000; y >= 1950; y--) {
-    yearRangeOptions.push(y);
-  }
-
   const [searchQuery, setSearchQuery] = useState('');
   const [filterProdi, setFilterProdi] = useState('semua');
   const [filterAngkatan, setFilterAngkatan] = useState('semua');
@@ -138,7 +132,6 @@ export default function AdminMahasiswaDatabasePage() {
       angkatan: Number(angkatan) || 2026,
       isProfileCompleted: true,
       
-      // Extended 32 Biodata Items
       tempatLahir,
       tanggalLahir,
       jenisKelamin,
@@ -225,7 +218,6 @@ export default function AdminMahasiswaDatabasePage() {
         angkatan: Number(row['Angkatan']) || 2026,
         isProfileCompleted: true,
         
-        // Extended 32 Biodata Items
         tempatLahir: row['Tempat Lahir'] || '',
         tanggalLahir: row['Tanggal Lahir'] || '',
         jenisKelamin: row['Jenis Kelamin'] || 'Laki-laki',
@@ -311,7 +303,9 @@ export default function AdminMahasiswaDatabasePage() {
       (m.nim && m.nim.toLowerCase().includes(searchQuery.toLowerCase())) ||
       m.email.toLowerCase().includes(searchQuery.toLowerCase());
     const matchProdi = filterProdi === 'semua' || (m.prodi && m.prodi.toLowerCase().includes(filterProdi.toLowerCase()));
-    const matchAngkatan = filterAngkatan === 'semua' || (m.angkatan && m.angkatan.toString() === filterAngkatan);
+    const matchAngkatan =
+      filterAngkatan === 'semua' ||
+      (m.angkatan && m.angkatan.toString().includes(filterAngkatan.toLowerCase()));
     return matchSearch && matchProdi && matchAngkatan;
   });
 
@@ -325,7 +319,7 @@ export default function AdminMahasiswaDatabasePage() {
             <span>Pusat Database Mahasiswa (Biodata Lengkap 32-Item)</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 mt-1 font-semibold">
-            Kelola data mahasiswa, angkatan (1950-3000), prodi terintegrasi, dan impor Excel biodata lengkap.
+            Kelola data mahasiswa, pencarian angkatan cepat, prodi terintegrasi, dan impor Excel biodata lengkap.
           </p>
         </div>
 
@@ -348,7 +342,7 @@ export default function AdminMahasiswaDatabasePage() {
         </div>
       </div>
 
-      {/* 2. Dynamic Filter & Search Bar Card */}
+      {/* 2. Filter & Search Bar Card */}
       <div className="glass-panel p-4 rounded-2xl bg-white border border-slate-200/90 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative w-full sm:w-80">
           <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
@@ -362,7 +356,7 @@ export default function AdminMahasiswaDatabasePage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-          {/* DYNAMIC PRODI FILTER CONNECTED TO MASTER DATA PRODI */}
+          {/* DYNAMIC PRODI FILTER (TEXT: "Semua prodi") */}
           <div className="flex items-center gap-1.5 flex-1 sm:flex-none">
             <span className="text-xs font-bold text-slate-700 shrink-0">Prodi:</span>
             <select
@@ -370,7 +364,7 @@ export default function AdminMahasiswaDatabasePage() {
               onChange={(e) => setFilterProdi(e.target.value)}
               className="glass-input text-xs font-bold py-2 px-3 rounded-xl bg-slate-100/90 border-slate-300 text-slate-900 w-full"
             >
-              <option value="semua">Semua Prodi Tersimpan</option>
+              <option value="semua">Semua prodi</option>
               {prodiList.map((p) => (
                 <option key={p.id} value={p.nama}>
                   {p.jenjang === 'Diploma III' ? 'D3' : 'D4'} {p.nama}
@@ -379,21 +373,27 @@ export default function AdminMahasiswaDatabasePage() {
             </select>
           </div>
 
-          {/* DYNAMIC ANGKATAN FILTER (1950 - 3000) */}
+          {/* SEARCHABLE ANGKATAN INPUT FILTER (NO MASSIVE SCROLL DROPDOWN) */}
           <div className="flex items-center gap-1.5 flex-1 sm:flex-none">
             <span className="text-xs font-bold text-slate-700 shrink-0">Angkatan:</span>
-            <select
-              value={filterAngkatan}
-              onChange={(e) => setFilterAngkatan(e.target.value)}
-              className="glass-input text-xs font-bold py-2 px-3 rounded-xl bg-slate-100/90 border-slate-300 text-slate-900 w-full max-h-48"
-            >
-              <option value="semua">Semua Angkatan (1950-3000)</option>
-              {yearRangeOptions.map((y) => (
-                <option key={y} value={y.toString()}>
-                  Tahun {y}
-                </option>
-              ))}
-            </select>
+            <div className="relative flex items-center">
+              <input
+                type="text"
+                value={filterAngkatan === 'semua' ? '' : filterAngkatan}
+                onChange={(e) => setFilterAngkatan(e.target.value.trim() === '' ? 'semua' : e.target.value)}
+                placeholder="Cari tahun (1950-3000)..."
+                className="glass-input text-xs font-semibold py-2 px-3 rounded-xl bg-slate-100/90 border-slate-300 text-slate-900 w-44"
+              />
+              {filterAngkatan !== 'semua' && (
+                <button
+                  onClick={() => setFilterAngkatan('semua')}
+                  className="absolute right-2.5 text-xs font-bold text-slate-400 hover:text-red-500"
+                  title="Reset Filter Angkatan"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -659,24 +659,19 @@ export default function AdminMahasiswaDatabasePage() {
                   />
                 </div>
 
-                {/* DYNAMIC ANGKATAN SELECT 1950 - 3000 */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Angkatan (1950-3000) *</label>
-                  <select
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Tahun Angkatan *</label>
+                  <input
+                    type="number"
+                    required
                     value={angkatan}
                     onChange={(e) => setAngkatan(e.target.value)}
-                    className="w-full glass-input text-xs font-semibold"
-                  >
-                    {yearRangeOptions.map((y) => (
-                      <option key={y} value={y.toString()}>
-                        Tahun {y}
-                      </option>
-                    ))}
-                  </select>
+                    placeholder="Contoh: 2026"
+                    className="w-full glass-input text-xs font-mono"
+                  />
                 </div>
               </div>
 
-              {/* DYNAMIC PRODI SELECT CONNECTED TO MASTER DATA */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Program Studi *</label>
                 <select
@@ -758,18 +753,14 @@ export default function AdminMahasiswaDatabasePage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Angkatan (1950-3000) *</label>
-                  <select
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Tahun Angkatan *</label>
+                  <input
+                    type="number"
+                    required
                     value={editingMhs.angkatan || 2026}
                     onChange={(e) => setEditingMhs({ ...editingMhs, angkatan: Number(e.target.value) })}
-                    className="w-full glass-input text-xs font-semibold"
-                  >
-                    {yearRangeOptions.map((y) => (
-                      <option key={y} value={y.toString()}>
-                        Tahun {y}
-                      </option>
-                    ))}
-                  </select>
+                    className="w-full glass-input text-xs font-mono"
+                  />
                 </div>
               </div>
 
