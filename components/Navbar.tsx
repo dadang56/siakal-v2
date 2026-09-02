@@ -93,25 +93,28 @@ export function Navbar({ currentUser, onLogout }: NavbarProps) {
           </div>
         </Link>
 
-        {/* Right Section: User Profile & Actions */}
+        {/* Right Section: User Profile & Prominent Red Logout Button */}
         <div className="flex items-center gap-2 sm:gap-4 shrink-0">
           {currentUser && currentUser.name && (
-            <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-white/20">
+            <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-slate-300">
               <div className="hidden sm:flex flex-col text-right">
-                <span className="text-sm font-bold text-white drop-shadow-sm">{userName}</span>
-                <span className="text-xs text-sky-300 capitalize font-bold">{userRole.replace('_', ' ')}</span>
+                <span className={`text-xs sm:text-sm font-black leading-tight ${isPublicPage ? 'text-white drop-shadow-sm' : 'text-slate-900'}`}>{userName}</span>
+                <span className={`text-[10px] sm:text-xs font-extrabold capitalize leading-tight ${isPublicPage ? 'text-sky-300' : 'text-sky-600'}`}>{userRole.replace('_', ' ')}</span>
               </div>
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 flex items-center justify-center text-white font-bold text-sm sm:text-base shadow-md shrink-0">
+
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center text-white font-black text-xs sm:text-base shadow-md shrink-0">
                 {userName.charAt(0).toUpperCase()}
               </div>
+
               {onLogout && (
                 <button
                   type="button"
                   onClick={onLogout}
-                  className="p-1.5 sm:p-2 rounded-xl text-white/80 hover:text-red-400 hover:bg-white/10 transition-colors cursor-pointer"
-                  title="Keluar"
+                  className="px-2.5 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-extrabold text-xs flex items-center gap-1.5 transition-all shadow-sm cursor-pointer active:scale-95 shrink-0"
+                  title="Keluar dari Sistem (Logout)"
                 >
-                  <LogOut className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+                  <LogOut className="w-4 h-4 text-red-600 shrink-0" />
+                  <span className="hidden sm:inline">Keluar</span>
                 </button>
               )}
             </div>

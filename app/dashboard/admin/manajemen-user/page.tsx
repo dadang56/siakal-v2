@@ -6,7 +6,6 @@ import { initialAccounts, UserAccount } from '@/lib/mockStore';
 import { readExcelFile, downloadUserImportTemplate, exportToExcel } from '@/lib/utils/excel';
 
 export default function AdminUserManagementPage() {
-  // Synchronous State Initializer to prevent split-second flash on refresh
   const [users, setUsers] = useState<UserAccount[]>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -138,25 +137,15 @@ export default function AdminUserManagementPage() {
     saveUsers(updated);
     setShowAddModal(false);
     setNewFullName('');
-    setNewEmail('');
     setNewUsernameOrId('');
-    setNewPassword('SIAKAL2026!');
+    setNewEmail('');
   };
 
   const handleSaveEditUser = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUser) return;
 
-    const isMhsOrAlumni = editingUser.role === 'mahasiswa' || editingUser.role === 'alumni';
-
-    const updatedUser = {
-      ...editingUser,
-      nim: editingUser.role === 'mahasiswa' ? editingUser.usernameOrId : editingUser.nim,
-      nip: editingUser.role === 'dosen' ? editingUser.usernameOrId : editingUser.nip,
-      prodi: isMhsOrAlumni ? (editingUser.prodi || 'Studi Nautika') : undefined,
-    };
-
-    const updatedList = users.map((u) => (u.id === updatedUser.id ? updatedUser : u));
+    const updatedList = users.map((u) => (u.id === editingUser.id ? editingUser : u));
     saveUsers(updatedList);
     setEditingUser(null);
   };
@@ -165,18 +154,18 @@ export default function AdminUserManagementPage() {
     exportToExcel(
       [
         {
-          sheetName: 'Database User SIAKAL',
+          sheetName: 'Manajemen User',
           data: filteredUsers.map((u) => ({
+            'ID Masuk (NIM/NIP)': u.usernameOrId || u.nim || u.nip || u.email,
             'Nama Lengkap': u.fullName,
             Email: u.email,
-            Role: u.role,
-            'Username / ID Masuk': u.usernameOrId || u.nim || u.nip || u.email,
-            'Password Awal': u.initialPassword || 'SIAKAL2026!',
-            Prodi: u.prodi || '-',
+            Role: u.role.toUpperCase(),
+            'Password Initial': u.initialPassword || 'SIAKAL2026!',
+            'Program Studi / Unit': u.prodi || '-',
           })),
         },
       ],
-      'Database_User_SIAKAL'
+      'Manajemen_User_SIAKAL'
     );
   };
 
@@ -192,34 +181,34 @@ export default function AdminUserManagementPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner Header */}
-      <div className="glass-panel p-6 border-l-4 border-l-sky-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      {/* 1. Header Banner Card */}
+      <div className="glass-panel p-6 border-l-4 border-l-sky-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm bg-white rounded-2xl">
         <div>
-          <h1 className="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-            <Users className="w-6 h-6 text-sky-500 dark:text-sky-400" />
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2.5">
+            <Users className="w-6 h-6 text-sky-500 shrink-0" />
             <span>Manajemen User & Hak Akses</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 font-semibold">
+          <p className="text-xs sm:text-sm text-slate-600 mt-1 font-semibold">
             Kelola akun pengguna, ID Masuk (NIM/NIP), dan kata sandi login sistem.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <label className="px-4 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:text-sky-600 font-bold text-xs sm:text-sm flex items-center gap-2 shadow-sm border border-slate-300 dark:border-white/10 cursor-pointer">
-            <Upload className="w-4 h-4" />
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs sm:text-sm flex items-center gap-2 border border-slate-300 shadow-sm cursor-pointer transition-all">
+            <Upload className="w-4 h-4 text-slate-600" />
             <span>Impor Excel</span>
             <input type="file" accept=".xlsx,.xls" onChange={handleExcelFileUpload} className="hidden" />
           </label>
 
-          <button onClick={() => setShowAddModal(true)} className="glass-button text-xs sm:text-sm font-bold flex items-center gap-2 py-2.5 px-4 shadow-lg">
+          <button onClick={() => setShowAddModal(true)} className="glass-button text-xs sm:text-sm font-extrabold flex items-center gap-2 py-2.5 px-4 shadow-md cursor-pointer">
             <Plus className="w-4 h-4" />
-            <span>Tambah User</span>
+            <span>+ Tambah User</span>
           </button>
         </div>
       </div>
 
-      {/* Filter & Search Bar */}
-      <div className="glass-panel p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      {/* 2. Filter & Search Bar Card */}
+      <div className="glass-panel p-4 rounded-2xl bg-white border border-slate-200/90 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="relative w-full sm:w-80">
           <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
           <input
@@ -227,16 +216,16 @@ export default function AdminUserManagementPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari nama, ID masuk, email..."
-            className="w-full glass-input pl-10 text-xs sm:text-sm"
+            className="w-full glass-input pl-10 text-xs sm:text-sm font-semibold text-slate-900 bg-slate-100/90 border-slate-300"
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">Filter Role:</span>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <span className="text-xs font-bold text-slate-700 shrink-0">Filter Role:</span>
           <select
             value={filterRole}
             onChange={(e) => setFilterRole(e.target.value)}
-            className="glass-input text-xs"
+            className="glass-input text-xs font-bold py-2 px-3 rounded-xl bg-slate-100/90 border-slate-300 text-slate-900"
           >
             <option value="semua">Semua Role</option>
             <option value="admin">Admin</option>
@@ -247,429 +236,248 @@ export default function AdminUserManagementPage() {
             <option value="unit_approver">Unit Approver</option>
           </select>
 
-          <button onClick={handleExportUsers} className="px-3.5 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs shrink-0 flex items-center gap-1.5 border border-slate-300 dark:border-white/10">
-            <Download className="w-3.5 h-3.5" />
+          <button onClick={handleExportUsers} className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs shrink-0 flex items-center gap-1.5 border border-slate-300 shadow-sm transition-all cursor-pointer">
+            <Download className="w-3.5 h-3.5 text-slate-600" />
             <span>Ekspor .XLSX</span>
           </button>
         </div>
       </div>
 
-      {/* Table List User */}
-      <div className="glass-panel p-6 overflow-hidden">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
+      {/* 3. Table List User Card */}
+      <div className="glass-panel p-6 rounded-2xl bg-white border border-slate-200/90 shadow-sm overflow-hidden space-y-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <h3 className="text-base font-black text-slate-900 tracking-wide">
             Daftar Akun Terdaftar ({filteredUsers.length} Users)
           </h3>
-          <button onClick={handleDownloadTemplate} className="text-xs text-sky-600 dark:text-sky-400 font-bold hover:underline flex items-center gap-1">
-            <FileSpreadsheet className="w-3.5 h-3.5" />
+          <button
+            onClick={handleDownloadTemplate}
+            className="text-xs font-extrabold text-sky-600 hover:underline flex items-center gap-1.5"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-sky-500" />
             <span>Download Template Excel Impor</span>
           </button>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-xl border border-slate-200">
           <table className="w-full text-left text-xs sm:text-sm border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-extrabold uppercase tracking-wider">
-                <th className="pb-3 px-4">Nama Lengkap & Email</th>
-                <th className="pb-3 px-4">Role</th>
-                <th className="pb-3 px-4">ID Masuk</th>
-                <th className="pb-3 px-4">Kata Sandi</th>
-                <th className="pb-3 px-4">Prodi / Unit</th>
-                <th className="pb-3 px-4 text-right">Aksi</th>
+              <tr className="bg-slate-100/90 text-slate-700 font-extrabold uppercase text-xs tracking-wider border-b border-slate-200">
+                <th className="py-3 px-4">NAMA LENGKAP & EMAIL</th>
+                <th className="py-3 px-4">ROLE</th>
+                <th className="py-3 px-4">ID MASUK</th>
+                <th className="py-3 px-4">KATA SANDI</th>
+                <th className="py-3 px-4">PRODI / UNIT</th>
+                <th className="py-3 px-4 text-center">AKSI</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
-              {filteredUsers.map((u) => {
-                const loginId = u.usernameOrId || u.nim || u.nip || u.email;
-                const pwd = u.initialPassword || 'SIAKAL2026!';
-                const isPwdShown = visiblePasswords[u.id];
+            <tbody className="divide-y divide-slate-100 font-semibold text-slate-800">
+              {filteredUsers.length > 0 ? (
+                filteredUsers.map((u) => {
+                  const loginId = u.usernameOrId || u.nim || u.nip || u.email;
+                  const isPassVisible = visiblePasswords[u.id];
 
-                return (
-                  <tr key={u.id} className="hover:bg-slate-100/80 dark:hover:bg-slate-800/50 transition-colors">
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      <div className="font-extrabold text-slate-900 dark:text-white text-sm">{u.fullName}</div>
-                      <div className="text-xs text-slate-500 font-mono font-medium">{u.email}</div>
-                    </td>
+                  return (
+                    <tr key={u.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-3.5 px-4">
+                        <div className="font-black text-slate-900">{u.fullName}</div>
+                        <div className="text-[11px] text-slate-500 font-mono">{u.email}</div>
+                      </td>
 
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-extrabold uppercase tracking-wider bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/30 inline-block">
-                        {u.role.replace('_', ' ')}
-                      </span>
-                    </td>
-
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      <span className="font-mono font-extrabold text-sky-600 dark:text-sky-400 bg-sky-500/10 px-2.5 py-1 rounded-lg border border-sky-500/20 text-xs inline-block">
-                        {loginId}
-                      </span>
-                    </td>
-
-                    <td className="py-4 px-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-300 dark:border-white/10 text-xs min-w-[90px] text-center inline-block">
-                          {isPwdShown ? pwd : '••••••••'}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => togglePasswordVisibility(u.id)}
-                          className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                          title="Lihat Password"
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
+                            u.role === 'admin'
+                              ? 'bg-sky-500/10 text-sky-700 border border-sky-500/20'
+                              : u.role === 'mahasiswa'
+                              ? 'bg-blue-500/10 text-blue-700 border border-blue-500/20'
+                              : u.role === 'dosen'
+                              ? 'bg-indigo-500/10 text-indigo-700 border border-indigo-500/20'
+                              : u.role === 'alumni'
+                              ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20'
+                              : 'bg-amber-500/10 text-amber-700 border border-amber-500/20'
+                          }`}
                         >
-                          {isPwdShown ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </td>
+                          {u.role.replace('_', ' ')}
+                        </span>
+                      </td>
 
-                    <td className="py-4 px-4 whitespace-nowrap text-slate-700 dark:text-slate-300 font-semibold">
-                      {u.prodi || u.namaLengkapGelar || '-'}
-                    </td>
+                      <td className="py-3.5 px-4 font-mono font-extrabold text-sky-700">
+                        <span className="bg-sky-50 px-2.5 py-1 rounded-lg border border-sky-200">
+                          {loginId}
+                        </span>
+                      </td>
 
-                    <td className="py-4 px-4 whitespace-nowrap text-right space-x-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setEditingUser({ ...u })}
-                        className="p-2 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-sky-400 transition-colors inline-flex items-center border border-sky-500/20"
-                        title="Edit Data User & Password"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
+                      <td className="py-3.5 px-4 font-mono">
+                        <div className="flex items-center gap-1.5">
+                          <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-xs font-bold">
+                            {isPassVisible ? u.initialPassword || 'SIAKAL2026!' : '••••••••'}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => togglePasswordVisibility(u.id)}
+                            className="p-1 rounded text-slate-400 hover:text-slate-600"
+                            title={isPassVisible ? 'Sembunyikan Password' : 'Lihat Password'}
+                          >
+                            {isPassVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          </button>
+                        </div>
+                      </td>
 
-                      <button
-                        type="button"
-                        onClick={() => handleCopyCredentials(u)}
-                        className="p-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-colors inline-flex items-center"
-                        title="Salin ID Masuk & Password"
-                      >
-                        {copiedId === u.id ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                      </button>
+                      <td className="py-3.5 px-4 font-bold text-slate-700">{u.prodi || '-'}</td>
 
-                      <button
-                        type="button"
-                        onClick={() => setDeleteTargetId(u.id)}
-                        className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors inline-flex items-center"
-                        title="Hapus Akun Pengguna"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                      <td className="py-3.5 px-4 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            onClick={() => setEditingUser({ ...u })}
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-sky-500/10 transition-colors"
+                            title="Edit Akun User"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            onClick={() => handleCopyCredentials(u)}
+                            className={`p-1.5 rounded-lg transition-colors ${
+                              copiedId === u.id
+                                ? 'text-emerald-600 bg-emerald-500/20'
+                                : 'text-slate-500 hover:text-sky-600 hover:bg-sky-500/10'
+                            }`}
+                            title="Salin ID & Password"
+                          >
+                            {copiedId === u.id ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                          </button>
+
+                          <button
+                            onClick={() => setDeleteTargetId(u.id)}
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-500/10 transition-colors"
+                            title="Hapus Akun User"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-slate-500 font-semibold text-xs">
+                    Tidak ditemukan akun pengguna yang sesuai dengan kriteria filter.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* MODAL EDIT USER */}
-      {editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
-          <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-lg p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-white/20">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Edit3 className="w-5 h-5 text-sky-500" />
-                <span>Edit Akun Pengguna & Password</span>
-              </h3>
-            </div>
-
-            <form onSubmit={handleSaveEditUser} className="space-y-3.5 text-xs sm:text-sm">
-              <div>
-                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Nama Lengkap Pengguna</label>
-                <input
-                  type="text"
-                  required
-                  value={editingUser.fullName}
-                  onChange={(e) => setEditingUser({ ...editingUser, fullName: e.target.value })}
-                  className="w-full glass-input font-bold"
-                />
-              </div>
-
-              {/* CONDITIONAL SHOW PRODI FIELD ONLY FOR MAHASISWA & ALUMNI */}
-              {editingUser.role === 'mahasiswa' || editingUser.role === 'alumni' ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Peran (Role Akun)</label>
-                    <select
-                      value={editingUser.role}
-                      onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as any })}
-                      className="w-full glass-input font-bold"
-                    >
-                      <option value="mahasiswa">Mahasiswa</option>
-                      <option value="dosen">Dosen</option>
-                      <option value="pembimbing_lapangan">Pembimbing Lapangan</option>
-                      <option value="alumni">Alumni</option>
-                      <option value="unit_approver">Unit Approver</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Program Studi</label>
-                    <select
-                      value={editingUser.prodi || 'Studi Nautika'}
-                      onChange={(e) => setEditingUser({ ...editingUser, prodi: e.target.value })}
-                      className="w-full glass-input font-semibold"
-                    >
-                      <option value="Studi Nautika">Studi Nautika</option>
-                      <option value="Permesinan Kapal">Permesinan Kapal</option>
-                      <option value="Manajemen Transportasi Perairan Daratan">MTPD</option>
-                      <option value="Teknologi Rekayasa Pelayaran & TSDP">TSDP</option>
-                    </select>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Peran (Role Akun)</label>
-                  <select
-                    value={editingUser.role}
-                    onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as any })}
-                    className="w-full glass-input font-bold"
-                  >
-                    <option value="mahasiswa">Mahasiswa</option>
-                    <option value="dosen">Dosen</option>
-                    <option value="pembimbing_lapangan">Pembimbing Lapangan</option>
-                    <option value="alumni">Alumni</option>
-                    <option value="unit_approver">Unit Approver</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </div>
-              )}
-
-              <div className="p-4 rounded-xl bg-sky-500/10 border border-sky-500/30 space-y-3">
-                <div className="font-extrabold text-sky-700 dark:text-sky-300 text-xs flex items-center gap-1.5">
-                  <Key className="w-4 h-4" />
-                  <span>Kredensial Log In (ID & Password Akun)</span>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
-                    {editingUser.role === 'mahasiswa' ? 'NIM (ID Log In)' : editingUser.role === 'dosen' ? 'NIP (ID Log In)' : 'Username / ID Masuk'}
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={editingUser.usernameOrId || editingUser.nim || editingUser.nip || ''}
-                    onChange={(e) => setEditingUser({ ...editingUser, usernameOrId: e.target.value })}
-                    className="w-full glass-input font-mono font-bold"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Kata Sandi (Password)</label>
-                  <input
-                    type="text"
-                    required
-                    value={editingUser.initialPassword || 'SIAKAL2026!'}
-                    onChange={(e) => setEditingUser({ ...editingUser, initialPassword: e.target.value })}
-                    className="w-full glass-input font-mono font-bold"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Email Official</label>
-                <input
-                  type="email"
-                  required
-                  value={editingUser.email}
-                  onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
-                  className="w-full glass-input font-medium"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setEditingUser(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs"
-                >
-                  Batal
-                </button>
-                <button type="submit" className="glass-button text-xs sm:text-sm font-bold">
-                  Simpan Perubahan Akun
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Import Excel Preview */}
-      {showImportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
-          <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-3xl max-h-[85vh] flex flex-col p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-white/20">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-              <span>Pratinjau Impor Excel ({importedPreview.length} Baris Data)</span>
-            </h3>
-
-            <div className="flex-1 overflow-y-auto border border-slate-200 dark:border-white/10 rounded-xl p-3 bg-slate-50 dark:bg-slate-950">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-slate-200 dark:border-white/10 font-bold text-slate-700 dark:text-slate-300">
-                    <th className="p-2">Nama</th>
-                    <th className="p-2">Email</th>
-                    <th className="p-2">Role</th>
-                    <th className="p-2">ID Masuk</th>
-                    <th className="p-2">Password Initial</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-white/5">
-                  {importedPreview.map((row, idx) => (
-                    <tr key={idx}>
-                      <td className="p-2 font-bold text-slate-900 dark:text-white">{row['Nama Lengkap']}</td>
-                      <td className="p-2 text-slate-700 dark:text-slate-300">{row['Email']}</td>
-                      <td className="p-2 text-sky-600 font-semibold">{row['Role']}</td>
-                      <td className="p-2 font-mono font-bold text-amber-500">{row['Username/NIM/NIP'] || '-'}</td>
-                      <td className="p-2 font-mono font-bold text-slate-600 dark:text-slate-300">{row['Password Initial'] || 'SIAKAL2026!'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-2">
-              <button
-                onClick={() => setShowImportModal(false)}
-                className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs"
-              >
-                Batal
-              </button>
-              <button onClick={handleConfirmBatchImport} className="glass-button text-xs font-bold">
-                Konfirmasi & Buat {importedPreview.length} Akun Sekarang
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Single Add User */}
+      {/* MODAL TAMBAH USER SINGLE */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
-          <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-lg p-6 space-y-4 shadow-2xl border border-slate-200 dark:border-white/20">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3">
-              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Key className="w-5 h-5 text-sky-500" />
-                <span>Tambah User Baru & Password</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+          <div className="glass-panel w-full max-w-lg p-6 space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                <Plus className="w-5 h-5 text-sky-500" />
+                <span>Tambah Akun User Baru</span>
               </h3>
+              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 font-bold">
+                ✕
+              </button>
             </div>
 
-            <form onSubmit={handleAddSingleUser} className="space-y-3.5 text-xs sm:text-sm">
+            <form onSubmit={handleAddSingleUser} className="space-y-3.5">
               <div>
-                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Nama Lengkap Pengguna</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap *</label>
                 <input
                   type="text"
                   required
                   value={newFullName}
                   onChange={(e) => setNewFullName(e.target.value)}
-                  placeholder="Contoh: Capt. Ahmad Subarjo, M.Mar."
-                  className="w-full glass-input"
+                  placeholder="Contoh: Capt. Budi Santoso"
+                  className="w-full glass-input text-xs sm:text-sm font-semibold"
                 />
               </div>
 
-              {/* CONDITIONAL SHOW PRODI FIELD ONLY FOR MAHASISWA & ALUMNI */}
-              {newRole === 'mahasiswa' || newRole === 'alumni' ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Peran (Role Akun)</label>
-                    <select
-                      value={newRole}
-                      onChange={(e) => setNewRole(e.target.value as any)}
-                      className="w-full glass-input font-bold"
-                    >
-                      <option value="mahasiswa">Mahasiswa</option>
-                      <option value="dosen">Dosen</option>
-                      <option value="pembimbing_lapangan">Pembimbing Lapangan</option>
-                      <option value="alumni">Alumni</option>
-                      <option value="unit_approver">Unit Approver</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Program Studi</label>
-                    <select
-                      value={newProdi}
-                      onChange={(e) => setNewProdi(e.target.value)}
-                      className="w-full glass-input font-semibold"
-                    >
-                      <option value="Studi Nautika">Studi Nautika</option>
-                      <option value="Permesinan Kapal">Permesinan Kapal</option>
-                      <option value="Manajemen Transportasi Perairan Daratan">MTPD</option>
-                      <option value="Teknologi Rekayasa Pelayaran & TSDP">TSDP</option>
-                    </select>
-                  </div>
-                </div>
-              ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Peran (Role Akun)</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Role Akun *</label>
                   <select
                     value={newRole}
                     onChange={(e) => setNewRole(e.target.value as any)}
-                    className="w-full glass-input font-bold"
+                    className="w-full glass-input text-xs font-semibold"
                   >
+                    <option value="admin">Administrator</option>
                     <option value="mahasiswa">Mahasiswa</option>
-                    <option value="dosen">Dosen</option>
+                    <option value="dosen">Dosen Pembimbing</option>
                     <option value="pembimbing_lapangan">Pembimbing Lapangan</option>
                     <option value="alumni">Alumni</option>
                     <option value="unit_approver">Unit Approver</option>
-                    <option value="admin">Admin</option>
                   </select>
-                </div>
-              )}
-
-              <div className="p-4 rounded-xl bg-sky-500/10 border border-sky-500/30 space-y-3">
-                <div className="font-extrabold text-sky-700 dark:text-sky-300 text-xs flex items-center gap-1.5">
-                  <Key className="w-4 h-4" />
-                  <span>Kredensial Log In (ID & Password Akun)</span>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">
-                    {newRole === 'mahasiswa' ? 'NIM (ID Log In)' : newRole === 'dosen' ? 'NIP (ID Log In)' : 'Username / ID Masuk'}
-                  </label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">ID Masuk (Username/NIM/NIP) *</label>
                   <input
                     type="text"
                     required
                     value={newUsernameOrId}
                     onChange={(e) => setNewUsernameOrId(e.target.value)}
-                    placeholder={newRole === 'mahasiswa' ? 'Masukkan NIM (cth: 2101034)' : newRole === 'dosen' ? 'Masukkan NIP (cth: 19850315...)' : 'Username (cth: supervisor_pelni)'}
-                    className="w-full glass-input font-mono font-bold"
+                    placeholder="Contoh: 198503152010121002"
+                    className="w-full glass-input text-xs font-mono"
                   />
                 </div>
+              </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Kata Sandi Awal (Password Initial)</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Password Initial *</label>
                   <input
                     type="text"
                     required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="SIAKAL2026!"
-                    className="w-full glass-input font-mono font-bold"
+                    className="w-full glass-input text-xs font-mono"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Program Studi / Unit</label>
+                  <select
+                    value={newProdi}
+                    onChange={(e) => setNewProdi(e.target.value)}
+                    className="w-full glass-input text-xs font-semibold"
+                  >
+                    <option value="Studi Nautika">D3 Studi Nautika</option>
+                    <option value="Permesinan Kapal">D3 Permesinan Kapal</option>
+                    <option value="Manajemen Transportasi Perairan Daratan">D3 MTPD</option>
+                    <option value="Teknologi Rekayasa Pelayaran & TSDP">D4 TSDP</option>
+                    <option value="Unit Perpustakaan">Unit Perpustakaan</option>
+                    <option value="Unit Ketarunaan">Unit Ketarunaan</option>
+                  </select>
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-800 dark:text-slate-200 mb-1">Email Official (Opsional)</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Email (Opsional)</label>
                 <input
                   type="email"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="user@poltek.ac.id"
-                  className="w-full glass-input"
+                  placeholder="Opsional (otomatis id@siakal.poltek.ac.id)"
+                  className="w-full glass-input text-xs font-semibold"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="pt-2 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold"
+                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200"
                 >
                   Batal
                 </button>
-                <button type="submit" className="glass-button text-xs sm:text-sm font-bold">
-                  Simpan & Buat Akun
+                <button type="submit" className="glass-button text-xs font-bold py-2 px-5">
+                  Simpan User Baru
                 </button>
               </div>
             </form>
@@ -677,36 +485,122 @@ export default function AdminUserManagementPage() {
         </div>
       )}
 
-      {/* POPUP MODAL KONFIRMASI HAPUS */}
+      {/* MODAL EDIT USER */}
+      {editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+          <div className="glass-panel w-full max-w-lg p-6 space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                <Edit3 className="w-5 h-5 text-sky-500" />
+                <span>Edit Akun User</span>
+              </h3>
+              <button onClick={() => setEditingUser(null)} className="text-slate-400 hover:text-slate-600 font-bold">
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditUser} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap *</label>
+                <input
+                  type="text"
+                  required
+                  value={editingUser.fullName}
+                  onChange={(e) => setEditingUser({ ...editingUser, fullName: e.target.value })}
+                  className="w-full glass-input text-xs sm:text-sm font-semibold"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Role Akun *</label>
+                  <select
+                    value={editingUser.role}
+                    onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as any })}
+                    className="w-full glass-input text-xs font-semibold"
+                  >
+                    <option value="admin">Administrator</option>
+                    <option value="mahasiswa">Mahasiswa</option>
+                    <option value="dosen">Dosen Pembimbing</option>
+                    <option value="pembimbing_lapangan">Pembimbing Lapangan</option>
+                    <option value="alumni">Alumni</option>
+                    <option value="unit_approver">Unit Approver</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">ID Masuk (NIM/NIP) *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingUser.usernameOrId || editingUser.nim || editingUser.nip || ''}
+                    onChange={(e) => setEditingUser({ ...editingUser, usernameOrId: e.target.value, nim: e.target.value, nip: e.target.value })}
+                    className="w-full glass-input text-xs font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Password Initial *</label>
+                <input
+                  type="text"
+                  required
+                  value={editingUser.initialPassword || 'SIAKAL2026!'}
+                  onChange={(e) => setEditingUser({ ...editingUser, initialPassword: e.target.value })}
+                  className="w-full glass-input text-xs font-mono"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingUser(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200"
+                >
+                  Batal
+                </button>
+                <button type="submit" className="glass-button text-xs font-bold py-2 px-5">
+                  Simpan Perubahan
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* CONFIRM DELETE MODAL */}
       {deleteTargetId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md">
-          <div className="glass-panel bg-white dark:bg-slate-900 w-full max-w-sm p-6 space-y-4 shadow-2xl border border-red-500/30 text-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+          <div className="glass-panel w-full max-w-sm p-6 text-center space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl">
             <div className="w-12 h-12 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center mx-auto">
               <AlertTriangle className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Konfirmasi Hapus Akun</h3>
-            <p className="text-xs text-slate-600 dark:text-slate-300 font-medium">
-              Apakah Anda yakin ingin menghapus Akun Pengguna ini? Akses pengguna ini akan dicabut permanen.
+            <h3 className="text-base font-black text-slate-900">Konfirmasi Hapus Akun</h3>
+            <p className="text-xs text-slate-600 font-semibold">
+              Apakah Anda yakin ingin menghapus akun pengguna ini dari sistem?
             </p>
-            <div className="flex justify-center gap-3 pt-2">
+
+            <div className="flex items-center justify-center gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setDeleteTargetId(null)}
-                className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs"
+                className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200"
               >
                 Batal
               </button>
+
               <button
                 type="button"
                 onClick={confirmDeleteUser}
-                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-lg"
+                className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs shadow-md transition-all cursor-pointer"
               >
-                Ya, Hapus Sekarang
+                Ya, Hapus User
               </button>
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }
