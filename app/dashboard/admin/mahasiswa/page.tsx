@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Download, Upload, Plus, Trash2, Edit3, FileSpreadsheet, Building2, GraduationCap, CheckCircle2, AlertTriangle, ShieldCheck, Eye, EyeOff, X, User, Home, Users2, ChevronRight, ChevronLeft, Save } from 'lucide-react';
+import { Search, Download, Upload, Plus, Trash2, Edit3, FileSpreadsheet, GraduationCap, AlertTriangle, Eye, X, User, Home, Users2, ChevronRight, ChevronLeft, Save } from 'lucide-react';
 import { initialAccounts, UserAccount, initialProdiList } from '@/lib/mockStore';
 import { exportToExcel, readExcelFile, downloadMahasiswaBiodataTemplate } from '@/lib/utils/excel';
 
@@ -63,7 +63,7 @@ export default function AdminMahasiswaDatabasePage() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [importedPreview, setImportedPreview] = useState<any[]>([]);
 
-  // 32-Item Form State for Add Mahasiswa
+  // Form State for Add Mahasiswa
   const [fullName, setFullName] = useState('');
   const [nim, setNim] = useState('');
   const [prodi, setProdi] = useState(prodiList[0]?.nama || 'Studi Nautika');
@@ -71,7 +71,7 @@ export default function AdminMahasiswaDatabasePage() {
   const [statusAkademik, setStatusAkademik] = useState<'Aktif' | 'PRALA' | 'Magang' | 'Lulus / Alumni'>('Aktif');
   const [email, setEmail] = useState('');
 
-  // Extended 32 Biodata Fields State
+  // Extended Biodata Fields State
   const [tempatLahir, setTempatLahir] = useState('');
   const [tanggalLahir, setTanggalLahir] = useState('');
   const [jenisKelamin, setJenisKelamin] = useState('Laki-laki');
@@ -199,7 +199,7 @@ export default function AdminMahasiswaDatabasePage() {
     saveAllUsers(updated);
     setShowAddModal(false);
     resetAddForm();
-    alert(`Data biodata mahasiswa lengkap 32-Item (${fullName}) berhasil disimpan!`);
+    alert(`Data mahasiswa (${fullName}) berhasil disimpan!`);
   };
 
   const handleSaveEditMahasiswa = (e: React.FormEvent) => {
@@ -209,7 +209,7 @@ export default function AdminMahasiswaDatabasePage() {
     const updatedList = mahasiswas.map((m) => (m.id === editingMhs.id ? editingMhs : m));
     saveAllUsers(updatedList);
     setEditingMhs(null);
-    alert(`Perubahan biodata lengkap (${editingMhs.fullName}) berhasil disimpan!`);
+    alert(`Perubahan data (${editingMhs.fullName}) berhasil disimpan!`);
   };
 
   const confirmDeleteMahasiswa = () => {
@@ -287,14 +287,14 @@ export default function AdminMahasiswaDatabasePage() {
     saveAllUsers(updated);
     setShowImportModal(false);
     setImportedPreview([]);
-    alert(`Berhasil mengimpor ${newStudents.length} data mahasiswa lengkap 32-Item!`);
+    alert(`Berhasil mengimpor ${newStudents.length} data mahasiswa!`);
   };
 
   const handleExport = () => {
     exportToExcel(
       [
         {
-          sheetName: 'Database Mahasiswa 32 Item',
+          sheetName: 'Database Mahasiswa',
           data: filteredMahasiswas.map((m) => ({
             'NIM': m.nim || m.usernameOrId,
             'Nama Lengkap': m.fullName,
@@ -326,7 +326,7 @@ export default function AdminMahasiswaDatabasePage() {
           })),
         },
       ],
-      'Database_Mahasiswa_32_Item_SIAKAL'
+      'Database_Mahasiswa_SIAKAL'
     );
   };
 
@@ -408,33 +408,34 @@ export default function AdminMahasiswaDatabasePage() {
 
   return (
     <div className="space-y-6">
-      {/* 1. Header Banner Card */}
+      {/* 1. Header Banner Card - CLEAN & UNIFORM 1-LINE BUTTON BAR */}
       <div className="glass-panel p-6 border-l-4 border-l-sky-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm bg-white rounded-2xl">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2.5">
             <GraduationCap className="w-6 h-6 text-sky-500 shrink-0" />
-            <span>Pusat Database Mahasiswa (Biodata Lengkap 32-Item)</span>
+            <span>Pusat Database Mahasiswa</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 mt-1 font-semibold">
-            Kelola data mahasiswa, pencarian angkatan cepat, prodi terintegrasi, dan impor Excel biodata lengkap.
+            Kelola data mahasiswa, pencarian angkatan, prodi terintegrasi, dan impor Excel.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs sm:text-sm flex items-center gap-2 border border-slate-300 shadow-sm cursor-pointer transition-all">
+        {/* ALIGNED SINGLE ROW BUTTONS */}
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <label className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs sm:text-sm flex items-center gap-2 border border-slate-300 shadow-sm cursor-pointer transition-all">
             <Upload className="w-4 h-4 text-slate-600" />
             <span>Impor Excel</span>
             <input type="file" accept=".xlsx,.xls" onChange={handleExcelImportUpload} className="hidden" />
           </label>
 
-          <button onClick={handleExport} className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs sm:text-sm flex items-center gap-2 border border-slate-300 shadow-sm transition-all cursor-pointer">
+          <button onClick={handleExport} className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs sm:text-sm flex items-center gap-2 border border-slate-300 shadow-sm transition-all cursor-pointer">
             <Download className="w-4 h-4 text-slate-600" />
             <span>Ekspor .XLSX</span>
           </button>
 
           <button onClick={() => { resetAddForm(); setShowAddModal(true); }} className="glass-button text-xs sm:text-sm font-extrabold flex items-center gap-2 py-2.5 px-4 shadow-md cursor-pointer">
             <Plus className="w-4 h-4" />
-            <span>+ Data Mahasiswa Lengkap</span>
+            <span>+ Data Mahasiswa</span>
           </button>
         </div>
       </div>
@@ -453,7 +454,7 @@ export default function AdminMahasiswaDatabasePage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-          {/* DYNAMIC PRODI FILTER (TEXT: "Semua prodi") */}
+          {/* DYNAMIC PRODI FILTER */}
           <div className="flex items-center gap-1.5 flex-1 sm:flex-none">
             <span className="text-xs font-bold text-slate-700 shrink-0">Prodi:</span>
             <select
@@ -505,10 +506,10 @@ export default function AdminMahasiswaDatabasePage() {
           <button
             type="button"
             onClick={downloadMahasiswaBiodataTemplate}
-            className="text-xs font-extrabold text-sky-600 hover:underline flex items-center gap-1.5"
+            className="text-xs font-extrabold text-sky-600 hover:underline flex items-center gap-1.5 cursor-pointer"
           >
             <FileSpreadsheet className="w-4 h-4 text-sky-500" />
-            <span>Download Template Excel 32-Item Biodata</span>
+            <span>Download Template Excel</span>
           </button>
         </div>
 
@@ -555,7 +556,7 @@ export default function AdminMahasiswaDatabasePage() {
                         <button
                           onClick={() => setViewDetailMhs(m)}
                           className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-sky-500/10 transition-colors cursor-pointer"
-                          title="Lihat Detail 32 Biodata"
+                          title="Lihat Detail Biodata"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
@@ -591,7 +592,7 @@ export default function AdminMahasiswaDatabasePage() {
         </div>
       </div>
 
-      {/* FULL-SCREEN SPACIOUS MODAL TAMBAH DATA MAHASISWA BARU (32-ITEM) */}
+      {/* FULL-SCREEN SPACIOUS MODAL TAMBAH DATA MAHASISWA BARU */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/70 backdrop-blur-md">
           <div className="glass-panel w-full max-w-[1400px] h-[92vh] p-6 sm:p-8 space-y-6 border border-slate-300 shadow-2xl relative bg-white rounded-3xl flex flex-col justify-between overflow-hidden">
@@ -601,10 +602,10 @@ export default function AdminMahasiswaDatabasePage() {
               <div>
                 <h3 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-3">
                   <Plus className="w-6 h-6 text-sky-500" />
-                  <span>Tambah Data Mahasiswa Baru (Biodata 32-Item Lengkap)</span>
+                  <span>Tambah Data Mahasiswa Baru</span>
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 font-semibold mt-1">
-                  Input data biodata lengkap sesuai formulir instansi & template Excel resmi SIAKAL.
+                  Input data mahasiswa secara lengkap sesuai formulir & template Excel resmi.
                 </p>
               </div>
               <button
@@ -631,7 +632,7 @@ export default function AdminMahasiswaDatabasePage() {
                 </div>
                 <div>
                   <div className="text-[10px] uppercase font-black tracking-wider opacity-80">Langkah 1</div>
-                  <div className="text-xs sm:text-sm font-black">1. Identitas Diri (1-9, 17)</div>
+                  <div className="text-xs sm:text-sm font-black">1. Identitas Diri (Item 1-9, 17)</div>
                 </div>
               </button>
 
@@ -649,7 +650,7 @@ export default function AdminMahasiswaDatabasePage() {
                 </div>
                 <div>
                   <div className="text-[10px] uppercase font-black tracking-wider opacity-80">Langkah 2</div>
-                  <div className="text-xs sm:text-sm font-black">2. Alamat & Transportasi (10-20)</div>
+                  <div className="text-xs sm:text-sm font-black">2. Alamat & Transportasi (Item 10-20)</div>
                 </div>
               </button>
 
@@ -667,7 +668,7 @@ export default function AdminMahasiswaDatabasePage() {
                 </div>
                 <div>
                   <div className="text-[10px] uppercase font-black tracking-wider opacity-80">Langkah 3</div>
-                  <div className="text-xs sm:text-sm font-black">3. Data Orang Tua / Wali (21-32)</div>
+                  <div className="text-xs sm:text-sm font-black">3. Data Orang Tua / Wali (Item 21-32)</div>
                 </div>
               </button>
             </div>
@@ -1187,7 +1188,7 @@ export default function AdminMahasiswaDatabasePage() {
                     className="glass-button text-xs sm:text-sm font-extrabold py-2.5 px-6 shadow-xl flex items-center gap-2 cursor-pointer"
                   >
                     <Save className="w-4 h-4" />
-                    <span>Simpan Biodata Lengkap (32 Item)</span>
+                    <span>Simpan Data Mahasiswa</span>
                   </button>
                 )}
               </div>
@@ -1197,7 +1198,7 @@ export default function AdminMahasiswaDatabasePage() {
         </div>
       )}
 
-      {/* FULL-SCREEN SPACIOUS MODAL EDIT DATA MAHASISWA (32-ITEM) */}
+      {/* FULL-SCREEN SPACIOUS MODAL EDIT DATA MAHASISWA */}
       {editingMhs && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/70 backdrop-blur-md">
           <div className="glass-panel w-full max-w-[1400px] h-[92vh] p-6 sm:p-8 space-y-6 border border-slate-300 shadow-2xl relative bg-white rounded-3xl flex flex-col justify-between overflow-hidden">
@@ -1210,7 +1211,7 @@ export default function AdminMahasiswaDatabasePage() {
                   <span>Edit Biodata Mahasiswa: {editingMhs.fullName}</span>
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 font-semibold mt-1">
-                  Ubah dan perbarui 32 item biodata mahasiswa secara terstruktur.
+                  Ubah dan perbarui data biodata mahasiswa secara terstruktur.
                 </p>
               </div>
               <button
@@ -1237,7 +1238,7 @@ export default function AdminMahasiswaDatabasePage() {
                 </div>
                 <div>
                   <div className="text-[10px] uppercase font-black tracking-wider opacity-80">Langkah 1</div>
-                  <div className="text-xs sm:text-sm font-black">1. Identitas Diri (1-9, 17)</div>
+                  <div className="text-xs sm:text-sm font-black">1. Identitas Diri (Item 1-9, 17)</div>
                 </div>
               </button>
 
@@ -1255,7 +1256,7 @@ export default function AdminMahasiswaDatabasePage() {
                 </div>
                 <div>
                   <div className="text-[10px] uppercase font-black tracking-wider opacity-80">Langkah 2</div>
-                  <div className="text-xs sm:text-sm font-black">2. Alamat & Transportasi (10-20)</div>
+                  <div className="text-xs sm:text-sm font-black">2. Alamat & Transportasi (Item 10-20)</div>
                 </div>
               </button>
 
@@ -1273,7 +1274,7 @@ export default function AdminMahasiswaDatabasePage() {
                 </div>
                 <div>
                   <div className="text-[10px] uppercase font-black tracking-wider opacity-80">Langkah 3</div>
-                  <div className="text-xs sm:text-sm font-black">3. Data Orang Tua (21-32)</div>
+                  <div className="text-xs sm:text-sm font-black">3. Data Orang Tua (Item 21-32)</div>
                 </div>
               </button>
             </div>
@@ -1756,7 +1757,7 @@ export default function AdminMahasiswaDatabasePage() {
                   className="glass-button text-xs sm:text-sm font-extrabold py-2.5 px-6 shadow-xl flex items-center gap-2 cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
-                  <span>Simpan Perubahan 32 Biodata</span>
+                  <span>Simpan Perubahan Data</span>
                 </button>
               </div>
             </div>
@@ -1765,14 +1766,14 @@ export default function AdminMahasiswaDatabasePage() {
         </div>
       )}
 
-      {/* MODAL IMPOR EXCEL 32-ITEM BIODATA */}
+      {/* MODAL IMPOR EXCEL */}
       {showImportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
           <div className="glass-panel w-full max-w-4xl p-6 space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
                 <FileSpreadsheet className="w-5 h-5 text-emerald-500" />
-                <span>Pratinjau Impor Batch {importedPreview.length} Mahasiswa (Biodata Lengkap)</span>
+                <span>Pratinjau Impor Batch {importedPreview.length} Mahasiswa</span>
               </h3>
               <button onClick={() => setShowImportModal(false)} className="text-slate-400 hover:text-slate-600 font-bold">
                 ✕
@@ -1828,7 +1829,7 @@ export default function AdminMahasiswaDatabasePage() {
         </div>
       )}
 
-      {/* MODAL VIEW DETAIL 32 BIODATA ITEM */}
+      {/* MODAL VIEW DETAIL */}
       {viewDetailMhs && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
           <div className="glass-panel w-full max-w-4xl p-6 space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl max-h-[85vh] overflow-y-auto text-slate-900">
