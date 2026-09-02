@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Download, Upload, Plus, Trash2, Edit3, FileSpreadsheet, Building2, GraduationCap, CheckCircle2, AlertTriangle, ShieldCheck, Eye, EyeOff, X, User, Home, Users2 } from 'lucide-react';
+import { Users, Search, Download, Upload, Plus, Trash2, Edit3, FileSpreadsheet, Building2, GraduationCap, CheckCircle2, AlertTriangle, ShieldCheck, Eye, EyeOff, X, User, Home, Users2, ChevronRight, ChevronLeft, Save } from 'lucide-react';
 import { initialAccounts, UserAccount, initialProdiList } from '@/lib/mockStore';
 import { exportToExcel, readExcelFile, downloadMahasiswaBiodataTemplate } from '@/lib/utils/excel';
 
@@ -591,245 +591,274 @@ export default function AdminMahasiswaDatabasePage() {
         </div>
       </div>
 
-      {/* MODAL TAMBAH DATA MAHASISWA BARU (LENGKAP 32-ITEM BIODATA WITH TABS) */}
+      {/* FULL-SCREEN SPACIOUS MODAL TAMBAH DATA MAHASISWA BARU (32-ITEM) */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-          <div className="glass-panel w-full max-w-4xl p-6 space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/70 backdrop-blur-md">
+          <div className="glass-panel w-full max-w-[1400px] h-[92vh] p-6 sm:p-8 space-y-6 border border-slate-300 shadow-2xl relative bg-white rounded-3xl flex flex-col justify-between overflow-hidden">
+            
+            {/* MODAL HEADER */}
+            <div className="flex items-center justify-between border-b border-slate-200 pb-4 shrink-0">
               <div>
-                <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-                  <Plus className="w-5 h-5 text-sky-500" />
+                <h3 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-3">
+                  <Plus className="w-6 h-6 text-sky-500" />
                   <span>Tambah Data Mahasiswa Baru (Biodata 32-Item Lengkap)</span>
                 </h3>
-                <p className="text-xs text-slate-500 font-semibold mt-0.5">Isi seluruh item isian biodata sesuai formulir instansi & template Excel.</p>
+                <p className="text-xs sm:text-sm text-slate-600 font-semibold mt-1">
+                  Input data biodata lengkap sesuai formulir instansi & template Excel resmi SIAKAL.
+                </p>
               </div>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 font-bold">
-                ✕
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors font-bold"
+              >
+                <X className="w-6 h-6" />
               </button>
             </div>
 
-            {/* TAB HEADER NAVIGATION */}
-            <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto">
+            {/* TAB STEP NAVIGATION BADGES */}
+            <div className="grid grid-cols-3 gap-3 sm:gap-4 border-b border-slate-200 pb-4 shrink-0">
               <button
                 type="button"
                 onClick={() => setActiveFormTab('identitas')}
-                className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                className={`p-3.5 rounded-2xl text-left flex items-center gap-3 transition-all cursor-pointer border ${
                   activeFormTab === 'identitas'
-                    ? 'bg-sky-500 text-white shadow-md'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-sky-500 text-white border-sky-600 shadow-lg scale-[1.01]'
+                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
               >
-                <User className="w-4 h-4" />
-                <span>1. Identitas Diri (Item 1-9, 17)</span>
+                <div className={`p-2.5 rounded-xl ${activeFormTab === 'identitas' ? 'bg-white/20 text-white' : 'bg-sky-100 text-sky-600'}`}>
+                  <User className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase font-black tracking-wider opacity-80">Langkah 1</div>
+                  <div className="text-xs sm:text-sm font-black">1. Identitas Diri (1-9, 17)</div>
+                </div>
               </button>
 
               <button
                 type="button"
                 onClick={() => setActiveFormTab('alamat')}
-                className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                className={`p-3.5 rounded-2xl text-left flex items-center gap-3 transition-all cursor-pointer border ${
                   activeFormTab === 'alamat'
-                    ? 'bg-sky-500 text-white shadow-md'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-sky-500 text-white border-sky-600 shadow-lg scale-[1.01]'
+                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
               >
-                <Home className="w-4 h-4" />
-                <span>2. Alamat & Transportasi (Item 10-20)</span>
+                <div className={`p-2.5 rounded-xl ${activeFormTab === 'alamat' ? 'bg-white/20 text-white' : 'bg-sky-100 text-sky-600'}`}>
+                  <Home className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase font-black tracking-wider opacity-80">Langkah 2</div>
+                  <div className="text-xs sm:text-sm font-black">2. Alamat & Transportasi (10-20)</div>
+                </div>
               </button>
 
               <button
                 type="button"
                 onClick={() => setActiveFormTab('orangtua')}
-                className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                className={`p-3.5 rounded-2xl text-left flex items-center gap-3 transition-all cursor-pointer border ${
                   activeFormTab === 'orangtua'
-                    ? 'bg-sky-500 text-white shadow-md'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-sky-500 text-white border-sky-600 shadow-lg scale-[1.01]'
+                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
               >
-                <Users2 className="w-4 h-4" />
-                <span>3. Data Orang Tua / Ayah & Ibu (Item 21-32)</span>
+                <div className={`p-2.5 rounded-xl ${activeFormTab === 'orangtua' ? 'bg-white/20 text-white' : 'bg-sky-100 text-sky-600'}`}>
+                  <Users2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase font-black tracking-wider opacity-80">Langkah 3</div>
+                  <div className="text-xs sm:text-sm font-black">3. Data Orang Tua / Wali (21-32)</div>
+                </div>
               </button>
             </div>
 
-            <form onSubmit={handleAddMahasiswa} className="space-y-4">
+            {/* FORM CONTENT AREA - FULL SCREEN SCROLLABLE & SPACIOUS GRID */}
+            <form onSubmit={handleAddMahasiswa} className="flex-1 overflow-y-auto pr-2 space-y-6">
               {/* TAB 1: IDENTITAS DIRI */}
               {activeFormTab === 'identitas' && (
-                <div className="space-y-4 animate-in fade-in duration-150">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">1. Nama Lengkap Mahasiswa *</label>
-                      <input
-                        type="text"
-                        required
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        placeholder="Contoh: Ahmad Fauzi"
-                        className="w-full glass-input text-xs sm:text-sm font-semibold"
-                      />
+                <div className="space-y-6 animate-in fade-in duration-200">
+                  <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+                    <h4 className="text-xs font-black text-sky-700 uppercase tracking-wider">A. INFORMASI AKADEMIK KAMPUS</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">1. Nama Lengkap Mahasiswa *</label>
+                        <input
+                          type="text"
+                          required
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          placeholder="Contoh: Ahmad Fauzi"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">NIM / Username ID Masuk *</label>
+                        <input
+                          type="text"
+                          required
+                          value={nim}
+                          onChange={(e) => setNim(e.target.value)}
+                          placeholder="Contoh: 2026001"
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">Program Studi *</label>
+                        <select
+                          value={prodi}
+                          onChange={(e) => setProdi(e.target.value)}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        >
+                          {prodiList.map((p) => (
+                            <option key={p.id} value={p.nama}>
+                              {p.jenjang === 'Diploma III' ? 'D3' : 'D4'} {p.nama}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">NIM / Username ID *</label>
-                      <input
-                        type="text"
-                        required
-                        value={nim}
-                        onChange={(e) => setNim(e.target.value)}
-                        placeholder="Contoh: 2026001"
-                        className="w-full glass-input text-xs font-mono"
-                      />
-                    </div>
-                  </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">Tahun Angkatan *</label>
+                        <input
+                          type="number"
+                          required
+                          value={angkatan}
+                          onChange={(e) => setAngkatan(e.target.value)}
+                          placeholder="Contoh: 2026"
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Program Studi *</label>
-                      <select
-                        value={prodi}
-                        onChange={(e) => setProdi(e.target.value)}
-                        className="w-full glass-input text-xs font-semibold"
-                      >
-                        {prodiList.map((p) => (
-                          <option key={p.id} value={p.nama}>
-                            {p.jenjang === 'Diploma III' ? 'D3' : 'D4'} {p.nama}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Tahun Angkatan *</label>
-                      <input
-                        type="number"
-                        required
-                        value={angkatan}
-                        onChange={(e) => setAngkatan(e.target.value)}
-                        placeholder="Contoh: 2026"
-                        className="w-full glass-input text-xs font-mono"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Status Akademik *</label>
-                      <select
-                        value={statusAkademik}
-                        onChange={(e) => setStatusAkademik(e.target.value as any)}
-                        className="w-full glass-input text-xs font-semibold"
-                      >
-                        <option value="Aktif">Mahasiswa Aktif</option>
-                        <option value="PRALA">Sedang PRALA</option>
-                        <option value="Magang">Sedang Magang MTPD</option>
-                        <option value="Lulus / Alumni">Lulus / Alumni</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">2. Tempat Lahir</label>
-                      <input
-                        type="text"
-                        value={tempatLahir}
-                        onChange={(e) => setTempatLahir(e.target.value)}
-                        placeholder="Contoh: Palembang"
-                        className="w-full glass-input text-xs font-semibold"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">5. Tanggal Lahir</label>
-                      <input
-                        type="date"
-                        value={tanggalLahir}
-                        onChange={(e) => setTanggalLahir(e.target.value)}
-                        className="w-full glass-input text-xs font-semibold"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">3. Jenis Kelamin</label>
-                      <select
-                        value={jenisKelamin}
-                        onChange={(e) => setJenisKelamin(e.target.value)}
-                        className="w-full glass-input text-xs font-semibold"
-                      >
-                        <option value="Laki-laki">Laki-laki</option>
-                        <option value="Perempuan">Perempuan</option>
-                      </select>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">Status Akademik *</label>
+                        <select
+                          value={statusAkademik}
+                          onChange={(e) => setStatusAkademik(e.target.value as any)}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        >
+                          <option value="Aktif">Mahasiswa Aktif</option>
+                          <option value="PRALA">Sedang PRALA</option>
+                          <option value="Magang">Sedang Magang MTPD</option>
+                          <option value="Lulus / Alumni">Lulus / Alumni</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">6. Agama</label>
-                      <select
-                        value={agama}
-                        onChange={(e) => setAgama(e.target.value)}
-                        className="w-full glass-input text-xs font-semibold"
-                      >
-                        <option value="Islam">Islam</option>
-                        <option value="Kristen Protestan">Kristen Protestan</option>
-                        <option value="Katolik">Katolik</option>
-                        <option value="Hindu">Hindu</option>
-                        <option value="Buddha">Buddha</option>
-                        <option value="Khonghucu">Khonghucu</option>
-                      </select>
+                  <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+                    <h4 className="text-xs font-black text-sky-700 uppercase tracking-wider">B. IDENTITAS KEPENDUDUKAN & KONTAK</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">2. Tempat Lahir</label>
+                        <input
+                          type="text"
+                          value={tempatLahir}
+                          onChange={(e) => setTempatLahir(e.target.value)}
+                          placeholder="Contoh: Palembang"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">5. Tanggal Lahir</label>
+                        <input
+                          type="date"
+                          value={tanggalLahir}
+                          onChange={(e) => setTanggalLahir(e.target.value)}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">3. Jenis Kelamin</label>
+                        <select
+                          value={jenisKelamin}
+                          onChange={(e) => setJenisKelamin(e.target.value)}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        >
+                          <option value="Laki-laki">Laki-laki</option>
+                          <option value="Perempuan">Perempuan</option>
+                        </select>
+                      </div>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">7. NIK (KTP)</label>
-                      <input
-                        type="text"
-                        value={nik}
-                        onChange={(e) => setNik(e.target.value)}
-                        placeholder="16 Digit NIK"
-                        className="w-full glass-input text-xs font-mono"
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">6. Agama</label>
+                        <select
+                          value={agama}
+                          onChange={(e) => setAgama(e.target.value)}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        >
+                          <option value="Islam">Islam</option>
+                          <option value="Kristen Protestan">Kristen Protestan</option>
+                          <option value="Katolik">Katolik</option>
+                          <option value="Hindu">Hindu</option>
+                          <option value="Buddha">Buddha</option>
+                          <option value="Khonghucu">Khonghucu</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">7. NIK (KTP)</label>
+                        <input
+                          type="text"
+                          value={nik}
+                          onChange={(e) => setNik(e.target.value)}
+                          placeholder="16 Digit NIK"
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">8. NISN</label>
+                        <input
+                          type="text"
+                          value={nisn}
+                          onChange={(e) => setNisn(e.target.value)}
+                          placeholder="10 Digit NISN"
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">8. NISN</label>
-                      <input
-                        type="text"
-                        value={nisn}
-                        onChange={(e) => setNisn(e.target.value)}
-                        placeholder="10 Digit NISN"
-                        className="w-full glass-input text-xs font-mono"
-                      />
-                    </div>
-                  </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">9. NPWP</label>
+                        <input
+                          type="text"
+                          value={npwp}
+                          onChange={(e) => setNpwp(e.target.value)}
+                          placeholder="Nomor NPWP"
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">9. NPWP</label>
-                      <input
-                        type="text"
-                        value={npwp}
-                        onChange={(e) => setNpwp(e.target.value)}
-                        placeholder="Nomor NPWP"
-                        className="w-full glass-input text-xs font-mono"
-                      />
-                    </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">17. Email Resmi</label>
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="user@mhs.poltek.ac.id"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">17. Email</label>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Contoh: user@mhs.poltek.ac.id"
-                        className="w-full glass-input text-xs font-semibold"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">11. No HP / WhatsApp</label>
-                      <input
-                        type="text"
-                        value={noHp}
-                        onChange={(e) => setNoHp(e.target.value)}
-                        placeholder="Contoh: 081234567890"
-                        className="w-full glass-input text-xs font-mono"
-                      />
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">11. No HP / WhatsApp</label>
+                        <input
+                          type="text"
+                          value={noHp}
+                          onChange={(e) => setNoHp(e.target.value)}
+                          placeholder="081234567890"
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -837,113 +866,119 @@ export default function AdminMahasiswaDatabasePage() {
 
               {/* TAB 2: ALAMAT & TRANSPORTASI */}
               {activeFormTab === 'alamat' && (
-                <div className="space-y-4 animate-in fade-in duration-150">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">10. Jalan / Alamat Rumah</label>
-                    <input
-                      type="text"
-                      value={jalan}
-                      onChange={(e) => setJalan(e.target.value)}
-                      placeholder="Contoh: Jl. Merdeka No. 45"
-                      className="w-full glass-input text-xs font-semibold"
-                    />
+                <div className="space-y-6 animate-in fade-in duration-200">
+                  <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+                    <h4 className="text-xs font-black text-sky-700 uppercase tracking-wider">A. ALAMAT DOMISILI RUMAH</h4>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-800 mb-1.5">10. Jalan / Alamat Lengkap Rumah</label>
+                      <input
+                        type="text"
+                        value={jalan}
+                        onChange={(e) => setJalan(e.target.value)}
+                        placeholder="Contoh: Jl. Merdeka No. 45"
+                        className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">12. Dusun</label>
+                        <input
+                          type="text"
+                          value={dusun}
+                          onChange={(e) => setDusun(e.target.value)}
+                          placeholder="Contoh: Dusun II"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">13. RT</label>
+                        <input
+                          type="text"
+                          value={rt}
+                          onChange={(e) => setRt(e.target.value)}
+                          placeholder="Contoh: 002"
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">14. RW</label>
+                        <input
+                          type="text"
+                          value={rw}
+                          onChange={(e) => setRw(e.target.value)}
+                          placeholder="Contoh: 001"
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">15. Kelurahan</label>
+                        <input
+                          type="text"
+                          value={kelurahan}
+                          onChange={(e) => setKelurahan(e.target.value)}
+                          placeholder="Contoh: Bukit Kecil"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">18. Kecamatan</label>
+                        <input
+                          type="text"
+                          value={kecamatan}
+                          onChange={(e) => setKecamatan(e.target.value)}
+                          placeholder="Contoh: Ilir Barat I"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">16. Kode Pos</label>
+                        <input
+                          type="text"
+                          value={kodePos}
+                          onChange={(e) => setKodePos(e.target.value)}
+                          placeholder="Contoh: 30135"
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">12. Dusun</label>
-                      <input
-                        type="text"
-                        value={dusun}
-                        onChange={(e) => setDusun(e.target.value)}
-                        placeholder="Contoh: Dusun II"
-                        className="w-full glass-input text-xs font-semibold"
-                      />
-                    </div>
+                  <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+                    <h4 className="text-xs font-black text-sky-700 uppercase tracking-wider">B. TRANSPORTASI & STATS TINGGAL</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">19. Alat Transportasi yang Dipunya</label>
+                        <select
+                          value={alatTransportasi}
+                          onChange={(e) => setAlatTransportasi(e.target.value)}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        >
+                          {transportOptions.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">13. RT</label>
-                      <input
-                        type="text"
-                        value={rt}
-                        onChange={(e) => setRt(e.target.value)}
-                        placeholder="Contoh: 002"
-                        className="w-full glass-input text-xs font-mono"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">14. RW</label>
-                      <input
-                        type="text"
-                        value={rw}
-                        onChange={(e) => setRw(e.target.value)}
-                        placeholder="Contoh: 001"
-                        className="w-full glass-input text-xs font-mono"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">15. Kelurahan</label>
-                      <input
-                        type="text"
-                        value={kelurahan}
-                        onChange={(e) => setKelurahan(e.target.value)}
-                        placeholder="Contoh: Bukit Kecil"
-                        className="w-full glass-input text-xs font-semibold"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">18. Kecamatan</label>
-                      <input
-                        type="text"
-                        value={kecamatan}
-                        onChange={(e) => setKecamatan(e.target.value)}
-                        placeholder="Contoh: Ilir Barat I"
-                        className="w-full glass-input text-xs font-semibold"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">16. Kode Pos</label>
-                      <input
-                        type="text"
-                        value={kodePos}
-                        onChange={(e) => setKodePos(e.target.value)}
-                        placeholder="Contoh: 30135"
-                        className="w-full glass-input text-xs font-mono"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">19. Alat Transportasi yang Dipunya</label>
-                      <select
-                        value={alatTransportasi}
-                        onChange={(e) => setAlatTransportasi(e.target.value)}
-                        className="w-full glass-input text-xs font-semibold"
-                      >
-                        {transportOptions.map((opt) => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">20. Status Tempat Tinggal</label>
-                      <select
-                        value={statusTempatTinggal}
-                        onChange={(e) => setStatusTempatTinggal(e.target.value)}
-                        className="w-full glass-input text-xs font-semibold"
-                      >
-                        {tempatTinggalOptions.map((opt) => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                      </select>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">20. Status Tempat Tinggal</label>
+                        <select
+                          value={statusTempatTinggal}
+                          onChange={(e) => setStatusTempatTinggal(e.target.value)}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        >
+                          {tempatTinggalOptions.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -951,49 +986,51 @@ export default function AdminMahasiswaDatabasePage() {
 
               {/* TAB 3: DATA ORANG TUA (AYAH & IBU) */}
               {activeFormTab === 'orangtua' && (
-                <div className="space-y-4 animate-in fade-in duration-150">
+                <div className="space-y-6 animate-in fade-in duration-200">
                   {/* SECTION AYAH */}
-                  <div className="p-4 rounded-xl bg-sky-50/60 border border-sky-200 space-y-3">
-                    <h4 className="font-extrabold text-xs text-sky-800 uppercase tracking-wider">A. DATA AYAH KANDUNG (ITEM 21-26)</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="bg-sky-50/70 p-5 rounded-2xl border border-sky-200 space-y-4">
+                    <h4 className="text-xs font-black text-sky-900 uppercase tracking-wider">A. DATA AYAH KANDUNG (ITEM 21-26)</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">21. Nama Ayah</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">21. Nama Ayah</label>
                         <input
                           type="text"
                           value={namaAyah}
                           onChange={(e) => setNamaAyah(e.target.value)}
                           placeholder="Nama lengkap ayah"
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         />
                       </div>
+
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">22. NIK Ayah</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">22. NIK Ayah</label>
                         <input
                           type="text"
                           value={nikAyah}
                           onChange={(e) => setNikAyah(e.target.value)}
                           placeholder="16 digit NIK ayah"
-                          className="w-full glass-input text-xs font-mono"
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
                         />
                       </div>
+
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">23. Tanggal Lahir Ayah</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">23. Tanggal Lahir Ayah</label>
                         <input
                           type="date"
                           value={tanggalLahirAyah}
                           onChange={(e) => setTanggalLahirAyah(e.target.value)}
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">24. Pendidikan Ayah</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">24. Pendidikan Ayah</label>
                         <select
                           value={pendidikanAyah}
                           onChange={(e) => setPendidikanAyah(e.target.value)}
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         >
                           {pendidikanOptions.map((opt) => (
                             <option key={opt} value={opt}>{opt}</option>
@@ -1002,11 +1039,11 @@ export default function AdminMahasiswaDatabasePage() {
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">25. Pekerjaan Ayah</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">25. Pekerjaan Ayah</label>
                         <select
                           value={pekerjaanAyah}
                           onChange={(e) => setPekerjaanAyah(e.target.value)}
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         >
                           {pekerjaanOptions.map((opt) => (
                             <option key={opt} value={opt}>{opt}</option>
@@ -1015,11 +1052,11 @@ export default function AdminMahasiswaDatabasePage() {
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">26. Penghasilan Ayah</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">26. Penghasilan Ayah</label>
                         <select
                           value={penghasilanAyah}
                           onChange={(e) => setPenghasilanAyah(e.target.value)}
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         >
                           {penghasilanOptions.map((opt) => (
                             <option key={opt} value={opt}>{opt}</option>
@@ -1030,47 +1067,49 @@ export default function AdminMahasiswaDatabasePage() {
                   </div>
 
                   {/* SECTION IBU */}
-                  <div className="p-4 rounded-xl bg-purple-50/60 border border-purple-200 space-y-3">
-                    <h4 className="font-extrabold text-xs text-purple-800 uppercase tracking-wider">B. DATA IBU KANDUNG (ITEM 27-32)</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="bg-purple-50/70 p-5 rounded-2xl border border-purple-200 space-y-4">
+                    <h4 className="text-xs font-black text-purple-900 uppercase tracking-wider">B. DATA IBU KANDUNG (ITEM 27-32)</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">27. Nama Ibu</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">27. Nama Ibu</label>
                         <input
                           type="text"
                           value={namaIbu}
                           onChange={(e) => setNamaIbu(e.target.value)}
                           placeholder="Nama lengkap ibu"
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         />
                       </div>
+
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">28. NIK Ibu</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">28. NIK Ibu</label>
                         <input
                           type="text"
                           value={nikIbu}
                           onChange={(e) => setNikIbu(e.target.value)}
                           placeholder="16 digit NIK ibu"
-                          className="w-full glass-input text-xs font-mono"
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
                         />
                       </div>
+
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">29. Tanggal Lahir Ibu</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">29. Tanggal Lahir Ibu</label>
                         <input
                           type="date"
                           value={tanggalLahirIbu}
                           onChange={(e) => setTanggalLahirIbu(e.target.value)}
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">30. Pendidikan Ibu</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">30. Pendidikan Ibu</label>
                         <select
                           value={pendidikanIbu}
                           onChange={(e) => setPendidikanIbu(e.target.value)}
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         >
                           {pendidikanOptions.map((opt) => (
                             <option key={opt} value={opt}>{opt}</option>
@@ -1079,11 +1118,11 @@ export default function AdminMahasiswaDatabasePage() {
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">31. Pekerjaan Ibu</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">31. Pekerjaan Ibu</label>
                         <select
                           value={pekerjaanIbu}
                           onChange={(e) => setPekerjaanIbu(e.target.value)}
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         >
                           {pekerjaanOptions.map((opt) => (
                             <option key={opt} value={opt}>{opt}</option>
@@ -1092,11 +1131,11 @@ export default function AdminMahasiswaDatabasePage() {
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">32. Penghasilan Ibu</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">32. Penghasilan Ibu</label>
                         <select
                           value={penghasilanIbu}
                           onChange={(e) => setPenghasilanIbu(e.target.value)}
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         >
                           {penghasilanOptions.map((opt) => (
                             <option key={opt} value={opt}>{opt}</option>
@@ -1107,273 +1146,314 @@ export default function AdminMahasiswaDatabasePage() {
                   </div>
                 </div>
               )}
-
-              <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
-                <div className="text-xs font-semibold text-slate-500">
-                  {activeFormTab === 'identitas' && 'Langkah 1 dari 3'}
-                  {activeFormTab === 'alamat' && 'Langkah 2 dari 3'}
-                  {activeFormTab === 'orangtua' && 'Langkah 3 dari 3'}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {activeFormTab !== 'identitas' && (
-                    <button
-                      type="button"
-                      onClick={() => setActiveFormTab(activeFormTab === 'orangtua' ? 'alamat' : 'identitas')}
-                      className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200"
-                    >
-                      ← Kembali
-                    </button>
-                  )}
-
-                  {activeFormTab !== 'orangtua' ? (
-                    <button
-                      type="button"
-                      onClick={() => setActiveFormTab(activeFormTab === 'identitas' ? 'alamat' : 'orangtua')}
-                      className="px-4 py-2 rounded-xl bg-sky-600 text-white font-bold text-xs hover:bg-sky-500 shadow-sm"
-                    >
-                      Lanjut ke Step Berikutnya →
-                    </button>
-                  ) : (
-                    <button type="submit" className="glass-button text-xs font-bold py-2 px-5">
-                      Simpan Biodata Lengkap (32 Item)
-                    </button>
-                  )}
-                </div>
-              </div>
             </form>
+
+            {/* MODAL ACTION FOOTER STICKY */}
+            <div className="pt-4 border-t border-slate-200 flex items-center justify-between shrink-0 bg-white">
+              <div className="text-xs font-bold text-slate-600 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
+                <span>
+                  {activeFormTab === 'identitas' && 'Langkah 1 dari 3: Identitas Diri Mahasiswa'}
+                  {activeFormTab === 'alamat' && 'Langkah 2 dari 3: Alamat Tempat Tinggal & Transportasi'}
+                  {activeFormTab === 'orangtua' && 'Langkah 3 dari 3: Data Orang Tua / Ayah & Ibu'}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {activeFormTab !== 'identitas' && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveFormTab(activeFormTab === 'orangtua' ? 'alamat' : 'identitas')}
+                    className="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-extrabold text-xs sm:text-sm hover:bg-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    <span>Langkah Sebelumnya</span>
+                  </button>
+                )}
+
+                {activeFormTab !== 'orangtua' ? (
+                  <button
+                    type="button"
+                    onClick={() => setActiveFormTab(activeFormTab === 'identitas' ? 'alamat' : 'orangtua')}
+                    className="px-6 py-2.5 rounded-xl bg-sky-600 text-white font-extrabold text-xs sm:text-sm hover:bg-sky-500 shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span>Langkah Berikutnya</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleAddMahasiswa}
+                    className="glass-button text-xs sm:text-sm font-extrabold py-2.5 px-6 shadow-xl flex items-center gap-2 cursor-pointer"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Simpan Biodata Lengkap (32 Item)</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
           </div>
         </div>
       )}
 
-      {/* MODAL EDIT DATA MAHASISWA (LENGKAP 32-ITEM BIODATA WITH TABS) */}
+      {/* FULL-SCREEN SPACIOUS MODAL EDIT DATA MAHASISWA (32-ITEM) */}
       {editingMhs && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-          <div className="glass-panel w-full max-w-4xl p-6 space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/70 backdrop-blur-md">
+          <div className="glass-panel w-full max-w-[1400px] h-[92vh] p-6 sm:p-8 space-y-6 border border-slate-300 shadow-2xl relative bg-white rounded-3xl flex flex-col justify-between overflow-hidden">
+            
+            {/* MODAL HEADER */}
+            <div className="flex items-center justify-between border-b border-slate-200 pb-4 shrink-0">
               <div>
-                <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-                  <Edit3 className="w-5 h-5 text-sky-500" />
+                <h3 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-3">
+                  <Edit3 className="w-6 h-6 text-sky-500" />
                   <span>Edit Biodata Mahasiswa: {editingMhs.fullName}</span>
                 </h3>
-                <p className="text-xs text-slate-500 font-semibold mt-0.5">Ubah dan perbarui 32 item biodata mahasiswa secara lengkap.</p>
+                <p className="text-xs sm:text-sm text-slate-600 font-semibold mt-1">
+                  Ubah dan perbarui 32 item biodata mahasiswa secara terstruktur.
+                </p>
               </div>
-              <button onClick={() => setEditingMhs(null)} className="text-slate-400 hover:text-slate-600 font-bold">
-                ✕
+              <button
+                onClick={() => setEditingMhs(null)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors font-bold"
+              >
+                <X className="w-6 h-6" />
               </button>
             </div>
 
-            {/* TAB NAVIGATION FOR EDIT */}
-            <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto">
+            {/* TAB STEP NAVIGATION BADGES */}
+            <div className="grid grid-cols-3 gap-3 sm:gap-4 border-b border-slate-200 pb-4 shrink-0">
               <button
                 type="button"
                 onClick={() => setActiveFormTab('identitas')}
-                className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                className={`p-3.5 rounded-2xl text-left flex items-center gap-3 transition-all cursor-pointer border ${
                   activeFormTab === 'identitas'
-                    ? 'bg-sky-500 text-white shadow-md'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-sky-500 text-white border-sky-600 shadow-lg scale-[1.01]'
+                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
               >
-                <User className="w-4 h-4" />
-                <span>1. Identitas Diri (Item 1-9, 17)</span>
+                <div className={`p-2.5 rounded-xl ${activeFormTab === 'identitas' ? 'bg-white/20 text-white' : 'bg-sky-100 text-sky-600'}`}>
+                  <User className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase font-black tracking-wider opacity-80">Langkah 1</div>
+                  <div className="text-xs sm:text-sm font-black">1. Identitas Diri (1-9, 17)</div>
+                </div>
               </button>
 
               <button
                 type="button"
                 onClick={() => setActiveFormTab('alamat')}
-                className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                className={`p-3.5 rounded-2xl text-left flex items-center gap-3 transition-all cursor-pointer border ${
                   activeFormTab === 'alamat'
-                    ? 'bg-sky-500 text-white shadow-md'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-sky-500 text-white border-sky-600 shadow-lg scale-[1.01]'
+                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
               >
-                <Home className="w-4 h-4" />
-                <span>2. Alamat & Transportasi (Item 10-20)</span>
+                <div className={`p-2.5 rounded-xl ${activeFormTab === 'alamat' ? 'bg-white/20 text-white' : 'bg-sky-100 text-sky-600'}`}>
+                  <Home className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase font-black tracking-wider opacity-80">Langkah 2</div>
+                  <div className="text-xs sm:text-sm font-black">2. Alamat & Transportasi (10-20)</div>
+                </div>
               </button>
 
               <button
                 type="button"
                 onClick={() => setActiveFormTab('orangtua')}
-                className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                className={`p-3.5 rounded-2xl text-left flex items-center gap-3 transition-all cursor-pointer border ${
                   activeFormTab === 'orangtua'
-                    ? 'bg-sky-500 text-white shadow-md'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-sky-500 text-white border-sky-600 shadow-lg scale-[1.01]'
+                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                 }`}
               >
-                <Users2 className="w-4 h-4" />
-                <span>3. Data Orang Tua (Item 21-32)</span>
+                <div className={`p-2.5 rounded-xl ${activeFormTab === 'orangtua' ? 'bg-white/20 text-white' : 'bg-sky-100 text-sky-600'}`}>
+                  <Users2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase font-black tracking-wider opacity-80">Langkah 3</div>
+                  <div className="text-xs sm:text-sm font-black">3. Data Orang Tua (21-32)</div>
+                </div>
               </button>
             </div>
 
-            <form onSubmit={handleSaveEditMahasiswa} className="space-y-4">
+            {/* FORM CONTENT AREA EDIT */}
+            <form onSubmit={handleSaveEditMahasiswa} className="flex-1 overflow-y-auto pr-2 space-y-6">
               {/* TAB 1 EDIT */}
               {activeFormTab === 'identitas' && (
-                <div className="space-y-4 animate-in fade-in duration-150">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">1. Nama Lengkap Mahasiswa *</label>
-                      <input
-                        type="text"
-                        required
-                        value={editingMhs.fullName}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, fullName: e.target.value })}
-                        className="w-full glass-input text-xs sm:text-sm font-semibold"
-                      />
+                <div className="space-y-6 animate-in fade-in duration-200">
+                  <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+                    <h4 className="text-xs font-black text-sky-700 uppercase tracking-wider">A. INFORMASI AKADEMIK KAMPUS</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">1. Nama Lengkap Mahasiswa *</label>
+                        <input
+                          type="text"
+                          required
+                          value={editingMhs.fullName}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, fullName: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">NIM / Username ID *</label>
+                        <input
+                          type="text"
+                          required
+                          value={editingMhs.nim || editingMhs.usernameOrId || ''}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, nim: e.target.value, usernameOrId: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">Program Studi *</label>
+                        <select
+                          value={editingMhs.prodi || prodiList[0]?.nama}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, prodi: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        >
+                          {prodiList.map((p) => (
+                            <option key={p.id} value={p.nama}>
+                              {p.jenjang === 'Diploma III' ? 'D3' : 'D4'} {p.nama}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">NIM *</label>
-                      <input
-                        type="text"
-                        required
-                        value={editingMhs.nim || editingMhs.usernameOrId || ''}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, nim: e.target.value, usernameOrId: e.target.value })}
-                        className="w-full glass-input text-xs font-mono"
-                      />
-                    </div>
-                  </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">Tahun Angkatan *</label>
+                        <input
+                          type="number"
+                          required
+                          value={editingMhs.angkatan || 2026}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, angkatan: Number(e.target.value) })}
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Program Studi *</label>
-                      <select
-                        value={editingMhs.prodi || prodiList[0]?.nama}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, prodi: e.target.value })}
-                        className="w-full glass-input text-xs font-semibold"
-                      >
-                        {prodiList.map((p) => (
-                          <option key={p.id} value={p.nama}>
-                            {p.jenjang === 'Diploma III' ? 'D3' : 'D4'} {p.nama}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Tahun Angkatan *</label>
-                      <input
-                        type="number"
-                        required
-                        value={editingMhs.angkatan || 2026}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, angkatan: Number(e.target.value) })}
-                        className="w-full glass-input text-xs font-mono"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Status Role / Akademik</label>
-                      <select
-                        value={editingMhs.role}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, role: e.target.value as any })}
-                        className="w-full glass-input text-xs font-semibold"
-                      >
-                        <option value="mahasiswa">Mahasiswa Aktif</option>
-                        <option value="alumni">Lulus / Alumni</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">2. Tempat Lahir</label>
-                      <input
-                        type="text"
-                        value={editingMhs.tempatLahir || ''}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, tempatLahir: e.target.value })}
-                        className="w-full glass-input text-xs font-semibold"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">5. Tanggal Lahir</label>
-                      <input
-                        type="date"
-                        value={editingMhs.tanggalLahir || ''}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, tanggalLahir: e.target.value })}
-                        className="w-full glass-input text-xs font-semibold"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">3. Jenis Kelamin</label>
-                      <select
-                        value={editingMhs.jenisKelamin || 'Laki-laki'}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, jenisKelamin: e.target.value })}
-                        className="w-full glass-input text-xs font-semibold"
-                      >
-                        <option value="Laki-laki">Laki-laki</option>
-                        <option value="Perempuan">Perempuan</option>
-                      </select>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">Status Role / Akademik</label>
+                        <select
+                          value={editingMhs.role}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, role: e.target.value as any })}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        >
+                          <option value="mahasiswa">Mahasiswa Aktif</option>
+                          <option value="alumni">Lulus / Alumni</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">6. Agama</label>
-                      <select
-                        value={editingMhs.agama || 'Islam'}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, agama: e.target.value })}
-                        className="w-full glass-input text-xs font-semibold"
-                      >
-                        <option value="Islam">Islam</option>
-                        <option value="Kristen Protestan">Kristen Protestan</option>
-                        <option value="Katolik">Katolik</option>
-                        <option value="Hindu">Hindu</option>
-                        <option value="Buddha">Buddha</option>
-                        <option value="Khonghucu">Khonghucu</option>
-                      </select>
+                  <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+                    <h4 className="text-xs font-black text-sky-700 uppercase tracking-wider">B. IDENTITAS KEPENDUDUKAN & KONTAK</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">2. Tempat Lahir</label>
+                        <input
+                          type="text"
+                          value={editingMhs.tempatLahir || ''}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, tempatLahir: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">5. Tanggal Lahir</label>
+                        <input
+                          type="date"
+                          value={editingMhs.tanggalLahir || ''}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, tanggalLahir: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">3. Jenis Kelamin</label>
+                        <select
+                          value={editingMhs.jenisKelamin || 'Laki-laki'}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, jenisKelamin: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        >
+                          <option value="Laki-laki">Laki-laki</option>
+                          <option value="Perempuan">Perempuan</option>
+                        </select>
+                      </div>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">7. NIK (KTP)</label>
-                      <input
-                        type="text"
-                        value={editingMhs.nik || ''}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, nik: e.target.value })}
-                        className="w-full glass-input text-xs font-mono"
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">6. Agama</label>
+                        <select
+                          value={editingMhs.agama || 'Islam'}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, agama: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        >
+                          <option value="Islam">Islam</option>
+                          <option value="Kristen Protestan">Kristen Protestan</option>
+                          <option value="Katolik">Katolik</option>
+                          <option value="Hindu">Hindu</option>
+                          <option value="Buddha">Buddha</option>
+                          <option value="Khonghucu">Khonghucu</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">7. NIK (KTP)</label>
+                        <input
+                          type="text"
+                          value={editingMhs.nik || ''}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, nik: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">8. NISN</label>
+                        <input
+                          type="text"
+                          value={editingMhs.nisn || ''}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, nisn: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">8. NISN</label>
-                      <input
-                        type="text"
-                        value={editingMhs.nisn || ''}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, nisn: e.target.value })}
-                        className="w-full glass-input text-xs font-mono"
-                      />
-                    </div>
-                  </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">9. NPWP</label>
+                        <input
+                          type="text"
+                          value={editingMhs.npwp || ''}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, npwp: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">9. NPWP</label>
-                      <input
-                        type="text"
-                        value={editingMhs.npwp || ''}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, npwp: e.target.value })}
-                        className="w-full glass-input text-xs font-mono"
-                      />
-                    </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">17. Email</label>
+                        <input
+                          type="email"
+                          value={editingMhs.email}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, email: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">17. Email</label>
-                      <input
-                        type="email"
-                        value={editingMhs.email}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, email: e.target.value })}
-                        className="w-full glass-input text-xs font-semibold"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">11. No HP</label>
-                      <input
-                        type="text"
-                        value={editingMhs.noHp || ''}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, noHp: e.target.value })}
-                        className="w-full glass-input text-xs font-mono"
-                      />
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">11. No HP</label>
+                        <input
+                          type="text"
+                          value={editingMhs.noHp || ''}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, noHp: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1381,106 +1461,112 @@ export default function AdminMahasiswaDatabasePage() {
 
               {/* TAB 2 EDIT */}
               {activeFormTab === 'alamat' && (
-                <div className="space-y-4 animate-in fade-in duration-150">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">10. Jalan / Alamat Rumah</label>
-                    <input
-                      type="text"
-                      value={editingMhs.jalan || ''}
-                      onChange={(e) => setEditingMhs({ ...editingMhs, jalan: e.target.value })}
-                      className="w-full glass-input text-xs font-semibold"
-                    />
+                <div className="space-y-6 animate-in fade-in duration-200">
+                  <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+                    <h4 className="text-xs font-black text-sky-700 uppercase tracking-wider">A. ALAMAT DOMISILI RUMAH</h4>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-800 mb-1.5">10. Jalan / Alamat Rumah</label>
+                      <input
+                        type="text"
+                        value={editingMhs.jalan || ''}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, jalan: e.target.value })}
+                        className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">12. Dusun</label>
+                        <input
+                          type="text"
+                          value={editingMhs.dusun || ''}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, dusun: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">13. RT</label>
+                        <input
+                          type="text"
+                          value={editingMhs.rt || ''}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, rt: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">14. RW</label>
+                        <input
+                          type="text"
+                          value={editingMhs.rw || ''}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, rw: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">15. Kelurahan</label>
+                        <input
+                          type="text"
+                          value={editingMhs.kelurahan || ''}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, kelurahan: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">18. Kecamatan</label>
+                        <input
+                          type="text"
+                          value={editingMhs.kecamatan || ''}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, kecamatan: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">16. Kode Pos</label>
+                        <input
+                          type="text"
+                          value={editingMhs.kodePos || ''}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, kodePos: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
+                        />
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">12. Dusun</label>
-                      <input
-                        type="text"
-                        value={editingMhs.dusun || ''}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, dusun: e.target.value })}
-                        className="w-full glass-input text-xs font-semibold"
-                      />
-                    </div>
+                  <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-4">
+                    <h4 className="text-xs font-black text-sky-700 uppercase tracking-wider">B. TRANSPORTASI & STATS TINGGAL</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">19. Alat Transportasi</label>
+                        <select
+                          value={editingMhs.alatTransportasi || 'Sepeda motor'}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, alatTransportasi: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        >
+                          {transportOptions.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">13. RT</label>
-                      <input
-                        type="text"
-                        value={editingMhs.rt || ''}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, rt: e.target.value })}
-                        className="w-full glass-input text-xs font-mono"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">14. RW</label>
-                      <input
-                        type="text"
-                        value={editingMhs.rw || ''}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, rw: e.target.value })}
-                        className="w-full glass-input text-xs font-mono"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">15. Kelurahan</label>
-                      <input
-                        type="text"
-                        value={editingMhs.kelurahan || ''}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, kelurahan: e.target.value })}
-                        className="w-full glass-input text-xs font-semibold"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">18. Kecamatan</label>
-                      <input
-                        type="text"
-                        value={editingMhs.kecamatan || ''}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, kecamatan: e.target.value })}
-                        className="w-full glass-input text-xs font-semibold"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">16. Kode Pos</label>
-                      <input
-                        type="text"
-                        value={editingMhs.kodePos || ''}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, kodePos: e.target.value })}
-                        className="w-full glass-input text-xs font-mono"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">19. Alat Transportasi</label>
-                      <select
-                        value={editingMhs.alatTransportasi || 'Sepeda motor'}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, alatTransportasi: e.target.value })}
-                        className="w-full glass-input text-xs font-semibold"
-                      >
-                        {transportOptions.map((opt) => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">20. Status Tempat Tinggal</label>
-                      <select
-                        value={editingMhs.statusTempatTinggal || 'Bersama orang tua'}
-                        onChange={(e) => setEditingMhs({ ...editingMhs, statusTempatTinggal: e.target.value })}
-                        className="w-full glass-input text-xs font-semibold"
-                      >
-                        {tempatTinggalOptions.map((opt) => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                      </select>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">20. Status Tempat Tinggal</label>
+                        <select
+                          value={editingMhs.statusTempatTinggal || 'Bersama orang tua'}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, statusTempatTinggal: e.target.value })}
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
+                        >
+                          {tempatTinggalOptions.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1488,46 +1574,48 @@ export default function AdminMahasiswaDatabasePage() {
 
               {/* TAB 3 EDIT */}
               {activeFormTab === 'orangtua' && (
-                <div className="space-y-4 animate-in fade-in duration-150">
-                  <div className="p-4 rounded-xl bg-sky-50/60 border border-sky-200 space-y-3">
-                    <h4 className="font-extrabold text-xs text-sky-800 uppercase tracking-wider">A. DATA AYAH KANDUNG</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="space-y-6 animate-in fade-in duration-200">
+                  <div className="bg-sky-50/70 p-5 rounded-2xl border border-sky-200 space-y-4">
+                    <h4 className="text-xs font-black text-sky-900 uppercase tracking-wider">A. DATA AYAH KANDUNG</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">21. Nama Ayah</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">21. Nama Ayah</label>
                         <input
                           type="text"
                           value={editingMhs.namaAyah || ''}
                           onChange={(e) => setEditingMhs({ ...editingMhs, namaAyah: e.target.value })}
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         />
                       </div>
+
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">22. NIK Ayah</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">22. NIK Ayah</label>
                         <input
                           type="text"
                           value={editingMhs.nikAyah || ''}
                           onChange={(e) => setEditingMhs({ ...editingMhs, nikAyah: e.target.value })}
-                          className="w-full glass-input text-xs font-mono"
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
                         />
                       </div>
+
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">23. Tgl Lahir Ayah</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">23. Tgl Lahir Ayah</label>
                         <input
                           type="date"
                           value={editingMhs.tanggalLahirAyah || ''}
                           onChange={(e) => setEditingMhs({ ...editingMhs, tanggalLahirAyah: e.target.value })}
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">24. Pendidikan Ayah</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">24. Pendidikan Ayah</label>
                         <select
                           value={editingMhs.pendidikanAyah || 'SMA / SMK'}
                           onChange={(e) => setEditingMhs({ ...editingMhs, pendidikanAyah: e.target.value })}
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         >
                           {pendidikanOptions.map((opt) => (
                             <option key={opt} value={opt}>{opt}</option>
@@ -1536,11 +1624,11 @@ export default function AdminMahasiswaDatabasePage() {
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">25. Pekerjaan Ayah</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">25. Pekerjaan Ayah</label>
                         <select
                           value={editingMhs.pekerjaanAyah || 'Wiraswasta'}
                           onChange={(e) => setEditingMhs({ ...editingMhs, pekerjaanAyah: e.target.value })}
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         >
                           {pekerjaanOptions.map((opt) => (
                             <option key={opt} value={opt}>{opt}</option>
@@ -1549,11 +1637,11 @@ export default function AdminMahasiswaDatabasePage() {
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">26. Penghasilan Ayah</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">26. Penghasilan Ayah</label>
                         <select
                           value={editingMhs.penghasilanAyah || 'Rp. 5,000,000 - Rp. 20,000,000'}
                           onChange={(e) => setEditingMhs({ ...editingMhs, penghasilanAyah: e.target.value })}
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         >
                           {penghasilanOptions.map((opt) => (
                             <option key={opt} value={opt}>{opt}</option>
@@ -1563,45 +1651,47 @@ export default function AdminMahasiswaDatabasePage() {
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-purple-50/60 border border-purple-200 space-y-3">
-                    <h4 className="font-extrabold text-xs text-purple-800 uppercase tracking-wider">B. DATA IBU KANDUNG</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="bg-purple-50/70 p-5 rounded-2xl border border-purple-200 space-y-4">
+                    <h4 className="text-xs font-black text-purple-900 uppercase tracking-wider">B. DATA IBU KANDUNG</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">27. Nama Ibu</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">27. Nama Ibu</label>
                         <input
                           type="text"
                           value={editingMhs.namaIbu || ''}
                           onChange={(e) => setEditingMhs({ ...editingMhs, namaIbu: e.target.value })}
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         />
                       </div>
+
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">28. NIK Ibu</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">28. NIK Ibu</label>
                         <input
                           type="text"
                           value={editingMhs.nikIbu || ''}
                           onChange={(e) => setEditingMhs({ ...editingMhs, nikIbu: e.target.value })}
-                          className="w-full glass-input text-xs font-mono"
+                          className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300"
                         />
                       </div>
+
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">29. Tgl Lahir Ibu</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">29. Tgl Lahir Ibu</label>
                         <input
                           type="date"
                           value={editingMhs.tanggalLahirIbu || ''}
                           onChange={(e) => setEditingMhs({ ...editingMhs, tanggalLahirIbu: e.target.value })}
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">30. Pendidikan Ibu</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">30. Pendidikan Ibu</label>
                         <select
                           value={editingMhs.pendidikanIbu || 'SMA / SMK'}
                           onChange={(e) => setEditingMhs({ ...editingMhs, pendidikanIbu: e.target.value })}
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         >
                           {pendidikanOptions.map((opt) => (
                             <option key={opt} value={opt}>{opt}</option>
@@ -1610,11 +1700,11 @@ export default function AdminMahasiswaDatabasePage() {
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">31. Pekerjaan Ibu</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">31. Pekerjaan Ibu</label>
                         <select
                           value={editingMhs.pekerjaanIbu || 'Wirausaha'}
                           onChange={(e) => setEditingMhs({ ...editingMhs, pekerjaanIbu: e.target.value })}
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         >
                           {pekerjaanOptions.map((opt) => (
                             <option key={opt} value={opt}>{opt}</option>
@@ -1623,11 +1713,11 @@ export default function AdminMahasiswaDatabasePage() {
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 mb-1">32. Penghasilan Ibu</label>
+                        <label className="block text-xs font-bold text-slate-800 mb-1.5">32. Penghasilan Ibu</label>
                         <select
                           value={editingMhs.penghasilanIbu || 'Rp. 2,000,000 - Rp. 4,999,999'}
                           onChange={(e) => setEditingMhs({ ...editingMhs, penghasilanIbu: e.target.value })}
-                          className="w-full glass-input text-xs font-semibold"
+                          className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300"
                         >
                           {penghasilanOptions.map((opt) => (
                             <option key={opt} value={opt}>{opt}</option>
@@ -1638,28 +1728,39 @@ export default function AdminMahasiswaDatabasePage() {
                   </div>
                 </div>
               )}
-
-              <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
-                <div className="text-xs font-semibold text-slate-500">
-                  {activeFormTab === 'identitas' && 'Langkah 1 dari 3'}
-                  {activeFormTab === 'alamat' && 'Langkah 2 dari 3'}
-                  {activeFormTab === 'orangtua' && 'Langkah 3 dari 3'}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setEditingMhs(null)}
-                    className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200"
-                  >
-                    Batal
-                  </button>
-                  <button type="submit" className="glass-button text-xs font-bold py-2 px-5">
-                    Simpan Perubahan 32 Biodata
-                  </button>
-                </div>
-              </div>
             </form>
+
+            {/* MODAL ACTION FOOTER STICKY */}
+            <div className="pt-4 border-t border-slate-200 flex items-center justify-between shrink-0 bg-white">
+              <div className="text-xs font-bold text-slate-600 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
+                <span>
+                  {activeFormTab === 'identitas' && 'Langkah 1 dari 3: Identitas Diri Mahasiswa'}
+                  {activeFormTab === 'alamat' && 'Langkah 2 dari 3: Alamat Tempat Tinggal & Transportasi'}
+                  {activeFormTab === 'orangtua' && 'Langkah 3 dari 3: Data Orang Tua / Ayah & Ibu'}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setEditingMhs(null)}
+                  className="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-extrabold text-xs sm:text-sm hover:bg-slate-200 transition-colors cursor-pointer"
+                >
+                  Batal
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSaveEditMahasiswa}
+                  className="glass-button text-xs sm:text-sm font-extrabold py-2.5 px-6 shadow-xl flex items-center gap-2 cursor-pointer"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Simpan Perubahan 32 Biodata</span>
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
       )}
@@ -1730,7 +1831,7 @@ export default function AdminMahasiswaDatabasePage() {
       {/* MODAL VIEW DETAIL 32 BIODATA ITEM */}
       {viewDetailMhs && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-          <div className="glass-panel w-full max-w-3xl p-6 space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl max-h-[85vh] overflow-y-auto text-slate-900">
+          <div className="glass-panel w-full max-w-4xl p-6 space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl max-h-[85vh] overflow-y-auto text-slate-900">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
                 <GraduationCap className="w-5 h-5 text-sky-500" />
