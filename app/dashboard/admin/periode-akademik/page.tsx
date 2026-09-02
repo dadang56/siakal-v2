@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, CheckCircle2, Plus, Edit3, Trash2, AlertTriangle, Sparkles, X, Check, Clock } from 'lucide-react';
+import { Calendar, CheckCircle2, Plus, Edit3, Trash2, AlertTriangle, Sparkles, X, Check } from 'lucide-react';
 import { initialPeriodeList, PeriodeItem } from '@/lib/mockStore';
 
 export default function AdminPeriodePage() {
@@ -56,7 +56,7 @@ export default function AdminPeriodePage() {
     savePeriodes(updated);
     const activeObj = updated.find((p) => p.id === id);
     if (activeObj) {
-      showNotification(`Periode Aktif berhasil diubah menjadi: Tahun Akademik ${activeObj.tahun} - Semester ${activeObj.semester}`);
+      showNotification(`Periode Aktif diubah ke: ${activeObj.tahun} (${activeObj.semester})`);
     }
   };
 
@@ -71,7 +71,6 @@ export default function AdminPeriodePage() {
       semester: newSemester,
       isAktif: isMakeActive,
       kodePeriode: newKodePeriode,
-      createdDate: new Date().toISOString().split('T')[0],
     };
 
     let updatedList: PeriodeItem[];
@@ -84,7 +83,7 @@ export default function AdminPeriodePage() {
 
     savePeriodes(updatedList);
     setShowAddModal(false);
-    showNotification(`Periode Akademik baru (${tahunStr} - Semester ${newSemester}) berhasil ditambahkan!`);
+    showNotification(`Periode ${tahunStr} (${newSemester}) berhasil ditambahkan.`);
   };
 
   const handleSaveEditPeriode = (e: React.FormEvent) => {
@@ -102,21 +101,21 @@ export default function AdminPeriodePage() {
 
     savePeriodes(updatedList);
     setEditingPeriode(null);
-    showNotification(`Perubahan Periode Akademik (${editingPeriode.tahun}) berhasil disimpan!`);
+    showNotification(`Periode ${editingPeriode.tahun} berhasil diperbarui.`);
   };
 
   const confirmDeletePeriode = () => {
     if (!deleteTargetId) return;
     const target = periodes.find((p) => p.id === deleteTargetId);
     if (target?.isAktif) {
-      alert('Tidak dapat menghapus Periode Akademik yang sedang AKTIF!');
+      alert('Periode yang sedang AKTIF tidak dapat dihapus.');
       setDeleteTargetId(null);
       return;
     }
     const updated = periodes.filter((p) => p.id !== deleteTargetId);
     savePeriodes(updated);
     setDeleteTargetId(null);
-    showNotification('Periode Akademik berhasil dihapus.');
+    showNotification('Periode akademik dihapus.');
   };
 
   const activePeriode = periodes.find((p) => p.isAktif) || periodes[0];
@@ -138,10 +137,10 @@ export default function AdminPeriodePage() {
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2.5">
             <Calendar className="w-6 h-6 text-sky-500 shrink-0" />
-            <span>Manajemen & Saklar Aktivasi Periode Akademik</span>
+            <span>Manajemen Periode Akademik</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 mt-1 font-semibold">
-            Tentukan Tahun Akademik dan Semester aktif. Seluruh data transaksi baru (seperti PRALA, TRB, Clearance Out, Beasiswa, dan Prestasi) akan ter-tag otomatis sesuai periode aktif ini.
+            Kelola tahun akademik dan semester aktif sistem.
           </p>
         </div>
 
@@ -164,20 +163,20 @@ export default function AdminPeriodePage() {
             <div>
               <div className="text-xs font-black uppercase text-sky-700 tracking-wider flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                PERIODE AKADEMIK AKTIF SISTEM SAAT INI
+                PERIODE AKTIF
               </div>
               <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">
                 Tahun Akademik {activePeriode.tahun} — Semester {activePeriode.semester}
               </h2>
               <p className="text-xs text-slate-600 font-semibold mt-1">
-                Kode Periode: <span className="font-mono font-bold text-sky-700">{activePeriode.kodePeriode || '20251'}</span> • Seluruh pengajuan & inputan data akan secara otomatis terkelompok di periode ini.
+                Kode Periode: <span className="font-mono font-bold text-sky-700">{activePeriode.kodePeriode || '20251'}</span>
               </p>
             </div>
           </div>
 
           <div className="px-4 py-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 font-black text-xs sm:text-sm flex items-center gap-2 shrink-0">
             <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-            <span>AKSI SISTEM TERHUBUNG</span>
+            <span>Periode Aktif</span>
           </div>
         </div>
       )}
@@ -185,7 +184,7 @@ export default function AdminPeriodePage() {
       {/* 3. List of All Academic Periods */}
       <div className="glass-panel p-6 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-4">
         <h3 className="text-base font-black text-slate-900 tracking-wide">
-          Daftar Periode Akademik Terdaftar ({periodes.length} Periode)
+          Daftar Periode Akademik ({periodes.length})
         </h3>
 
         <div className="grid grid-cols-1 gap-3.5">
@@ -220,7 +219,6 @@ export default function AdminPeriodePage() {
                   </div>
                   <p className="text-xs text-slate-600 font-bold mt-1">
                     Semester: <span className="text-sky-700 font-black">{p.semester}</span>
-                    {p.createdDate && ` • Dibuat: ${p.createdDate}`}
                   </p>
                 </div>
               </div>
@@ -229,7 +227,7 @@ export default function AdminPeriodePage() {
                 {p.isAktif ? (
                   <span className="px-4 py-2 rounded-xl bg-emerald-500/20 text-emerald-800 font-black text-xs border border-emerald-500/30 inline-flex items-center gap-1.5 shadow-sm">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>Periode Aktif Sistem</span>
+                    <span>Periode Aktif</span>
                   </span>
                 ) : (
                   <button
@@ -310,7 +308,7 @@ export default function AdminPeriodePage() {
                     />
                   </div>
                 </div>
-                <p className="text-[11px] text-slate-500 font-medium mt-1">Format otomatis: {newTahunStart}/{newTahunEnd}</p>
+                <p className="text-[11px] text-slate-500 font-medium mt-1">Format: {newTahunStart}/{newTahunEnd}</p>
               </div>
 
               {/* SEMESTER RADIO BUTTON CARDS */}
@@ -347,7 +345,7 @@ export default function AdminPeriodePage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1">Kode Periode Sistem *</label>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">Kode Periode *</label>
                   <input
                     type="text"
                     required
