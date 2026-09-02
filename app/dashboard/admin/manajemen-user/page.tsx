@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Users, Upload, Download, Plus, Trash2, CheckCircle2, Search, Key, Copy, Eye, EyeOff, Check, AlertTriangle, FileSpreadsheet, Edit3 } from 'lucide-react';
-import { initialAccounts, UserAccount } from '@/lib/mockStore';
+import { initialAccounts, UserAccount, initialProdiList } from '@/lib/mockStore';
 import { readExcelFile, downloadUserImportTemplate, exportToExcel } from '@/lib/utils/excel';
 
 export default function AdminUserManagementPage() {
@@ -18,6 +18,30 @@ export default function AdminUserManagementPage() {
     }
     return initialAccounts;
   });
+
+  // Dynamic Master Data Prodi List
+  const [prodiList, setProdiList] = useState<any[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('siakal_prodi_list');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (e) {}
+    }
+    return initialProdiList;
+  });
+
+  useEffect(() => {
+    try {
+      const storedProdis = localStorage.getItem('siakal_prodi_list');
+      if (storedProdis) {
+        const parsed = JSON.parse(storedProdis);
+        if (Array.isArray(parsed) && parsed.length > 0) setProdiList(parsed);
+      }
+    } catch (e) {}
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRole, setFilterRole] = useState<string>('semua');
@@ -37,7 +61,7 @@ export default function AdminUserManagementPage() {
   const [newRole, setNewRole] = useState<UserAccount['role']>('mahasiswa');
   const [newUsernameOrId, setNewUsernameOrId] = useState('');
   const [newPassword, setNewPassword] = useState('SIAKAL2026!');
-  const [newProdi, setNewProdi] = useState('Studi Nautika');
+  const [newProdi, setNewProdi] = useState(prodiList[0]?.nama || 'Studi Nautika');
 
   const saveUsers = (newList: UserAccount[]) => {
     setUsers(newList);
@@ -99,7 +123,7 @@ export default function AdminUserManagementPage() {
         initialPassword: row['Password Initial']?.toString() || 'SIAKAL2026!',
         nim: r === 'mahasiswa' ? row['Username/NIM/NIP']?.toString() : undefined,
         nip: r === 'dosen' ? row['Username/NIM/NIP']?.toString() : undefined,
-        prodi: isMhsOrAlumni ? row['Prodi'] : undefined,
+        prodi: isMhsOrAlumni ? (row['Prodi'] || prodiList[0]?.nama) : undefined,
         isProfileCompleted: true,
       };
     });
@@ -139,15 +163,23 @@ export default function AdminUserManagementPage() {
     setNewFullName('');
     setNewUsernameOrId('');
     setNewEmail('');
+    alert(`Akun (${newFullName}) berhasil dibuat & tersimpan di sistem!`);
   };
 
   const handleSaveEditUser = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingUser) return;
 
-    const updatedList = users.map((u) => (u.id === editingUser.id ? editingUser : u));
+    const isMhsOrAlumni = editingUser.role === 'mahasiswa' || editingUser.role === 'alumni';
+    const updatedUser = {
+      ...editingUser,
+      prodi: isMhsOrAlumni ? editingUser.prodi : undefined,
+    };
+
+    const updatedList = users.map((u) => (u.id === editingUser.id ? updatedUser : u));
     saveUsers(updatedList);
     setEditingUser(null);
+    alert(`Perubahan akun (${editingUser.fullName}) berhasil disimpan!`);
   };
 
   const handleExportUsers = () => {
@@ -266,7 +298,7 @@ export default function AdminUserManagementPage() {
                 <th className="py-3 px-4">ROLE</th>
                 <th className="py-3 px-4">ID MASUK</th>
                 <th className="py-3 px-4">KATA SANDI</th>
-                <th className="py-3 px-4">PRODI / UNIT</th>
+                <th className="py-3 px-4">PROGRAM STUDI</th>
                 <th className="py-3 px-4 text-center">AKSI</th>
               </tr>
             </thead>
@@ -323,7 +355,10 @@ export default function AdminUserManagementPage() {
                         </div>
                       </td>
 
-                      <td className="py-3.5 px-4 font-bold text-slate-700">{u.prodi || '-'}</td>
+                      {/* PROGRAM STUDI ONLY DISPLAYED FOR MAHASISWA & ALUMNI */}
+                      <td className="py-3.5 px-4 font-bold text-slate-700">
+                        {u.role === 'mahasiswa' || u.role === 'alumni' ? u.prodi || '-' : '-'}
+                      </td>
 
                       <td className="py-3.5 px-4 text-center">
                         <div className="flex items-center justify-center gap-1.5">
@@ -406,8 +441,8 @@ export default function AdminUserManagementPage() {
                     onChange={(e) => setNewRole(e.target.value as any)}
                     className="w-full glass-input text-xs font-semibold"
                   >
-                    <option value="admin">Administrator</option>
                     <option value="mahasiswa">Mahasiswa</option>
+                    <option value="admin">Administrator</option>
                     <option value="dosen">Dosen Pembimbing</option>
                     <option value="pembimbing_lapangan">Pembimbing Lapangan</option>
                     <option value="alumni">Alumni</option>
@@ -440,21 +475,33 @@ export default function AdminUserManagementPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Program Studi / Unit</label>
-                  <select
-                    value={newProdi}
-                    onChange={(e) => setNewProdi(e.target.value)}
-                    className="w-full glass-input text-xs font-semibold"
-                  >
-                    <option value="Studi Nautika">D3 Studi Nautika</option>
-                    <option value="Permesinan Kapal">D3 Permesinan Kapal</option>
-                    <option value="Manajemen Transportasi Perairan Daratan">D3 MTPD</option>
-                    <option value="Teknologi Rekayasa Pelayaran & TSDP">D4 TSDP</option>
-                    <option value="Unit Perpustakaan">Unit Perpustakaan</option>
-                    <option value="Unit Ketarunaan">Unit Ketarunaan</option>
-                  </select>
-                </div>
+                {/* PROGRAM STUDI ONLY SHOWN IF ROLE IS MAHASISWA OR ALUMNI */}
+                {(newRole === 'mahasiswa' || newRole === 'alumni') ? (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Program Studi *</label>
+                    <select
+                      value={newProdi}
+                      onChange={(e) => setNewProdi(e.target.value)}
+                      className="w-full glass-input text-xs font-semibold"
+                    >
+                      {prodiList.map((p) => (
+                        <option key={p.id} value={p.nama}>
+                          {p.jenjang === 'Diploma III' ? 'D3' : 'D4'} {p.nama}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 mb-1">Program Studi</label>
+                    <input
+                      type="text"
+                      disabled
+                      value="Tidak Perlu (Non-Mahasiswa)"
+                      className="w-full glass-input text-xs font-semibold text-slate-400 bg-slate-100 cursor-not-allowed"
+                    />
+                  </div>
+                )}
               </div>
 
               <div>
@@ -519,8 +566,8 @@ export default function AdminUserManagementPage() {
                     onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as any })}
                     className="w-full glass-input text-xs font-semibold"
                   >
-                    <option value="admin">Administrator</option>
                     <option value="mahasiswa">Mahasiswa</option>
+                    <option value="admin">Administrator</option>
                     <option value="dosen">Dosen Pembimbing</option>
                     <option value="pembimbing_lapangan">Pembimbing Lapangan</option>
                     <option value="alumni">Alumni</option>
@@ -540,15 +587,45 @@ export default function AdminUserManagementPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Password Initial *</label>
-                <input
-                  type="text"
-                  required
-                  value={editingUser.initialPassword || 'SIAKAL2026!'}
-                  onChange={(e) => setEditingUser({ ...editingUser, initialPassword: e.target.value })}
-                  className="w-full glass-input text-xs font-mono"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Password Initial *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingUser.initialPassword || 'SIAKAL2026!'}
+                    onChange={(e) => setEditingUser({ ...editingUser, initialPassword: e.target.value })}
+                    className="w-full glass-input text-xs font-mono"
+                  />
+                </div>
+
+                {/* PROGRAM STUDI ONLY SHOWN IF ROLE IS MAHASISWA OR ALUMNI */}
+                {(editingUser.role === 'mahasiswa' || editingUser.role === 'alumni') ? (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Program Studi *</label>
+                    <select
+                      value={editingUser.prodi || prodiList[0]?.nama}
+                      onChange={(e) => setEditingUser({ ...editingUser, prodi: e.target.value })}
+                      className="w-full glass-input text-xs font-semibold"
+                    >
+                      {prodiList.map((p) => (
+                        <option key={p.id} value={p.nama}>
+                          {p.jenjang === 'Diploma III' ? 'D3' : 'D4'} {p.nama}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 mb-1">Program Studi</label>
+                    <input
+                      type="text"
+                      disabled
+                      value="Tidak Perlu (Non-Mahasiswa)"
+                      className="w-full glass-input text-xs font-semibold text-slate-400 bg-slate-100 cursor-not-allowed"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="pt-2 flex items-center justify-end gap-2">
