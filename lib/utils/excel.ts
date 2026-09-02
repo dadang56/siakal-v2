@@ -36,7 +36,7 @@ export function downloadUserImportTemplate() {
       'Email': 'fauzi@mhs.poltek.ac.id',
       'Username/NIM/NIP': '2101034',
       'Password Initial': 'SIAKAL2026!',
-      'Role': 'mahasiswa', // admin, mahasiswa, dosen, pembimbing_lapangan, alumni, unit_approver
+      'Role': 'mahasiswa',
       'Prodi': 'Studi Nautika',
       'Angkatan': 2023,
     },
@@ -49,15 +49,49 @@ export function downloadUserImportTemplate() {
       'Prodi': 'Studi Nautika',
       'Angkatan': '',
     },
-    {
-      'Nama Lengkap': 'Unit Perpustakaan',
-      'Email': 'perpus@poltek.ac.id',
-      'Username/NIM/NIP': 'UNIT-PERPUS-03',
-      'Password Initial': 'Perpus2026!',
-      'Role': 'unit_approver',
-      'Prodi': '',
-      'Angkatan': '',
-    },
   ];
   exportToExcel([{ sheetName: 'Template Import Akun', data: templateData }], 'Template_Import_Akun_SIAKAL');
+}
+
+export function downloadMahasiswaBiodataTemplate() {
+  const templateData = [
+    {
+      'NIM': '2026001',
+      'Nama Lengkap': 'Ahmad Fauzi',
+      'Program Studi': 'D3 Permesinan Kapal',
+      'Angkatan': 2026,
+      'Status Akademik': 'Aktif',
+      'Tempat Lahir': 'Palembang',
+      'Tanggal Lahir': '2004-05-14',
+      'Jenis Kelamin': 'Laki-laki',
+      'Agama': 'Islam',
+      'NIK (KTP)': '1671011405040001',
+      'NISN': '0041234567',
+      'NPWP': '92.123.456.7-301.000',
+      'Email': 'fauzi@mhs.poltek.ac.id',
+      'No HP': '081234567890',
+      'Jalan': 'Jl. Merdeka No. 45',
+      'Dusun': 'Dusun II',
+      'RT': '002',
+      'RW': '001',
+      'Kelurahan': 'Bukit Kecil',
+      'Kecamatan': 'Ilir Barat I',
+      'Kode Pos': '30135',
+      'Alat Transportasi': 'Sepeda motor',
+      'Status Tempat Tinggal': 'Bersama orang tua',
+      'Nama Ayah': 'Herman Prasetyo',
+      'NIK Ayah': '1671011002750002',
+      'Tanggal Lahir Ayah': '1975-02-10',
+      'Pendidikan Ayah': 'S1 / D4',
+      'Pekerjaan Ayah': 'Wiraswasta',
+      'Penghasilan Ayah': 'Rp. 5,000,000 - Rp. 20,000,000',
+      'Nama Ibu': 'Siti Rahmah',
+      'NIK Ibu': '1671011508780003',
+      'Tanggal Lahir Ibu': '1978-08-15',
+      'Pendidikan Ibu': 'SMA / SMK',
+      'Pekerjaan Ibu': 'Wirausaha',
+      'Penghasilan Ibu': 'Rp. 2,000,000 - Rp. 4,999,999',
+    },
+  ];
+  exportToExcel([{ sheetName: 'Biodata Mahasiswa Lengkap', data: templateData }], 'Template_Biodata_Mahasiswa_Lengkap_32_Item');
 }
