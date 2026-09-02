@@ -202,7 +202,7 @@ export default function AdminUserManagementPage() {
 
           <button onClick={() => setShowAddModal(true)} className="glass-button text-xs sm:text-sm font-extrabold flex items-center gap-2 py-2.5 px-4 shadow-md cursor-pointer">
             <Plus className="w-4 h-4" />
-            <span>+ Tambah User</span>
+            <span>Tambah User</span>
           </button>
         </div>
       </div>

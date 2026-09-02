@@ -435,7 +435,7 @@ export default function AdminMahasiswaDatabasePage() {
 
           <button onClick={() => { resetAddForm(); setShowAddModal(true); }} className="glass-button text-xs sm:text-sm font-extrabold flex items-center gap-2 py-2.5 px-4 shadow-md cursor-pointer">
             <Plus className="w-4 h-4" />
-            <span>+ Data Mahasiswa</span>
+            <span>Tambah Mahasiswa</span>
           </button>
         </div>
       </div>

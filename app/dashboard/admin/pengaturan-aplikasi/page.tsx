@@ -443,7 +443,7 @@ export default function AppSettingsPage() {
               className="glass-button text-xs font-bold py-2.5 px-4 flex items-center gap-2 cursor-pointer shadow-md"
             >
               <Plus className="w-4 h-4" />
-              <span>+ Upload Foto dari Komputer</span>
+              <span>Upload Foto dari Komputer</span>
             </label>
           </div>
         </div>
@@ -463,7 +463,7 @@ export default function AppSettingsPage() {
               className="w-full glass-input text-xs font-mono"
             />
             <button type="button" onClick={handleAddDriveBgSlide} className="glass-button text-xs font-bold py-2 px-4 shrink-0">
-              + Tambah Slide Drive
+              Tambah Slide Drive
             </button>
           </div>
         </div>
