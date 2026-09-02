@@ -463,7 +463,8 @@ export default function AdminUserManagementPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* PROGRAM STUDI FIELD IS COMPLETELY HIDDEN IF ROLE IS NON-MAHASISWA */}
+              <div className={`grid grid-cols-1 ${newRole === 'mahasiswa' || newRole === 'alumni' ? 'sm:grid-cols-2' : ''} gap-3`}>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Password Initial *</label>
                   <input
@@ -475,8 +476,7 @@ export default function AdminUserManagementPage() {
                   />
                 </div>
 
-                {/* PROGRAM STUDI ONLY SHOWN IF ROLE IS MAHASISWA OR ALUMNI */}
-                {(newRole === 'mahasiswa' || newRole === 'alumni') ? (
+                {(newRole === 'mahasiswa' || newRole === 'alumni') && (
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Program Studi *</label>
                     <select
@@ -490,16 +490,6 @@ export default function AdminUserManagementPage() {
                         </option>
                       ))}
                     </select>
-                  </div>
-                ) : (
-                  <div>
-                    <label className="block text-xs font-bold text-slate-400 mb-1">Program Studi</label>
-                    <input
-                      type="text"
-                      disabled
-                      value="Tidak Perlu (Non-Mahasiswa)"
-                      className="w-full glass-input text-xs font-semibold text-slate-400 bg-slate-100 cursor-not-allowed"
-                    />
                   </div>
                 )}
               </div>
@@ -587,7 +577,8 @@ export default function AdminUserManagementPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* PROGRAM STUDI FIELD IS COMPLETELY HIDDEN IF ROLE IS NON-MAHASISWA */}
+              <div className={`grid grid-cols-1 ${editingUser.role === 'mahasiswa' || editingUser.role === 'alumni' ? 'sm:grid-cols-2' : ''} gap-3`}>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Password Initial *</label>
                   <input
@@ -599,8 +590,7 @@ export default function AdminUserManagementPage() {
                   />
                 </div>
 
-                {/* PROGRAM STUDI ONLY SHOWN IF ROLE IS MAHASISWA OR ALUMNI */}
-                {(editingUser.role === 'mahasiswa' || editingUser.role === 'alumni') ? (
+                {(editingUser.role === 'mahasiswa' || editingUser.role === 'alumni') && (
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">Program Studi *</label>
                     <select
@@ -614,16 +604,6 @@ export default function AdminUserManagementPage() {
                         </option>
                       ))}
                     </select>
-                  </div>
-                ) : (
-                  <div>
-                    <label className="block text-xs font-bold text-slate-400 mb-1">Program Studi</label>
-                    <input
-                      type="text"
-                      disabled
-                      value="Tidak Perlu (Non-Mahasiswa)"
-                      className="w-full glass-input text-xs font-semibold text-slate-400 bg-slate-100 cursor-not-allowed"
-                    />
                   </div>
                 )}
               </div>
