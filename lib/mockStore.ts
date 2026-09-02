@@ -219,7 +219,33 @@ export const initialClearanceUnits = [
   { id: 'unit-lab', name: 'Laboratorium & Bengkel Kapal', namaUnit: 'Laboratorium & Bengkel Kapal', kode: 'LABORATORIUM', code: 'LABORATORIUM', unitCode: 14 },
 ];
 
-export const initialPeriodeList = [
-  { id: 'per-1', tahun: '2025/2026', tahunAkademik: '2025/2026 Ganjil', semester: 'Ganjil', isAktif: true },
-  { id: 'per-2', tahun: '2024/2025', tahunAkademik: '2024/2025 Genap', semester: 'Genap', isAktif: false },
+export interface PeriodeItem {
+  id: string;
+  tahun: string; // e.g. "2025/2026"
+  semester: 'Ganjil' | 'Genap';
+  isAktif: boolean;
+  kodePeriode?: string; // e.g. "20251"
+  createdDate?: string;
+}
+
+export const initialPeriodeList: PeriodeItem[] = [
+  { id: 'per-1', tahun: '2025/2026', semester: 'Ganjil', isAktif: true, kodePeriode: '20251', createdDate: '2025-08-01' },
+  { id: 'per-2', tahun: '2024/2025', semester: 'Genap', isAktif: false, kodePeriode: '20242', createdDate: '2025-01-10' },
+  { id: 'per-3', tahun: '2024/2025', semester: 'Ganjil', isAktif: false, kodePeriode: '20241', createdDate: '2024-08-01' },
 ];
+
+export function getActivePeriode(): PeriodeItem {
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('siakal_periode_list');
+      if (stored) {
+        const parsed: PeriodeItem[] = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const active = parsed.find((p) => p.isAktif);
+          if (active) return active;
+        }
+      }
+    } catch (e) {}
+  }
+  return initialPeriodeList[0];
+}
