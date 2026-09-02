@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, Upload, Download, Plus, Trash2, CheckCircle2, Search, Key, Copy, Eye, EyeOff, Check, AlertTriangle, FileSpreadsheet, Edit3 } from 'lucide-react';
+import { Users, Upload, Download, Plus, Trash2, CheckCircle2, Search, Key, Copy, Eye, EyeOff, Check, AlertTriangle, FileSpreadsheet, Edit3, RefreshCw, UserCheck } from 'lucide-react';
 import { initialAccounts, UserAccount, initialProdiList } from '@/lib/mockStore';
 import { readExcelFile, downloadUserImportTemplate, exportToExcel } from '@/lib/utils/excel';
 
@@ -62,6 +62,11 @@ export default function AdminUserManagementPage() {
   const [newUsernameOrId, setNewUsernameOrId] = useState('');
   const [newPassword, setNewPassword] = useState('SIAKAL2026!');
   const [newProdi, setNewProdi] = useState(prodiList[0]?.nama || 'Studi Nautika');
+  const [newAngkatan, setNewAngkatan] = useState('2026');
+  const [selectedMhsId, setSelectedMhsId] = useState('');
+
+  // Extract list of Mahasiswas from database
+  const existingMahasiswas = users.filter((u) => u.role === 'mahasiswa' || u.role === 'alumni');
 
   const saveUsers = (newList: UserAccount[]) => {
     setUsers(newList);
@@ -94,6 +99,20 @@ export default function AdminUserManagementPage() {
     downloadUserImportTemplate();
   };
 
+  // Sync selection when choosing existing student from dropdown
+  const handleSelectExistingMhs = (mhsId: string) => {
+    setSelectedMhsId(mhsId);
+    if (!mhsId) return;
+    const mhs = existingMahasiswas.find((m) => m.id === mhsId);
+    if (mhs) {
+      setNewFullName(mhs.fullName);
+      setNewUsernameOrId(mhs.nim || mhs.usernameOrId || '');
+      setNewEmail(mhs.email);
+      setNewProdi(mhs.prodi || prodiList[0]?.nama);
+      setNewAngkatan(mhs.angkatan ? mhs.angkatan.toString() : '2026');
+    }
+  };
+
   const handleExcelFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -121,9 +140,10 @@ export default function AdminUserManagementPage() {
         role: r,
         usernameOrId: row['Username/NIM/NIP']?.toString() || row['Email'],
         initialPassword: row['Password Initial']?.toString() || 'SIAKAL2026!',
-        nim: r === 'mahasiswa' ? row['Username/NIM/NIP']?.toString() : undefined,
+        nim: isMhsOrAlumni ? row['Username/NIM/NIP']?.toString() : undefined,
         nip: r === 'dosen' ? row['Username/NIM/NIP']?.toString() : undefined,
         prodi: isMhsOrAlumni ? (row['Prodi'] || prodiList[0]?.nama) : undefined,
+        angkatan: isMhsOrAlumni ? (Number(row['Angkatan']) || 2026) : undefined,
         isProfileCompleted: true,
       };
     });
@@ -132,7 +152,7 @@ export default function AdminUserManagementPage() {
     saveUsers(updated);
     setShowImportModal(false);
     setImportedPreview([]);
-    alert(`Berhasil mengimpor ${newAccounts.length} akun pengguna baru ke sistem!`);
+    alert(`Berhasil mengimpor ${newAccounts.length} akun pengguna baru dan tersinkronisasi ke Database Mahasiswa!`);
   };
 
   const handleAddSingleUser = (e: React.FormEvent) => {
@@ -144,26 +164,56 @@ export default function AdminUserManagementPage() {
 
     const isMhsOrAlumni = newRole === 'mahasiswa' || newRole === 'alumni';
 
-    const newUser: UserAccount = {
-      id: `user-${Date.now()}`,
-      fullName: newFullName,
-      email: newEmail || `${newUsernameOrId}@siakal.poltek.ac.id`,
-      role: newRole,
-      usernameOrId: newUsernameOrId,
-      initialPassword: newPassword,
-      nim: newRole === 'mahasiswa' ? newUsernameOrId : undefined,
-      nip: newRole === 'dosen' ? newUsernameOrId : undefined,
-      prodi: isMhsOrAlumni ? newProdi : undefined,
-      isProfileCompleted: true,
-    };
+    // Check if updating an existing student record by NIM or ID
+    const existingIndex = users.findIndex(
+      (u) =>
+        (selectedMhsId && u.id === selectedMhsId) ||
+        (isMhsOrAlumni && u.nim === newUsernameOrId) ||
+        u.usernameOrId === newUsernameOrId
+    );
 
-    const updated = [...users, newUser];
-    saveUsers(updated);
+    let updatedList: UserAccount[];
+
+    if (existingIndex >= 0) {
+      const existingUser = users[existingIndex];
+      const updatedUser: UserAccount = {
+        ...existingUser,
+        fullName: newFullName,
+        email: newEmail || existingUser.email || `${newUsernameOrId}@siakal.poltek.ac.id`,
+        role: newRole,
+        usernameOrId: newUsernameOrId,
+        initialPassword: newPassword,
+        nim: isMhsOrAlumni ? newUsernameOrId : undefined,
+        nip: newRole === 'dosen' ? newUsernameOrId : undefined,
+        prodi: isMhsOrAlumni ? newProdi : undefined,
+        angkatan: isMhsOrAlumni ? Number(newAngkatan) || 2026 : undefined,
+      };
+      updatedList = [...users];
+      updatedList[existingIndex] = updatedUser;
+    } else {
+      const newUser: UserAccount = {
+        id: `user-${Date.now()}`,
+        fullName: newFullName,
+        email: newEmail || `${newUsernameOrId}@siakal.poltek.ac.id`,
+        role: newRole,
+        usernameOrId: newUsernameOrId,
+        initialPassword: newPassword,
+        nim: isMhsOrAlumni ? newUsernameOrId : undefined,
+        nip: newRole === 'dosen' ? newUsernameOrId : undefined,
+        prodi: isMhsOrAlumni ? newProdi : undefined,
+        angkatan: isMhsOrAlumni ? Number(newAngkatan) || 2026 : undefined,
+        isProfileCompleted: true,
+      };
+      updatedList = [...users, newUser];
+    }
+
+    saveUsers(updatedList);
     setShowAddModal(false);
     setNewFullName('');
     setNewUsernameOrId('');
     setNewEmail('');
-    alert(`Akun (${newFullName}) berhasil dibuat & tersimpan di sistem!`);
+    setSelectedMhsId('');
+    alert(`Akun (${newFullName}) berhasil disimpan & otomatis tersinkron dengan Database Mahasiswa!`);
   };
 
   const handleSaveEditUser = (e: React.FormEvent) => {
@@ -171,15 +221,17 @@ export default function AdminUserManagementPage() {
     if (!editingUser) return;
 
     const isMhsOrAlumni = editingUser.role === 'mahasiswa' || editingUser.role === 'alumni';
-    const updatedUser = {
+    const updatedUser: UserAccount = {
       ...editingUser,
+      nim: isMhsOrAlumni ? editingUser.usernameOrId || editingUser.nim : undefined,
       prodi: isMhsOrAlumni ? editingUser.prodi : undefined,
+      angkatan: isMhsOrAlumni ? Number(editingUser.angkatan) || 2026 : undefined,
     };
 
     const updatedList = users.map((u) => (u.id === editingUser.id ? updatedUser : u));
     saveUsers(updatedList);
     setEditingUser(null);
-    alert(`Perubahan akun (${editingUser.fullName}) berhasil disimpan!`);
+    alert(`Perubahan akun (${editingUser.fullName}) berhasil disimpan & tersinkron ke Database Mahasiswa!`);
   };
 
   const handleExportUsers = () => {
@@ -193,7 +245,8 @@ export default function AdminUserManagementPage() {
             Email: u.email,
             Role: u.role.toUpperCase(),
             'Password Initial': u.initialPassword || 'SIAKAL2026!',
-            'Program Studi / Unit': u.prodi || '-',
+            'Program Studi': u.prodi || '-',
+            'Angkatan': u.angkatan || '-',
           })),
         },
       ],
@@ -221,7 +274,7 @@ export default function AdminUserManagementPage() {
             <span>Manajemen User & Hak Akses</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 mt-1 font-semibold">
-            Kelola akun pengguna, ID Masuk (NIM/NIP), dan kata sandi login sistem.
+            Kelola akun pengguna, ID Masuk (NIM/NIP), dan kata sandi login terintegrasi Database Mahasiswa.
           </p>
         </div>
 
@@ -232,7 +285,7 @@ export default function AdminUserManagementPage() {
             <input type="file" accept=".xlsx,.xls" onChange={handleExcelFileUpload} className="hidden" />
           </label>
 
-          <button onClick={() => setShowAddModal(true)} className="glass-button text-xs sm:text-sm font-extrabold flex items-center gap-2 py-2.5 px-4 shadow-md cursor-pointer">
+          <button onClick={() => { setSelectedMhsId(''); setShowAddModal(true); }} className="glass-button text-xs sm:text-sm font-extrabold flex items-center gap-2 py-2.5 px-4 shadow-md cursor-pointer">
             <Plus className="w-4 h-4" />
             <span>Tambah User</span>
           </button>
@@ -406,7 +459,7 @@ export default function AdminUserManagementPage() {
         </div>
       </div>
 
-      {/* MODAL TAMBAH USER SINGLE */}
+      {/* MODAL TAMBAH USER SINGLE - WITH DYNAMIC MAHASISWA SYNC */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
           <div className="glass-panel w-full max-w-lg p-6 space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl">
@@ -421,24 +474,17 @@ export default function AdminUserManagementPage() {
             </div>
 
             <form onSubmit={handleAddSingleUser} className="space-y-3.5">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap *</label>
-                <input
-                  type="text"
-                  required
-                  value={newFullName}
-                  onChange={(e) => setNewFullName(e.target.value)}
-                  placeholder="Contoh: Capt. Budi Santoso"
-                  className="w-full glass-input text-xs sm:text-sm font-semibold"
-                />
-              </div>
-
+              {/* ROLE SELECTOR */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Role Akun *</label>
                   <select
                     value={newRole}
-                    onChange={(e) => setNewRole(e.target.value as any)}
+                    onChange={(e) => {
+                      const r = e.target.value as any;
+                      setNewRole(r);
+                      setSelectedMhsId('');
+                    }}
                     className="w-full glass-input text-xs font-semibold"
                   >
                     <option value="mahasiswa">Mahasiswa</option>
@@ -450,21 +496,64 @@ export default function AdminUserManagementPage() {
                   </select>
                 </div>
 
+                {/* SINKRONISASI DROPDOWN DARI DATABASE MAHASISWA */}
+                {(newRole === 'mahasiswa' || newRole === 'alumni') ? (
+                  <div>
+                    <label className="block text-xs font-bold text-sky-700 mb-1 flex items-center gap-1">
+                      <RefreshCw className="w-3 h-3 text-sky-500 animate-spin-slow" />
+                      <span>Pilih dari Database Mahasiswa:</span>
+                    </label>
+                    <select
+                      value={selectedMhsId}
+                      onChange={(e) => handleSelectExistingMhs(e.target.value)}
+                      className="w-full glass-input text-xs font-semibold bg-sky-50/50 border-sky-300 text-sky-900"
+                    >
+                      <option value="">-- Buat Baru / Pilih Tersimpan --</option>
+                      {existingMahasiswas.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.nim ? `${m.nim} - ` : ''}{m.fullName} ({m.prodi || 'N/A'})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Status Sinkronisasi</label>
+                    <div className="glass-input text-xs font-semibold text-slate-500 bg-slate-50 flex items-center gap-1.5 py-2">
+                      <UserCheck className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>Akun Sistem Non-Mahasiswa</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap *</label>
+                <input
+                  type="text"
+                  required
+                  value={newFullName}
+                  onChange={(e) => setNewFullName(e.target.value)}
+                  placeholder="Contoh: Ahmad Fauzi"
+                  className="w-full glass-input text-xs sm:text-sm font-semibold"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">ID Masuk (Username/NIM/NIP) *</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    {newRole === 'mahasiswa' || newRole === 'alumni' ? 'NIM (ID Masuk Login) *' : 'ID Masuk (Username/NIP) *'}
+                  </label>
                   <input
                     type="text"
                     required
                     value={newUsernameOrId}
                     onChange={(e) => setNewUsernameOrId(e.target.value)}
-                    placeholder="Contoh: 198503152010121002"
+                    placeholder={newRole === 'mahasiswa' ? 'Contoh: 111111' : 'Contoh: 198503152010121002'}
                     className="w-full glass-input text-xs font-mono"
                   />
                 </div>
-              </div>
 
-              {/* PROGRAM STUDI FIELD IS COMPLETELY HIDDEN IF ROLE IS NON-MAHASISWA */}
-              <div className={`grid grid-cols-1 ${newRole === 'mahasiswa' || newRole === 'alumni' ? 'sm:grid-cols-2' : ''} gap-3`}>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Password Initial *</label>
                   <input
@@ -475,14 +564,17 @@ export default function AdminUserManagementPage() {
                     className="w-full glass-input text-xs font-mono"
                   />
                 </div>
+              </div>
 
-                {(newRole === 'mahasiswa' || newRole === 'alumni') && (
+              {/* PROGRAM STUDI & ANGKATAN FOR MAHASISWA & ALUMNI */}
+              {(newRole === 'mahasiswa' || newRole === 'alumni') && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-sky-50/60 p-3 rounded-xl border border-sky-200">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Program Studi *</label>
+                    <label className="block text-xs font-bold text-slate-800 mb-1">Program Studi *</label>
                     <select
                       value={newProdi}
                       onChange={(e) => setNewProdi(e.target.value)}
-                      className="w-full glass-input text-xs font-semibold"
+                      className="w-full glass-input text-xs font-semibold bg-white"
                     >
                       {prodiList.map((p) => (
                         <option key={p.id} value={p.nama}>
@@ -491,8 +583,19 @@ export default function AdminUserManagementPage() {
                       ))}
                     </select>
                   </div>
-                )}
-              </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-800 mb-1">Tahun Angkatan *</label>
+                    <input
+                      type="number"
+                      value={newAngkatan}
+                      onChange={(e) => setNewAngkatan(e.target.value)}
+                      placeholder="Contoh: 2026"
+                      className="w-full glass-input text-xs font-mono bg-white"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Email (Opsional)</label>
@@ -500,7 +603,7 @@ export default function AdminUserManagementPage() {
                   type="email"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="Opsional (otomatis id@siakal.poltek.ac.id)"
+                  placeholder="Opsional (otomatis nim@siakal.poltek.ac.id)"
                   className="w-full glass-input text-xs font-semibold"
                 />
               </div>
@@ -514,7 +617,7 @@ export default function AdminUserManagementPage() {
                   Batal
                 </button>
                 <button type="submit" className="glass-button text-xs font-bold py-2 px-5">
-                  Simpan User Baru
+                  Simpan User Baru & Sinkronkan
                 </button>
               </div>
             </form>
@@ -566,7 +669,9 @@ export default function AdminUserManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">ID Masuk (NIM/NIP) *</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    {editingUser.role === 'mahasiswa' || editingUser.role === 'alumni' ? 'NIM (ID Masuk Login) *' : 'ID Masuk (NIP/Username) *'}
+                  </label>
                   <input
                     type="text"
                     required
@@ -577,8 +682,7 @@ export default function AdminUserManagementPage() {
                 </div>
               </div>
 
-              {/* PROGRAM STUDI FIELD IS COMPLETELY HIDDEN IF ROLE IS NON-MAHASISWA */}
-              <div className={`grid grid-cols-1 ${editingUser.role === 'mahasiswa' || editingUser.role === 'alumni' ? 'sm:grid-cols-2' : ''} gap-3`}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Password Initial *</label>
                   <input
@@ -590,13 +694,27 @@ export default function AdminUserManagementPage() {
                   />
                 </div>
 
-                {(editingUser.role === 'mahasiswa' || editingUser.role === 'alumni') && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Email *</label>
+                  <input
+                    type="email"
+                    required
+                    value={editingUser.email}
+                    onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                    className="w-full glass-input text-xs font-semibold"
+                  />
+                </div>
+              </div>
+
+              {/* PROGRAM STUDI & ANGKATAN FOR MAHASISWA & ALUMNI */}
+              {(editingUser.role === 'mahasiswa' || editingUser.role === 'alumni') && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-sky-50/60 p-3 rounded-xl border border-sky-200">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Program Studi *</label>
+                    <label className="block text-xs font-bold text-slate-800 mb-1">Program Studi *</label>
                     <select
                       value={editingUser.prodi || prodiList[0]?.nama}
                       onChange={(e) => setEditingUser({ ...editingUser, prodi: e.target.value })}
-                      className="w-full glass-input text-xs font-semibold"
+                      className="w-full glass-input text-xs font-semibold bg-white"
                     >
                       {prodiList.map((p) => (
                         <option key={p.id} value={p.nama}>
@@ -605,8 +723,18 @@ export default function AdminUserManagementPage() {
                       ))}
                     </select>
                   </div>
-                )}
-              </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-800 mb-1">Tahun Angkatan *</label>
+                    <input
+                      type="number"
+                      value={editingUser.angkatan || 2026}
+                      onChange={(e) => setEditingUser({ ...editingUser, angkatan: Number(e.target.value) })}
+                      className="w-full glass-input text-xs font-mono bg-white"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="pt-2 flex items-center justify-end gap-2">
                 <button
@@ -617,7 +745,7 @@ export default function AdminUserManagementPage() {
                   Batal
                 </button>
                 <button type="submit" className="glass-button text-xs font-bold py-2 px-5">
-                  Simpan Perubahan
+                  Simpan Perubahan & Sinkronkan
                 </button>
               </div>
             </form>
