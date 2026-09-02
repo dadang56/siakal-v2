@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Download, Upload, Plus, Trash2, Edit3, FileSpreadsheet, Building2, GraduationCap, CheckCircle2, AlertTriangle, ShieldCheck, Eye, EyeOff, X } from 'lucide-react';
+import { Users, Search, Download, Upload, Plus, Trash2, Edit3, FileSpreadsheet, Building2, GraduationCap, CheckCircle2, AlertTriangle, ShieldCheck, Eye, EyeOff, X, User, Home, Users2 } from 'lucide-react';
 import { initialAccounts, UserAccount, initialProdiList } from '@/lib/mockStore';
 import { exportToExcel, readExcelFile, downloadMahasiswaBiodataTemplate } from '@/lib/utils/excel';
 
@@ -56,11 +56,14 @@ export default function AdminMahasiswaDatabasePage() {
   const [editingMhs, setEditingMhs] = useState<UserAccount | null>(null);
   const [viewDetailMhs, setViewDetailMhs] = useState<UserAccount | null>(null);
 
+  // Active Form Tab: 'identitas' | 'alamat' | 'orangtua'
+  const [activeFormTab, setActiveFormTab] = useState<'identitas' | 'alamat' | 'orangtua'>('identitas');
+
   // Excel Batch Import Modal State
   const [showImportModal, setShowImportModal] = useState(false);
   const [importedPreview, setImportedPreview] = useState<any[]>([]);
 
-  // 32-Item Form State
+  // 32-Item Form State for Add Mahasiswa
   const [fullName, setFullName] = useState('');
   const [nim, setNim] = useState('');
   const [prodi, setProdi] = useState(prodiList[0]?.nama || 'Studi Nautika');
@@ -102,6 +105,32 @@ export default function AdminMahasiswaDatabasePage() {
   const [pekerjaanIbu, setPekerjaanIbu] = useState('Wirausaha');
   const [penghasilanIbu, setPenghasilanIbu] = useState('Rp. 2,000,000 - Rp. 4,999,999');
 
+  const resetAddForm = () => {
+    setFullName('');
+    setNim('');
+    setEmail('');
+    setTempatLahir('');
+    setTanggalLahir('');
+    setNik('');
+    setNisn('');
+    setNpwp('');
+    setNoHp('');
+    setJalan('');
+    setDusun('');
+    setRt('');
+    setRw('');
+    setKelurahan('');
+    setKecamatan('');
+    setKodePos('');
+    setNamaAyah('');
+    setNikAyah('');
+    setTanggalLahirAyah('');
+    setNamaIbu('');
+    setNikIbu('');
+    setTanggalLahirIbu('');
+    setActiveFormTab('identitas');
+  };
+
   const saveAllUsers = (updatedMahasiswas: UserAccount[]) => {
     setMahasiswas(updatedMahasiswas);
     try {
@@ -118,7 +147,10 @@ export default function AdminMahasiswaDatabasePage() {
 
   const handleAddMahasiswa = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fullName || !nim) return;
+    if (!fullName || !nim) {
+      alert('Mohon isi Nama Lengkap dan NIM Mahasiswa!');
+      return;
+    }
 
     const newMhs: UserAccount = {
       id: `mhs-${Date.now()}`,
@@ -128,7 +160,7 @@ export default function AdminMahasiswaDatabasePage() {
       nim,
       usernameOrId: nim,
       initialPassword: 'SIAKAL2026!',
-      prodi,
+      prodi: prodi || prodiList[0]?.nama,
       angkatan: Number(angkatan) || 2026,
       isProfileCompleted: true,
       
@@ -166,8 +198,8 @@ export default function AdminMahasiswaDatabasePage() {
     const updated = [newMhs, ...mahasiswas];
     saveAllUsers(updated);
     setShowAddModal(false);
-    setFullName('');
-    setNim('');
+    resetAddForm();
+    alert(`Data biodata mahasiswa lengkap 32-Item (${fullName}) berhasil disimpan!`);
   };
 
   const handleSaveEditMahasiswa = (e: React.FormEvent) => {
@@ -177,6 +209,7 @@ export default function AdminMahasiswaDatabasePage() {
     const updatedList = mahasiswas.map((m) => (m.id === editingMhs.id ? editingMhs : m));
     saveAllUsers(updatedList);
     setEditingMhs(null);
+    alert(`Perubahan biodata lengkap (${editingMhs.fullName}) berhasil disimpan!`);
   };
 
   const confirmDeleteMahasiswa = () => {
@@ -309,6 +342,70 @@ export default function AdminMahasiswaDatabasePage() {
     return matchSearch && matchProdi && matchAngkatan;
   });
 
+  const transportOptions = [
+    'Sepeda motor',
+    'Mobil pribadi',
+    'Perahu penyeberangan/rakit/getek',
+    'Jalan kaki',
+    'Mobil/bus antar jemput',
+    'Ojek',
+    'Kereta api',
+    'Sepeda',
+    'Angkutan umum/bus/pete-pete',
+    'Andong/bendi/sado/dokar/delman/becak',
+    'Lainnya',
+  ];
+
+  const tempatTinggalOptions = [
+    'Bersama orang tua',
+    'Kost',
+    'Wali',
+    'Asrama',
+    'Rumah sendiri',
+    'Panti asuhan',
+    'Lainnya',
+  ];
+
+  const pekerjaanOptions = [
+    'Wiraswasta',
+    'PNS/TNI/Polri',
+    'Karyawan Swasta',
+    'Petani',
+    'Nelayan',
+    'Wirausaha',
+    'Pedagang Kecil',
+    'Pedagang Besar',
+    'Tenaga Pengajar / Instruktur / Fasilitator',
+    'Pimpinan / Manajerial',
+    'Tim Ahli / Konsultan',
+    'Peneliti',
+    'Pensiunan',
+    'Peternak',
+    'Buruh',
+    'Tidak bekerja',
+    'Sudah Meninggal',
+    'Lainnya',
+  ];
+
+  const penghasilanOptions = [
+    'Kurang dari Rp. 500,000',
+    'Rp. 500,000 - Rp. 999,999',
+    'Rp. 1,000,000 - Rp. 1,999,999',
+    'Rp. 2,000,000 - Rp. 4,999,999',
+    'Rp. 5,000,000 - Rp. 20,000,000',
+    'Lebih dari Rp. 20,000,000',
+  ];
+
+  const pendidikanOptions = [
+    'S1 / D4',
+    'S2 / S3',
+    'D3 / D2 / D1',
+    'SMA / SMK',
+    'SMP / MPT',
+    'SD / MI',
+    'Tidak Sekolah',
+  ];
+
   return (
     <div className="space-y-6">
       {/* 1. Header Banner Card */}
@@ -335,9 +432,9 @@ export default function AdminMahasiswaDatabasePage() {
             <span>Ekspor .XLSX</span>
           </button>
 
-          <button onClick={() => setShowAddModal(true)} className="glass-button text-xs sm:text-sm font-extrabold flex items-center gap-2 py-2.5 px-4 shadow-md cursor-pointer">
+          <button onClick={() => { resetAddForm(); setShowAddModal(true); }} className="glass-button text-xs sm:text-sm font-extrabold flex items-center gap-2 py-2.5 px-4 shadow-md cursor-pointer">
             <Plus className="w-4 h-4" />
-            <span>+ Data Mahasiswa</span>
+            <span>+ Data Mahasiswa Lengkap</span>
           </button>
         </div>
       </div>
@@ -373,7 +470,7 @@ export default function AdminMahasiswaDatabasePage() {
             </select>
           </div>
 
-          {/* SEARCHABLE ANGKATAN INPUT FILTER (NO MASSIVE SCROLL DROPDOWN) */}
+          {/* SEARCHABLE ANGKATAN INPUT FILTER */}
           <div className="flex items-center gap-1.5 flex-1 sm:flex-none">
             <span className="text-xs font-bold text-slate-700 shrink-0">Angkatan:</span>
             <div className="relative flex items-center">
@@ -464,7 +561,7 @@ export default function AdminMahasiswaDatabasePage() {
                         </button>
 
                         <button
-                          onClick={() => setEditingMhs({ ...m })}
+                          onClick={() => { setEditingMhs({ ...m }); setActiveFormTab('identitas'); }}
                           className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-sky-500/10 transition-colors cursor-pointer"
                           title="Edit Data Mahasiswa"
                         >
@@ -493,6 +590,1079 @@ export default function AdminMahasiswaDatabasePage() {
           </table>
         </div>
       </div>
+
+      {/* MODAL TAMBAH DATA MAHASISWA BARU (LENGKAP 32-ITEM BIODATA WITH TABS) */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+          <div className="glass-panel w-full max-w-4xl p-6 space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div>
+                <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                  <Plus className="w-5 h-5 text-sky-500" />
+                  <span>Tambah Data Mahasiswa Baru (Biodata 32-Item Lengkap)</span>
+                </h3>
+                <p className="text-xs text-slate-500 font-semibold mt-0.5">Isi seluruh item isian biodata sesuai formulir instansi & template Excel.</p>
+              </div>
+              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 font-bold">
+                ✕
+              </button>
+            </div>
+
+            {/* TAB HEADER NAVIGATION */}
+            <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto">
+              <button
+                type="button"
+                onClick={() => setActiveFormTab('identitas')}
+                className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                  activeFormTab === 'identitas'
+                    ? 'bg-sky-500 text-white shadow-md'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                <User className="w-4 h-4" />
+                <span>1. Identitas Diri (Item 1-9, 17)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveFormTab('alamat')}
+                className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                  activeFormTab === 'alamat'
+                    ? 'bg-sky-500 text-white shadow-md'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                <Home className="w-4 h-4" />
+                <span>2. Alamat & Transportasi (Item 10-20)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveFormTab('orangtua')}
+                className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                  activeFormTab === 'orangtua'
+                    ? 'bg-sky-500 text-white shadow-md'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                <Users2 className="w-4 h-4" />
+                <span>3. Data Orang Tua / Ayah & Ibu (Item 21-32)</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleAddMahasiswa} className="space-y-4">
+              {/* TAB 1: IDENTITAS DIRI */}
+              {activeFormTab === 'identitas' && (
+                <div className="space-y-4 animate-in fade-in duration-150">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">1. Nama Lengkap Mahasiswa *</label>
+                      <input
+                        type="text"
+                        required
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        placeholder="Contoh: Ahmad Fauzi"
+                        className="w-full glass-input text-xs sm:text-sm font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">NIM / Username ID *</label>
+                      <input
+                        type="text"
+                        required
+                        value={nim}
+                        onChange={(e) => setNim(e.target.value)}
+                        placeholder="Contoh: 2026001"
+                        className="w-full glass-input text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Program Studi *</label>
+                      <select
+                        value={prodi}
+                        onChange={(e) => setProdi(e.target.value)}
+                        className="w-full glass-input text-xs font-semibold"
+                      >
+                        {prodiList.map((p) => (
+                          <option key={p.id} value={p.nama}>
+                            {p.jenjang === 'Diploma III' ? 'D3' : 'D4'} {p.nama}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Tahun Angkatan *</label>
+                      <input
+                        type="number"
+                        required
+                        value={angkatan}
+                        onChange={(e) => setAngkatan(e.target.value)}
+                        placeholder="Contoh: 2026"
+                        className="w-full glass-input text-xs font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Status Akademik *</label>
+                      <select
+                        value={statusAkademik}
+                        onChange={(e) => setStatusAkademik(e.target.value as any)}
+                        className="w-full glass-input text-xs font-semibold"
+                      >
+                        <option value="Aktif">Mahasiswa Aktif</option>
+                        <option value="PRALA">Sedang PRALA</option>
+                        <option value="Magang">Sedang Magang MTPD</option>
+                        <option value="Lulus / Alumni">Lulus / Alumni</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">2. Tempat Lahir</label>
+                      <input
+                        type="text"
+                        value={tempatLahir}
+                        onChange={(e) => setTempatLahir(e.target.value)}
+                        placeholder="Contoh: Palembang"
+                        className="w-full glass-input text-xs font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">5. Tanggal Lahir</label>
+                      <input
+                        type="date"
+                        value={tanggalLahir}
+                        onChange={(e) => setTanggalLahir(e.target.value)}
+                        className="w-full glass-input text-xs font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">3. Jenis Kelamin</label>
+                      <select
+                        value={jenisKelamin}
+                        onChange={(e) => setJenisKelamin(e.target.value)}
+                        className="w-full glass-input text-xs font-semibold"
+                      >
+                        <option value="Laki-laki">Laki-laki</option>
+                        <option value="Perempuan">Perempuan</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">6. Agama</label>
+                      <select
+                        value={agama}
+                        onChange={(e) => setAgama(e.target.value)}
+                        className="w-full glass-input text-xs font-semibold"
+                      >
+                        <option value="Islam">Islam</option>
+                        <option value="Kristen Protestan">Kristen Protestan</option>
+                        <option value="Katolik">Katolik</option>
+                        <option value="Hindu">Hindu</option>
+                        <option value="Buddha">Buddha</option>
+                        <option value="Khonghucu">Khonghucu</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">7. NIK (KTP)</label>
+                      <input
+                        type="text"
+                        value={nik}
+                        onChange={(e) => setNik(e.target.value)}
+                        placeholder="16 Digit NIK"
+                        className="w-full glass-input text-xs font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">8. NISN</label>
+                      <input
+                        type="text"
+                        value={nisn}
+                        onChange={(e) => setNisn(e.target.value)}
+                        placeholder="10 Digit NISN"
+                        className="w-full glass-input text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">9. NPWP</label>
+                      <input
+                        type="text"
+                        value={npwp}
+                        onChange={(e) => setNpwp(e.target.value)}
+                        placeholder="Nomor NPWP"
+                        className="w-full glass-input text-xs font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">17. Email</label>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Contoh: user@mhs.poltek.ac.id"
+                        className="w-full glass-input text-xs font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">11. No HP / WhatsApp</label>
+                      <input
+                        type="text"
+                        value={noHp}
+                        onChange={(e) => setNoHp(e.target.value)}
+                        placeholder="Contoh: 081234567890"
+                        className="w-full glass-input text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: ALAMAT & TRANSPORTASI */}
+              {activeFormTab === 'alamat' && (
+                <div className="space-y-4 animate-in fade-in duration-150">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">10. Jalan / Alamat Rumah</label>
+                    <input
+                      type="text"
+                      value={jalan}
+                      onChange={(e) => setJalan(e.target.value)}
+                      placeholder="Contoh: Jl. Merdeka No. 45"
+                      className="w-full glass-input text-xs font-semibold"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">12. Dusun</label>
+                      <input
+                        type="text"
+                        value={dusun}
+                        onChange={(e) => setDusun(e.target.value)}
+                        placeholder="Contoh: Dusun II"
+                        className="w-full glass-input text-xs font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">13. RT</label>
+                      <input
+                        type="text"
+                        value={rt}
+                        onChange={(e) => setRt(e.target.value)}
+                        placeholder="Contoh: 002"
+                        className="w-full glass-input text-xs font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">14. RW</label>
+                      <input
+                        type="text"
+                        value={rw}
+                        onChange={(e) => setRw(e.target.value)}
+                        placeholder="Contoh: 001"
+                        className="w-full glass-input text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">15. Kelurahan</label>
+                      <input
+                        type="text"
+                        value={kelurahan}
+                        onChange={(e) => setKelurahan(e.target.value)}
+                        placeholder="Contoh: Bukit Kecil"
+                        className="w-full glass-input text-xs font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">18. Kecamatan</label>
+                      <input
+                        type="text"
+                        value={kecamatan}
+                        onChange={(e) => setKecamatan(e.target.value)}
+                        placeholder="Contoh: Ilir Barat I"
+                        className="w-full glass-input text-xs font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">16. Kode Pos</label>
+                      <input
+                        type="text"
+                        value={kodePos}
+                        onChange={(e) => setKodePos(e.target.value)}
+                        placeholder="Contoh: 30135"
+                        className="w-full glass-input text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">19. Alat Transportasi yang Dipunya</label>
+                      <select
+                        value={alatTransportasi}
+                        onChange={(e) => setAlatTransportasi(e.target.value)}
+                        className="w-full glass-input text-xs font-semibold"
+                      >
+                        {transportOptions.map((opt) => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">20. Status Tempat Tinggal</label>
+                      <select
+                        value={statusTempatTinggal}
+                        onChange={(e) => setStatusTempatTinggal(e.target.value)}
+                        className="w-full glass-input text-xs font-semibold"
+                      >
+                        {tempatTinggalOptions.map((opt) => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: DATA ORANG TUA (AYAH & IBU) */}
+              {activeFormTab === 'orangtua' && (
+                <div className="space-y-4 animate-in fade-in duration-150">
+                  {/* SECTION AYAH */}
+                  <div className="p-4 rounded-xl bg-sky-50/60 border border-sky-200 space-y-3">
+                    <h4 className="font-extrabold text-xs text-sky-800 uppercase tracking-wider">A. DATA AYAH KANDUNG (ITEM 21-26)</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">21. Nama Ayah</label>
+                        <input
+                          type="text"
+                          value={namaAyah}
+                          onChange={(e) => setNamaAyah(e.target.value)}
+                          placeholder="Nama lengkap ayah"
+                          className="w-full glass-input text-xs font-semibold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">22. NIK Ayah</label>
+                        <input
+                          type="text"
+                          value={nikAyah}
+                          onChange={(e) => setNikAyah(e.target.value)}
+                          placeholder="16 digit NIK ayah"
+                          className="w-full glass-input text-xs font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">23. Tanggal Lahir Ayah</label>
+                        <input
+                          type="date"
+                          value={tanggalLahirAyah}
+                          onChange={(e) => setTanggalLahirAyah(e.target.value)}
+                          className="w-full glass-input text-xs font-semibold"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">24. Pendidikan Ayah</label>
+                        <select
+                          value={pendidikanAyah}
+                          onChange={(e) => setPendidikanAyah(e.target.value)}
+                          className="w-full glass-input text-xs font-semibold"
+                        >
+                          {pendidikanOptions.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">25. Pekerjaan Ayah</label>
+                        <select
+                          value={pekerjaanAyah}
+                          onChange={(e) => setPekerjaanAyah(e.target.value)}
+                          className="w-full glass-input text-xs font-semibold"
+                        >
+                          {pekerjaanOptions.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">26. Penghasilan Ayah</label>
+                        <select
+                          value={penghasilanAyah}
+                          onChange={(e) => setPenghasilanAyah(e.target.value)}
+                          className="w-full glass-input text-xs font-semibold"
+                        >
+                          {penghasilanOptions.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECTION IBU */}
+                  <div className="p-4 rounded-xl bg-purple-50/60 border border-purple-200 space-y-3">
+                    <h4 className="font-extrabold text-xs text-purple-800 uppercase tracking-wider">B. DATA IBU KANDUNG (ITEM 27-32)</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">27. Nama Ibu</label>
+                        <input
+                          type="text"
+                          value={namaIbu}
+                          onChange={(e) => setNamaIbu(e.target.value)}
+                          placeholder="Nama lengkap ibu"
+                          className="w-full glass-input text-xs font-semibold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">28. NIK Ibu</label>
+                        <input
+                          type="text"
+                          value={nikIbu}
+                          onChange={(e) => setNikIbu(e.target.value)}
+                          placeholder="16 digit NIK ibu"
+                          className="w-full glass-input text-xs font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">29. Tanggal Lahir Ibu</label>
+                        <input
+                          type="date"
+                          value={tanggalLahirIbu}
+                          onChange={(e) => setTanggalLahirIbu(e.target.value)}
+                          className="w-full glass-input text-xs font-semibold"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">30. Pendidikan Ibu</label>
+                        <select
+                          value={pendidikanIbu}
+                          onChange={(e) => setPendidikanIbu(e.target.value)}
+                          className="w-full glass-input text-xs font-semibold"
+                        >
+                          {pendidikanOptions.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">31. Pekerjaan Ibu</label>
+                        <select
+                          value={pekerjaanIbu}
+                          onChange={(e) => setPekerjaanIbu(e.target.value)}
+                          className="w-full glass-input text-xs font-semibold"
+                        >
+                          {pekerjaanOptions.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">32. Penghasilan Ibu</label>
+                        <select
+                          value={penghasilanIbu}
+                          onChange={(e) => setPenghasilanIbu(e.target.value)}
+                          className="w-full glass-input text-xs font-semibold"
+                        >
+                          {penghasilanOptions.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
+                <div className="text-xs font-semibold text-slate-500">
+                  {activeFormTab === 'identitas' && 'Langkah 1 dari 3'}
+                  {activeFormTab === 'alamat' && 'Langkah 2 dari 3'}
+                  {activeFormTab === 'orangtua' && 'Langkah 3 dari 3'}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {activeFormTab !== 'identitas' && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveFormTab(activeFormTab === 'orangtua' ? 'alamat' : 'identitas')}
+                      className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200"
+                    >
+                      ← Kembali
+                    </button>
+                  )}
+
+                  {activeFormTab !== 'orangtua' ? (
+                    <button
+                      type="button"
+                      onClick={() => setActiveFormTab(activeFormTab === 'identitas' ? 'alamat' : 'orangtua')}
+                      className="px-4 py-2 rounded-xl bg-sky-600 text-white font-bold text-xs hover:bg-sky-500 shadow-sm"
+                    >
+                      Lanjut ke Step Berikutnya →
+                    </button>
+                  ) : (
+                    <button type="submit" className="glass-button text-xs font-bold py-2 px-5">
+                      Simpan Biodata Lengkap (32 Item)
+                    </button>
+                  )}
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL EDIT DATA MAHASISWA (LENGKAP 32-ITEM BIODATA WITH TABS) */}
+      {editingMhs && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
+          <div className="glass-panel w-full max-w-4xl p-6 space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+              <div>
+                <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+                  <Edit3 className="w-5 h-5 text-sky-500" />
+                  <span>Edit Biodata Mahasiswa: {editingMhs.fullName}</span>
+                </h3>
+                <p className="text-xs text-slate-500 font-semibold mt-0.5">Ubah dan perbarui 32 item biodata mahasiswa secara lengkap.</p>
+              </div>
+              <button onClick={() => setEditingMhs(null)} className="text-slate-400 hover:text-slate-600 font-bold">
+                ✕
+              </button>
+            </div>
+
+            {/* TAB NAVIGATION FOR EDIT */}
+            <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto">
+              <button
+                type="button"
+                onClick={() => setActiveFormTab('identitas')}
+                className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                  activeFormTab === 'identitas'
+                    ? 'bg-sky-500 text-white shadow-md'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                <User className="w-4 h-4" />
+                <span>1. Identitas Diri (Item 1-9, 17)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveFormTab('alamat')}
+                className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                  activeFormTab === 'alamat'
+                    ? 'bg-sky-500 text-white shadow-md'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                <Home className="w-4 h-4" />
+                <span>2. Alamat & Transportasi (Item 10-20)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveFormTab('orangtua')}
+                className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all ${
+                  activeFormTab === 'orangtua'
+                    ? 'bg-sky-500 text-white shadow-md'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                <Users2 className="w-4 h-4" />
+                <span>3. Data Orang Tua (Item 21-32)</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditMahasiswa} className="space-y-4">
+              {/* TAB 1 EDIT */}
+              {activeFormTab === 'identitas' && (
+                <div className="space-y-4 animate-in fade-in duration-150">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">1. Nama Lengkap Mahasiswa *</label>
+                      <input
+                        type="text"
+                        required
+                        value={editingMhs.fullName}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, fullName: e.target.value })}
+                        className="w-full glass-input text-xs sm:text-sm font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">NIM *</label>
+                      <input
+                        type="text"
+                        required
+                        value={editingMhs.nim || editingMhs.usernameOrId || ''}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, nim: e.target.value, usernameOrId: e.target.value })}
+                        className="w-full glass-input text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Program Studi *</label>
+                      <select
+                        value={editingMhs.prodi || prodiList[0]?.nama}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, prodi: e.target.value })}
+                        className="w-full glass-input text-xs font-semibold"
+                      >
+                        {prodiList.map((p) => (
+                          <option key={p.id} value={p.nama}>
+                            {p.jenjang === 'Diploma III' ? 'D3' : 'D4'} {p.nama}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Tahun Angkatan *</label>
+                      <input
+                        type="number"
+                        required
+                        value={editingMhs.angkatan || 2026}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, angkatan: Number(e.target.value) })}
+                        className="w-full glass-input text-xs font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Status Role / Akademik</label>
+                      <select
+                        value={editingMhs.role}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, role: e.target.value as any })}
+                        className="w-full glass-input text-xs font-semibold"
+                      >
+                        <option value="mahasiswa">Mahasiswa Aktif</option>
+                        <option value="alumni">Lulus / Alumni</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">2. Tempat Lahir</label>
+                      <input
+                        type="text"
+                        value={editingMhs.tempatLahir || ''}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, tempatLahir: e.target.value })}
+                        className="w-full glass-input text-xs font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">5. Tanggal Lahir</label>
+                      <input
+                        type="date"
+                        value={editingMhs.tanggalLahir || ''}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, tanggalLahir: e.target.value })}
+                        className="w-full glass-input text-xs font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">3. Jenis Kelamin</label>
+                      <select
+                        value={editingMhs.jenisKelamin || 'Laki-laki'}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, jenisKelamin: e.target.value })}
+                        className="w-full glass-input text-xs font-semibold"
+                      >
+                        <option value="Laki-laki">Laki-laki</option>
+                        <option value="Perempuan">Perempuan</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">6. Agama</label>
+                      <select
+                        value={editingMhs.agama || 'Islam'}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, agama: e.target.value })}
+                        className="w-full glass-input text-xs font-semibold"
+                      >
+                        <option value="Islam">Islam</option>
+                        <option value="Kristen Protestan">Kristen Protestan</option>
+                        <option value="Katolik">Katolik</option>
+                        <option value="Hindu">Hindu</option>
+                        <option value="Buddha">Buddha</option>
+                        <option value="Khonghucu">Khonghucu</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">7. NIK (KTP)</label>
+                      <input
+                        type="text"
+                        value={editingMhs.nik || ''}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, nik: e.target.value })}
+                        className="w-full glass-input text-xs font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">8. NISN</label>
+                      <input
+                        type="text"
+                        value={editingMhs.nisn || ''}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, nisn: e.target.value })}
+                        className="w-full glass-input text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">9. NPWP</label>
+                      <input
+                        type="text"
+                        value={editingMhs.npwp || ''}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, npwp: e.target.value })}
+                        className="w-full glass-input text-xs font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">17. Email</label>
+                      <input
+                        type="email"
+                        value={editingMhs.email}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, email: e.target.value })}
+                        className="w-full glass-input text-xs font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">11. No HP</label>
+                      <input
+                        type="text"
+                        value={editingMhs.noHp || ''}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, noHp: e.target.value })}
+                        className="w-full glass-input text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2 EDIT */}
+              {activeFormTab === 'alamat' && (
+                <div className="space-y-4 animate-in fade-in duration-150">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">10. Jalan / Alamat Rumah</label>
+                    <input
+                      type="text"
+                      value={editingMhs.jalan || ''}
+                      onChange={(e) => setEditingMhs({ ...editingMhs, jalan: e.target.value })}
+                      className="w-full glass-input text-xs font-semibold"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">12. Dusun</label>
+                      <input
+                        type="text"
+                        value={editingMhs.dusun || ''}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, dusun: e.target.value })}
+                        className="w-full glass-input text-xs font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">13. RT</label>
+                      <input
+                        type="text"
+                        value={editingMhs.rt || ''}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, rt: e.target.value })}
+                        className="w-full glass-input text-xs font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">14. RW</label>
+                      <input
+                        type="text"
+                        value={editingMhs.rw || ''}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, rw: e.target.value })}
+                        className="w-full glass-input text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">15. Kelurahan</label>
+                      <input
+                        type="text"
+                        value={editingMhs.kelurahan || ''}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, kelurahan: e.target.value })}
+                        className="w-full glass-input text-xs font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">18. Kecamatan</label>
+                      <input
+                        type="text"
+                        value={editingMhs.kecamatan || ''}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, kecamatan: e.target.value })}
+                        className="w-full glass-input text-xs font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">16. Kode Pos</label>
+                      <input
+                        type="text"
+                        value={editingMhs.kodePos || ''}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, kodePos: e.target.value })}
+                        className="w-full glass-input text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">19. Alat Transportasi</label>
+                      <select
+                        value={editingMhs.alatTransportasi || 'Sepeda motor'}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, alatTransportasi: e.target.value })}
+                        className="w-full glass-input text-xs font-semibold"
+                      >
+                        {transportOptions.map((opt) => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">20. Status Tempat Tinggal</label>
+                      <select
+                        value={editingMhs.statusTempatTinggal || 'Bersama orang tua'}
+                        onChange={(e) => setEditingMhs({ ...editingMhs, statusTempatTinggal: e.target.value })}
+                        className="w-full glass-input text-xs font-semibold"
+                      >
+                        {tempatTinggalOptions.map((opt) => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3 EDIT */}
+              {activeFormTab === 'orangtua' && (
+                <div className="space-y-4 animate-in fade-in duration-150">
+                  <div className="p-4 rounded-xl bg-sky-50/60 border border-sky-200 space-y-3">
+                    <h4 className="font-extrabold text-xs text-sky-800 uppercase tracking-wider">A. DATA AYAH KANDUNG</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">21. Nama Ayah</label>
+                        <input
+                          type="text"
+                          value={editingMhs.namaAyah || ''}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, namaAyah: e.target.value })}
+                          className="w-full glass-input text-xs font-semibold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">22. NIK Ayah</label>
+                        <input
+                          type="text"
+                          value={editingMhs.nikAyah || ''}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, nikAyah: e.target.value })}
+                          className="w-full glass-input text-xs font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">23. Tgl Lahir Ayah</label>
+                        <input
+                          type="date"
+                          value={editingMhs.tanggalLahirAyah || ''}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, tanggalLahirAyah: e.target.value })}
+                          className="w-full glass-input text-xs font-semibold"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">24. Pendidikan Ayah</label>
+                        <select
+                          value={editingMhs.pendidikanAyah || 'SMA / SMK'}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, pendidikanAyah: e.target.value })}
+                          className="w-full glass-input text-xs font-semibold"
+                        >
+                          {pendidikanOptions.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">25. Pekerjaan Ayah</label>
+                        <select
+                          value={editingMhs.pekerjaanAyah || 'Wiraswasta'}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, pekerjaanAyah: e.target.value })}
+                          className="w-full glass-input text-xs font-semibold"
+                        >
+                          {pekerjaanOptions.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">26. Penghasilan Ayah</label>
+                        <select
+                          value={editingMhs.penghasilanAyah || 'Rp. 5,000,000 - Rp. 20,000,000'}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, penghasilanAyah: e.target.value })}
+                          className="w-full glass-input text-xs font-semibold"
+                        >
+                          {penghasilanOptions.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-purple-50/60 border border-purple-200 space-y-3">
+                    <h4 className="font-extrabold text-xs text-purple-800 uppercase tracking-wider">B. DATA IBU KANDUNG</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">27. Nama Ibu</label>
+                        <input
+                          type="text"
+                          value={editingMhs.namaIbu || ''}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, namaIbu: e.target.value })}
+                          className="w-full glass-input text-xs font-semibold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">28. NIK Ibu</label>
+                        <input
+                          type="text"
+                          value={editingMhs.nikIbu || ''}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, nikIbu: e.target.value })}
+                          className="w-full glass-input text-xs font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">29. Tgl Lahir Ibu</label>
+                        <input
+                          type="date"
+                          value={editingMhs.tanggalLahirIbu || ''}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, tanggalLahirIbu: e.target.value })}
+                          className="w-full glass-input text-xs font-semibold"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">30. Pendidikan Ibu</label>
+                        <select
+                          value={editingMhs.pendidikanIbu || 'SMA / SMK'}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, pendidikanIbu: e.target.value })}
+                          className="w-full glass-input text-xs font-semibold"
+                        >
+                          {pendidikanOptions.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">31. Pekerjaan Ibu</label>
+                        <select
+                          value={editingMhs.pekerjaanIbu || 'Wirausaha'}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, pekerjaanIbu: e.target.value })}
+                          className="w-full glass-input text-xs font-semibold"
+                        >
+                          {pekerjaanOptions.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">32. Penghasilan Ibu</label>
+                        <select
+                          value={editingMhs.penghasilanIbu || 'Rp. 2,000,000 - Rp. 4,999,999'}
+                          onChange={(e) => setEditingMhs({ ...editingMhs, penghasilanIbu: e.target.value })}
+                          className="w-full glass-input text-xs font-semibold"
+                        >
+                          {penghasilanOptions.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
+                <div className="text-xs font-semibold text-slate-500">
+                  {activeFormTab === 'identitas' && 'Langkah 1 dari 3'}
+                  {activeFormTab === 'alamat' && 'Langkah 2 dari 3'}
+                  {activeFormTab === 'orangtua' && 'Langkah 3 dari 3'}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingMhs(null)}
+                    className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200"
+                  >
+                    Batal
+                  </button>
+                  <button type="submit" className="glass-button text-xs font-bold py-2 px-5">
+                    Simpan Perubahan 32 Biodata
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* MODAL IMPOR EXCEL 32-ITEM BIODATA */}
       {showImportModal && (
@@ -615,183 +1785,6 @@ export default function AdminMahasiswaDatabasePage() {
                 Tutup Detail
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL TAMBAH MAHASISWA BARU */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-          <div className="glass-panel w-full max-w-xl p-6 space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-                <Plus className="w-5 h-5 text-sky-500" />
-                <span>Tambah Data Mahasiswa Baru</span>
-              </h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 font-bold">
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleAddMahasiswa} className="space-y-3.5">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap Mahasiswa *</label>
-                <input
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Contoh: Ahmad Fauzi"
-                  className="w-full glass-input text-xs sm:text-sm font-semibold"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">NIM (Nomor Induk) *</label>
-                  <input
-                    type="text"
-                    required
-                    value={nim}
-                    onChange={(e) => setNim(e.target.value)}
-                    placeholder="Contoh: 2026001"
-                    className="w-full glass-input text-xs font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Tahun Angkatan *</label>
-                  <input
-                    type="number"
-                    required
-                    value={angkatan}
-                    onChange={(e) => setAngkatan(e.target.value)}
-                    placeholder="Contoh: 2026"
-                    className="w-full glass-input text-xs font-mono"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Program Studi *</label>
-                <select
-                  value={prodi}
-                  onChange={(e) => setProdi(e.target.value)}
-                  className="w-full glass-input text-xs font-semibold"
-                >
-                  {prodiList.map((p) => (
-                    <option key={p.id} value={p.nama}>
-                      {p.jenjang === 'Diploma III' ? 'D3' : 'D4'} {p.nama}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Status Akademik *</label>
-                <select value={statusAkademik} onChange={(e) => setStatusAkademik(e.target.value as any)} className="w-full glass-input text-xs font-semibold">
-                  <option value="Aktif">Mahasiswa Aktif</option>
-                  <option value="PRALA">Sedang PRALA</option>
-                  <option value="Magang">Sedang Magang MTPD</option>
-                  <option value="Lulus / Alumni">Lulus / Alumni</option>
-                </select>
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200"
-                >
-                  Batal
-                </button>
-                <button type="submit" className="glass-button text-xs font-bold py-2 px-5">
-                  Simpan Mahasiswa Baru
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL EDIT DATA MAHASISWA */}
-      {editingMhs && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-          <div className="glass-panel w-full max-w-xl p-6 space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-                <Edit3 className="w-5 h-5 text-sky-500" />
-                <span>Edit Biodata Mahasiswa</span>
-              </h3>
-              <button onClick={() => setEditingMhs(null)} className="text-slate-400 hover:text-slate-600 font-bold">
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveEditMahasiswa} className="space-y-3.5">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap Mahasiswa *</label>
-                <input
-                  type="text"
-                  required
-                  value={editingMhs.fullName}
-                  onChange={(e) => setEditingMhs({ ...editingMhs, fullName: e.target.value })}
-                  className="w-full glass-input text-xs sm:text-sm font-semibold"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">NIM *</label>
-                  <input
-                    type="text"
-                    required
-                    value={editingMhs.nim || editingMhs.usernameOrId || ''}
-                    onChange={(e) => setEditingMhs({ ...editingMhs, nim: e.target.value, usernameOrId: e.target.value })}
-                    className="w-full glass-input text-xs font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Tahun Angkatan *</label>
-                  <input
-                    type="number"
-                    required
-                    value={editingMhs.angkatan || 2026}
-                    onChange={(e) => setEditingMhs({ ...editingMhs, angkatan: Number(e.target.value) })}
-                    className="w-full glass-input text-xs font-mono"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Program Studi *</label>
-                <select
-                  value={editingMhs.prodi || prodiList[0]?.nama}
-                  onChange={(e) => setEditingMhs({ ...editingMhs, prodi: e.target.value })}
-                  className="w-full glass-input text-xs font-semibold"
-                >
-                  {prodiList.map((p) => (
-                    <option key={p.id} value={p.nama}>
-                      {p.jenjang === 'Diploma III' ? 'D3' : 'D4'} {p.nama}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setEditingMhs(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200"
-                >
-                  Batal
-                </button>
-                <button type="submit" className="glass-button text-xs font-bold py-2 px-5">
-                  Simpan Perubahan
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}
