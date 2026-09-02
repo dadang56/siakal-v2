@@ -5,8 +5,8 @@ import { Settings, Upload, Image as ImageIcon, CheckCircle2, Trash2, Plus, Refre
 import { DEFAULT_POLTEKTRANS_LOGO, DEFAULT_BACKGROUND_SLIDES } from '@/lib/defaultBranding';
 import { getGoogleDriveDirectLink, extractGoogleDriveFileId, loadGoogleDriveConfig, saveGoogleDriveConfig, GoogleDriveConfig } from '@/lib/googleDrive';
 
-// Optimized High-Compression Image Generator for LocalStorage Quota Safety
-function compressImage(file: File, maxWidth = 900, quality = 0.65, isLogo = false): Promise<string> {
+// High-Resolution Image Compressor for Full HD 1080p Crystal Sharpness
+function compressImage(file: File, maxWidth = 1920, quality = 0.85, isLogo = false): Promise<string> {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -181,7 +181,7 @@ export default function AppSettingsPage() {
 
     setIsProcessingLogo(true);
     try {
-      const rawCompressed = await compressImage(file, 350, 0.9, true);
+      const rawCompressed = await compressImage(file, 500, 0.95, true);
       // Auto-remove black background for clean transparent PNG
       const transparentLogo = await makeLogoTransparent(rawCompressed, 45);
       setLogoUrl(transparentLogo);
@@ -215,7 +215,7 @@ export default function AppSettingsPage() {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (file.type.startsWith('image/')) {
-        const compressed = await compressImage(file, 900, 0.65, false);
+        const compressed = await compressImage(file, 1920, 0.85, false);
         compressedList.push(compressed);
       }
     }
@@ -283,9 +283,7 @@ export default function AppSettingsPage() {
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* GOOGLE DRIVE CLOUD STORAGE INTEGRATION MODULE                             */}
-      {/* ========================================================================= */}
+      {/* GOOGLE DRIVE CLOUD STORAGE INTEGRATION MODULE */}
       <div className="glass-panel p-6 space-y-4 border-l-4 border-l-emerald-500">
         <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3">
           <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
@@ -333,7 +331,7 @@ export default function AppSettingsPage() {
         <div className="p-4 rounded-2xl bg-sky-500/10 border border-sky-500/20 space-y-2">
           <label className="block text-xs font-extrabold text-sky-700 dark:text-sky-300 flex items-center gap-1.5">
             <Link2 className="w-4 h-4 text-sky-500" />
-            <span>Option A: Tempelkan Link Gambar dari Google Drive (Sangat Direkomendasikan)</span>
+            <span>Option A: Tempelkan Link Gambar dari Google Drive (Resolusi Tajam Ultra HD 4K)</span>
           </label>
           <div className="flex gap-2">
             <input
@@ -428,7 +426,7 @@ export default function AppSettingsPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-white/10 pb-3">
           <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
             <ImageIcon className="w-5 h-5 text-amber-500" />
-            <span>2. Carousel Multi-Foto Background Landing Page</span>
+            <span>2. Carousel Multi-Foto Background Landing Page (Full HD 1080p Sharpness)</span>
           </h3>
 
           <div className="relative">
@@ -454,7 +452,7 @@ export default function AppSettingsPage() {
         <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-2">
           <label className="block text-xs font-extrabold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
             <Link2 className="w-4 h-4 text-amber-500" />
-            <span>Tambah Foto Latar Belakang dari Link Google Drive:</span>
+            <span>Tambah Foto Latar Belakang dari Link Google Drive (Tajam Ultra HD 4K):</span>
           </label>
           <div className="flex gap-2">
             <input

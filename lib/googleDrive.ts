@@ -20,24 +20,20 @@ export function extractGoogleDriveFileId(urlOrId: string): string | null {
 
   const trimmed = urlOrId.trim();
 
-  // 1. Check raw File ID format (typically 25-45 alphanumeric characters with _ or -)
   if (/^[a-zA-Z0-9_-]{25,50}$/.test(trimmed)) {
     return trimmed;
   }
 
-  // 2. Match /file/d/FILE_ID/
   const fileDMatch = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
   if (fileDMatch && fileDMatch[1]) {
     return fileDMatch[1];
   }
 
-  // 3. Match /d/FILE_ID
   const dMatch = trimmed.match(/\/d\/([a-zA-Z0-9_-]+)/);
   if (dMatch && dMatch[1]) {
     return dMatch[1];
   }
 
-  // 4. Match ?id=FILE_ID
   const idParamMatch = trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/);
   if (idParamMatch && idParamMatch[1]) {
     return idParamMatch[1];
@@ -47,22 +43,20 @@ export function extractGoogleDriveFileId(urlOrId: string): string | null {
 }
 
 /**
- * Converts any Google Drive link or ID into a direct high-speed image stream URL:
- * Format: https://lh3.googleusercontent.com/d/FILE_ID
- * Fallback: https://drive.google.com/thumbnail?id=FILE_ID&sz=w1600
+ * Converts any Google Drive link or ID into an Ultra-Sharp 4K/1080p direct stream URL:
+ * Format: https://lh3.googleusercontent.com/d/FILE_ID=s2560
  */
 export function getGoogleDriveDirectLink(urlOrId: string): string {
   if (!urlOrId) return '';
 
-  // If already a standard http/base64 data URL and not Google Drive, return as-is
   if (!urlOrId.includes('drive.google.com') && !urlOrId.includes('googleusercontent.com')) {
     return urlOrId;
   }
 
   const fileId = extractGoogleDriveFileId(urlOrId);
   if (fileId) {
-    // High-speed Google User Content CDN Direct Image Stream
-    return `https://lh3.googleusercontent.com/d/${fileId}`;
+    // Ultra-sharp 2560px resolution Google CDN stream
+    return `https://lh3.googleusercontent.com/d/${fileId}=s2560`;
   }
 
   return urlOrId;

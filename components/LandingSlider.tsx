@@ -52,20 +52,20 @@ export function LandingSlider() {
   const activeBg = getGoogleDriveDirectLink(rawBg);
 
   return (
-    <div className="absolute inset-0 z-0 overflow-hidden bg-slate-100">
+    <div className="absolute inset-0 z-0 overflow-hidden bg-slate-900">
       <AnimatePresence mode="wait">
         <motion.div
           key={currentIndex}
-          initial={{ opacity: 0, scale: 1.02 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 1.2, ease: 'easeInOut' }}
+          transition={{ duration: 1, ease: 'easeInOut' }}
           className="absolute inset-0"
         >
           <img
             src={activeBg}
             alt="Landing Page Background"
-            className="w-full h-full object-cover font-sans brightness-105 contrast-105"
+            className="w-full h-full object-cover font-sans"
             onError={(e) => {
               (e.target as HTMLImageElement).src = DEFAULT_BACKGROUND_SLIDES[0];
             }}
@@ -73,8 +73,8 @@ export function LandingSlider() {
         </motion.div>
       </AnimatePresence>
 
-      {/* Subtle Light Glass Overlay for High Contrast Readable Text without Darkening Photos */}
-      <div className="absolute inset-0 bg-white/20 bg-gradient-to-t from-slate-100/80 via-white/20 to-slate-900/10 pointer-events-none" />
+      {/* Crystal Clear Light Glass Tint Overlay */}
+      <div className="absolute inset-0 bg-slate-950/15 bg-gradient-to-t from-slate-950/40 via-transparent to-slate-950/20 pointer-events-none" />
 
       {/* Slider Indicators / Dots */}
       {images.length > 1 && (
@@ -84,7 +84,7 @@ export function LandingSlider() {
               key={idx}
               onClick={() => setCurrentIndex(idx)}
               className={`h-2.5 rounded-full transition-all duration-300 ${
-                idx === currentIndex ? 'w-8 bg-sky-600 shadow-md' : 'w-2.5 bg-slate-800/40 hover:bg-slate-800/80'
+                idx === currentIndex ? 'w-8 bg-sky-400 shadow-md' : 'w-2.5 bg-white/40 hover:bg-white/80'
               }`}
               title={`Foto ${idx + 1}`}
             />
