@@ -2,15 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const defaultImages = [
-  'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1920&q=80',
-  'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1920&q=80',
-  'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1920&q=80',
-];
+import { getGoogleDriveDirectLink } from '@/lib/googleDrive';
+import { DEFAULT_BACKGROUND_SLIDES } from '@/lib/defaultBranding';
 
 export function LandingSlider() {
-  const [images, setImages] = useState<string[]>(defaultImages);
+  const [images, setImages] = useState<string[]>(DEFAULT_BACKGROUND_SLIDES);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const loadCustomBgs = () => {
@@ -29,7 +25,7 @@ export function LandingSlider() {
     } catch (err) {
       console.error(err);
     }
-    setImages(defaultImages);
+    setImages(DEFAULT_BACKGROUND_SLIDES);
   };
 
   useEffect(() => {
@@ -48,11 +44,13 @@ export function LandingSlider() {
     if (images.length <= 1) return;
     const timer = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 5000);
+    }, 6000);
     return () => clearInterval(timer);
   }, [images]);
 
-  const activeBg = images[currentIndex] || defaultImages[0];
+  const rawBg = images[currentIndex] || DEFAULT_BACKGROUND_SLIDES[0];
+  // Convert any Google Drive URL into a direct stream CDN link
+  const activeBg = getGoogleDriveDirectLink(rawBg);
 
   return (
     <div className="absolute inset-0 z-0 overflow-hidden bg-slate-950">
@@ -69,6 +67,10 @@ export function LandingSlider() {
             src={activeBg}
             alt="Landing Page Background"
             className="w-full h-full object-cover font-sans"
+            onError={(e) => {
+              // Fallback if image fails to load
+              (e.target as HTMLImageElement).src = DEFAULT_BACKGROUND_SLIDES[0];
+            }}
           />
         </motion.div>
       </AnimatePresence>

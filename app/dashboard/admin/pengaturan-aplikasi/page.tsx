@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Settings, Upload, Image as ImageIcon, CheckCircle2, Trash2, Plus, RefreshCw, AlertTriangle, Sparkles, Wand2 } from 'lucide-react';
+import { Settings, Upload, Image as ImageIcon, CheckCircle2, Trash2, Plus, RefreshCw, AlertTriangle, Sparkles, Wand2, HardDrive, Link2, ExternalLink } from 'lucide-react';
 import { DEFAULT_POLTEKTRANS_LOGO, DEFAULT_BACKGROUND_SLIDES } from '@/lib/defaultBranding';
+import { getGoogleDriveDirectLink, extractGoogleDriveFileId, loadGoogleDriveConfig, saveGoogleDriveConfig, GoogleDriveConfig } from '@/lib/googleDrive';
 
 // Optimized High-Compression Image Generator for LocalStorage Quota Safety
 function compressImage(file: File, maxWidth = 900, quality = 0.65, isLogo = false): Promise<string> {
@@ -85,6 +86,12 @@ export default function AppSettingsPage() {
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [isProcessingLogo, setIsProcessingLogo] = useState(false);
 
+  // Google Drive Cloud Storage State
+  const [driveConfig, setDriveConfig] = useState<GoogleDriveConfig>({ isDriveActive: false, folderUrl: '' });
+  const [driveFolderInput, setDriveFolderInput] = useState('');
+  const [driveLogoInput, setDriveLogoInput] = useState('');
+  const [driveBgInput, setDriveBgInput] = useState('');
+
   // Modal confirm targets
   const [deleteSlideIndex, setDeleteSlideIndex] = useState<number | null>(null);
   const [showResetConfirmModal, setShowResetConfirmModal] = useState(false);
@@ -101,6 +108,10 @@ export default function AppSettingsPage() {
           setBackgrounds(parsed);
         }
       }
+
+      const cfg = loadGoogleDriveConfig();
+      setDriveConfig(cfg);
+      if (cfg.folderUrl) setDriveFolderInput(cfg.folderUrl);
     } catch (err) {
       console.error(err);
     }
@@ -126,8 +137,37 @@ export default function AppSettingsPage() {
       setTimeout(() => setSavedSuccess(false), 3500);
     } catch (err) {
       console.error('LocalStorage quota error:', err);
-      alert('Gagal menyimpan memori lokal browser. Foto otomatis diperkecil agar muat.');
+      alert('Gagal menyimpan memori lokal browser. Gunakan Google Drive Link untuk file besar.');
     }
+  };
+
+  const handleSaveDriveConfig = (e: React.FormEvent) => {
+    e.preventDefault();
+    const updatedCfg: GoogleDriveConfig = {
+      folderUrl: driveFolderInput,
+      isDriveActive: driveFolderInput.trim().length > 0,
+    };
+    setDriveConfig(updatedCfg);
+    saveGoogleDriveConfig(updatedCfg);
+    setSavedSuccess(true);
+    setTimeout(() => setSavedSuccess(false), 3500);
+  };
+
+  const handleAddDriveLogo = () => {
+    if (!driveLogoInput) return;
+    const directLink = getGoogleDriveDirectLink(driveLogoInput);
+    setLogoUrl(directLink);
+    persistBranding(directLink, backgrounds);
+    setDriveLogoInput('');
+  };
+
+  const handleAddDriveBgSlide = () => {
+    if (!driveBgInput) return;
+    const directLink = getGoogleDriveDirectLink(driveBgInput);
+    const updatedBgs = [...backgrounds, directLink];
+    setBackgrounds(updatedBgs);
+    persistBranding(logoUrl, updatedBgs);
+    setDriveBgInput('');
   };
 
   const handleLogoFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -175,7 +215,6 @@ export default function AppSettingsPage() {
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       if (file.type.startsWith('image/')) {
-        // Compress photo to lightweight ~40-60KB JPEG to fit in localStorage quota easily
         const compressed = await compressImage(file, 900, 0.65, false);
         compressedList.push(compressed);
       }
@@ -199,8 +238,11 @@ export default function AppSettingsPage() {
   const confirmResetToDefault = () => {
     localStorage.removeItem('siakal_custom_logo');
     localStorage.removeItem('siakal_custom_backgrounds');
+    localStorage.removeItem('siakal_google_drive_config');
     setLogoUrl('');
     setBackgrounds(DEFAULT_BACKGROUND_SLIDES);
+    setDriveFolderInput('');
+    setDriveConfig({ isDriveActive: false });
     window.dispatchEvent(new Event('siakal_branding_updated'));
     setShowResetConfirmModal(false);
     setSavedSuccess(true);
@@ -218,10 +260,10 @@ export default function AppSettingsPage() {
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
             <Settings className="w-6 h-6 text-sky-500" />
-            <span>Pengaturan Branding & Landing Page Dinamis</span>
+            <span>Pengaturan Branding & Google Drive Cloud Storage</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 font-semibold">
-            Unggah Logo Kampus resmi dan atur multi-foto latar belakang dari perangkat komputer Anda.
+            Integrasikan akun Google Drive kampus untuk menyimpan logo, foto latar belakang, & berkas tanpa batas kuota.
           </p>
         </div>
 
@@ -237,21 +279,81 @@ export default function AppSettingsPage() {
       {savedSuccess && (
         <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs sm:text-sm font-extrabold flex items-center gap-2 shadow-lg">
           <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-          <span>Perubahan Branding & Latar Belakang Berhasil Disimpan 100%!</span>
+          <span>Perubahan Branding & Integrasi Google Drive Berhasil Disimpan!</span>
         </div>
       )}
 
-      {/* SECTION 1: UPLOAD LOGO KAMPUS */}
+      {/* ========================================================================= */}
+      {/* GOOGLE DRIVE CLOUD STORAGE INTEGRATION MODULE                             */}
+      {/* ========================================================================= */}
+      <div className="glass-panel p-6 space-y-4 border-l-4 border-l-emerald-500">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-3">
+          <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            <HardDrive className="w-5 h-5 text-emerald-500" />
+            <span>Integrasi Folder Google Drive Kampus</span>
+          </h3>
+
+          <span className={`px-3 py-1 rounded-full text-xs font-black uppercase ${driveConfig.isDriveActive ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-500/30'}`}>
+            {driveConfig.isDriveActive ? '🟢 TERHUBUNG CLOUD DRIVE' : '🟡 MODE LOKAL'}
+          </span>
+        </div>
+
+        <form onSubmit={handleSaveDriveConfig} className="space-y-3">
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              Link Folder Google Drive Kampus (Tempat Menyimpan Berkas Official)
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={driveFolderInput}
+                onChange={(e) => setDriveFolderInput(e.target.value)}
+                placeholder="Tempelkan Link Folder Google Drive (cth: https://drive.google.com/drive/folders/1A2B3C...)"
+                className="w-full glass-input text-xs font-mono"
+              />
+              <button type="submit" className="glass-button text-xs font-bold py-2.5 px-5 shrink-0">
+                Hubungkan Folder
+              </button>
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-semibold">
+              Semua link berkas yang berada di dalam folder ini otomatis dapat diakses 100% oleh SIAKAL V2 secara instan.
+            </p>
+          </div>
+        </form>
+      </div>
+
+      {/* SECTION 1: UPLOAD LOGO KAMPUS (FILE LOKAL ATAU GOOGLE DRIVE) */}
       <div className="glass-panel p-6 space-y-4">
         <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200 dark:border-white/10 pb-3">
           <Upload className="w-5 h-5 text-sky-500" />
-          <span>1. Upload Logo Kampus Resmi (File Lokal)</span>
+          <span>1. Logo Kampus Resmi (Upload Lokal / Google Drive Link)</span>
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+        {/* Option A: Paste Google Drive Link */}
+        <div className="p-4 rounded-2xl bg-sky-500/10 border border-sky-500/20 space-y-2">
+          <label className="block text-xs font-extrabold text-sky-700 dark:text-sky-300 flex items-center gap-1.5">
+            <Link2 className="w-4 h-4 text-sky-500" />
+            <span>Option A: Tempelkan Link Gambar dari Google Drive (Sangat Direkomendasikan)</span>
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={driveLogoInput}
+              onChange={(e) => setDriveLogoInput(e.target.value)}
+              placeholder="Tempelkan Link File Gambar Google Drive (cth: https://drive.google.com/file/d/1A2B3C.../view)"
+              className="w-full glass-input text-xs font-mono"
+            />
+            <button type="button" onClick={handleAddDriveLogo} className="glass-button text-xs font-bold py-2 px-4 shrink-0">
+              Gunakan Link Drive
+            </button>
+          </div>
+        </div>
+
+        {/* Option B: Local File Upload */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center pt-2">
           <div className="md:col-span-8 space-y-3">
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-              Pilih Gambar Logo dari Komputer (.PNG / .JPG / .SVG)
+              Option B: Pilih Gambar Logo dari Komputer (.PNG / .JPG / .SVG)
             </label>
 
             <div className="relative">
@@ -264,9 +366,9 @@ export default function AppSettingsPage() {
               />
               <label
                 htmlFor="logo-upload-input"
-                className="flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-dashed border-sky-500/40 hover:border-sky-500 bg-slate-50 dark:bg-slate-900/50 hover:bg-sky-500/5 cursor-pointer transition-all text-center group"
+                className="flex flex-col items-center justify-center p-5 rounded-2xl border-2 border-dashed border-sky-500/40 hover:border-sky-500 bg-slate-50 dark:bg-slate-900/50 hover:bg-sky-500/5 cursor-pointer transition-all text-center group"
               >
-                <Upload className="w-8 h-8 text-sky-500 mb-2 group-hover:scale-110 transition-transform" />
+                <Upload className="w-7 h-7 text-sky-500 mb-1.5 group-hover:scale-110 transition-transform" />
                 <span className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">
                   {isProcessingLogo ? 'Sedang Memproses & Membersihkan Background Logo...' : 'Klik untuk Upload File Logo Lokal'}
                 </span>
@@ -284,9 +386,12 @@ export default function AppSettingsPage() {
             </span>
             <div className="w-28 h-28 rounded-2xl bg-slate-200/60 dark:bg-slate-950 p-3 flex items-center justify-center border border-slate-300 dark:border-white/10 shadow-inner overflow-hidden">
               <img
-                src={logoUrl || DEFAULT_POLTEKTRANS_LOGO}
+                src={getGoogleDriveDirectLink(logoUrl || DEFAULT_POLTEKTRANS_LOGO)}
                 alt="Logo Preview"
                 className="max-h-full max-w-full object-contain"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = DEFAULT_POLTEKTRANS_LOGO;
+                }}
               />
             </div>
 
@@ -310,7 +415,7 @@ export default function AppSettingsPage() {
                   }}
                   className="text-xs text-red-500 hover:underline font-bold"
                 >
-                  Hapus Logo
+                  Hapus Logo Custom
                 </button>
               </div>
             )}
@@ -318,12 +423,12 @@ export default function AppSettingsPage() {
         </div>
       </div>
 
-      {/* SECTION 2: CAROUSEL MULTI-FOTO BACKGROUND */}
+      {/* SECTION 2: CAROUSEL MULTI-FOTO BACKGROUND (GOOGLE DRIVE / LOKAL) */}
       <div className="glass-panel p-6 space-y-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-white/10 pb-3">
           <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
             <ImageIcon className="w-5 h-5 text-amber-500" />
-            <span>2. Carousel Multi-Foto Background Fluid Landing Page</span>
+            <span>2. Carousel Multi-Foto Background Landing Page</span>
           </h3>
 
           <div className="relative">
@@ -345,31 +450,63 @@ export default function AppSettingsPage() {
           </div>
         </div>
 
+        {/* Option A: Paste Google Drive Image Link for Background */}
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-2">
+          <label className="block text-xs font-extrabold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
+            <Link2 className="w-4 h-4 text-amber-500" />
+            <span>Tambah Foto Latar Belakang dari Link Google Drive:</span>
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={driveBgInput}
+              onChange={(e) => setDriveBgInput(e.target.value)}
+              placeholder="Tempelkan Link File Foto Google Drive (cth: https://drive.google.com/file/d/1A2B3C.../view)"
+              className="w-full glass-input text-xs font-mono"
+            />
+            <button type="button" onClick={handleAddDriveBgSlide} className="glass-button text-xs font-bold py-2 px-4 shrink-0">
+              + Tambah Slide Drive
+            </button>
+          </div>
+        </div>
+
         {/* Gallery Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
-          {backgrounds.map((bg, idx) => (
-            <div
-              key={idx}
-              className="group relative rounded-2xl overflow-hidden border border-slate-300 dark:border-white/15 bg-slate-950 aspect-video shadow-md"
-            >
-              <img src={bg} alt={`Slide ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-              
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-80" />
-              
-              <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-slate-950/70 backdrop-blur-md text-white text-[11px] font-extrabold">
-                Slide {idx + 1}
-              </div>
+          {backgrounds.map((bg, idx) => {
+            const displayUrl = getGoogleDriveDirectLink(bg);
+            const isDriveLink = bg.includes('drive.google.com') || bg.includes('googleusercontent.com');
 
-              <button
-                type="button"
-                onClick={() => setDeleteSlideIndex(idx)}
-                className="absolute top-3 right-3 p-2 rounded-xl bg-red-600/90 text-white hover:bg-red-500 transition-all opacity-90 sm:opacity-0 group-hover:opacity-100 shadow-md cursor-pointer"
-                title="Hapus Slide Ini"
+            return (
+              <div
+                key={idx}
+                className="group relative rounded-2xl overflow-hidden border border-slate-300 dark:border-white/15 bg-slate-950 aspect-video shadow-md"
               >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
+                <img src={displayUrl} alt={`Slide ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-80" />
+                
+                <div className="absolute bottom-3 left-3 flex items-center gap-1.5">
+                  <span className="px-2.5 py-1 rounded-lg bg-slate-950/70 backdrop-blur-md text-white text-[11px] font-extrabold">
+                    Slide {idx + 1}
+                  </span>
+                  {isDriveLink && (
+                    <span className="px-2 py-0.5 rounded-md bg-emerald-500 text-white text-[10px] font-extrabold flex items-center gap-1">
+                      <HardDrive className="w-3 h-3" /> Drive
+                    </span>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setDeleteSlideIndex(idx)}
+                  className="absolute top-3 right-3 p-2 rounded-xl bg-red-600/90 text-white hover:bg-red-500 transition-all opacity-90 sm:opacity-0 group-hover:opacity-100 shadow-md cursor-pointer"
+                  title="Hapus Slide Ini"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            );
+          })}
         </div>
       </div>
 

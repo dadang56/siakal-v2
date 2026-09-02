@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useTheme } from '@/components/ThemeProvider';
 import { Sun, Moon, LogOut } from 'lucide-react';
 import { DEFAULT_POLTEKTRANS_LOGO } from '@/lib/defaultBranding';
+import { getGoogleDriveDirectLink } from '@/lib/googleDrive';
 
 interface NavbarProps {
   currentUser?: {
@@ -48,6 +49,9 @@ export function Navbar({ currentUser, onLogout, hideThemeToggle = false }: Navba
   const userName = currentUser?.name || 'Pengguna';
   const userRole = currentUser?.role || 'User';
 
+  // Convert Google Drive image link to direct stream CDN link
+  const logoSource = getGoogleDriveDirectLink(customLogo || DEFAULT_POLTEKTRANS_LOGO);
+
   return (
     <header
       className={`sticky top-0 z-40 w-full backdrop-blur-xl transition-all duration-200 ${
@@ -60,7 +64,7 @@ export function Navbar({ currentUser, onLogout, hideThemeToggle = false }: Navba
         {/* Brand Logo & Name */}
         <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0 min-w-0">
           <img
-            src={customLogo || DEFAULT_POLTEKTRANS_LOGO}
+            src={logoSource}
             alt="Logo Resmi Kampus Poltektrans SDP Palembang"
             className="h-8 sm:h-10 w-auto max-w-[100px] sm:max-w-[170px] object-contain drop-shadow-md transition-transform group-hover:scale-105 shrink-0"
             onError={(e) => {
