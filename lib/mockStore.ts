@@ -47,6 +47,9 @@ export interface UserAccount {
   pendidikanIbu?: string;
   pekerjaanIbu?: string;
   penghasilanIbu?: string;
+
+  // Dosen Pembimbing Mahasiswa Allocation
+  mahasiswaBimbinganNames?: string[];
 }
 
 export interface Achievement {

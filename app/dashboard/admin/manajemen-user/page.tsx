@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Users, Upload, Download, Plus, Trash2, CheckCircle2, Search, Key, Copy, Eye, EyeOff, Check, AlertTriangle, FileSpreadsheet, Edit3, RefreshCw, UserCheck } from 'lucide-react';
+import { Users, Upload, Download, Plus, Trash2, CheckCircle2, Search, Key, Copy, Eye, EyeOff, Check, AlertTriangle, FileSpreadsheet, Edit3, RefreshCw, UserCheck, UserPlus, X } from 'lucide-react';
 import { initialAccounts, UserAccount, initialProdiList } from '@/lib/mockStore';
 import { readExcelFile, downloadUserImportTemplate, exportToExcel } from '@/lib/utils/excel';
 
@@ -64,6 +64,8 @@ export default function AdminUserManagementPage() {
   const [newProdi, setNewProdi] = useState(prodiList[0]?.nama || 'Studi Nautika');
   const [newAngkatan, setNewAngkatan] = useState('2026');
   const [selectedMhsId, setSelectedMhsId] = useState('');
+  const [newDosenBimbingans, setNewDosenBimbingans] = useState<string[]>([]);
+  const [selectedBimbinganAdd, setSelectedBimbinganAdd] = useState('');
 
   // Extract list of Mahasiswas from database
   const existingMahasiswas = users.filter((u) => u.role === 'mahasiswa' || u.role === 'alumni');
@@ -163,6 +165,7 @@ export default function AdminUserManagementPage() {
     }
 
     const isMhsOrAlumni = newRole === 'mahasiswa' || newRole === 'alumni';
+    const isDosen = newRole === 'dosen';
 
     // Check if updating an existing student record by NIM or ID
     const existingIndex = users.findIndex(
@@ -184,9 +187,10 @@ export default function AdminUserManagementPage() {
         usernameOrId: newUsernameOrId,
         initialPassword: newPassword,
         nim: isMhsOrAlumni ? newUsernameOrId : undefined,
-        nip: newRole === 'dosen' ? newUsernameOrId : undefined,
+        nip: isDosen ? newUsernameOrId : undefined,
         prodi: isMhsOrAlumni ? newProdi : undefined,
         angkatan: isMhsOrAlumni ? Number(newAngkatan) || 2026 : undefined,
+        mahasiswaBimbinganNames: isDosen ? newDosenBimbingans : undefined,
       };
       updatedList = [...users];
       updatedList[existingIndex] = updatedUser;
@@ -199,9 +203,10 @@ export default function AdminUserManagementPage() {
         usernameOrId: newUsernameOrId,
         initialPassword: newPassword,
         nim: isMhsOrAlumni ? newUsernameOrId : undefined,
-        nip: newRole === 'dosen' ? newUsernameOrId : undefined,
+        nip: isDosen ? newUsernameOrId : undefined,
         prodi: isMhsOrAlumni ? newProdi : undefined,
         angkatan: isMhsOrAlumni ? Number(newAngkatan) || 2026 : undefined,
+        mahasiswaBimbinganNames: isDosen ? newDosenBimbingans : undefined,
         isProfileCompleted: true,
       };
       updatedList = [...users, newUser];
@@ -213,7 +218,8 @@ export default function AdminUserManagementPage() {
     setNewUsernameOrId('');
     setNewEmail('');
     setSelectedMhsId('');
-    alert(`Akun (${newFullName}) berhasil disimpan & otomatis tersinkron dengan Database Mahasiswa!`);
+    setNewDosenBimbingans([]);
+    alert(`Akun (${newFullName}) berhasil disimpan!`);
   };
 
   const handleSaveEditUser = (e: React.FormEvent) => {
@@ -221,17 +227,20 @@ export default function AdminUserManagementPage() {
     if (!editingUser) return;
 
     const isMhsOrAlumni = editingUser.role === 'mahasiswa' || editingUser.role === 'alumni';
+    const isDosen = editingUser.role === 'dosen';
+
     const updatedUser: UserAccount = {
       ...editingUser,
       nim: isMhsOrAlumni ? editingUser.usernameOrId || editingUser.nim : undefined,
       prodi: isMhsOrAlumni ? editingUser.prodi : undefined,
       angkatan: isMhsOrAlumni ? Number(editingUser.angkatan) || 2026 : undefined,
+      mahasiswaBimbinganNames: isDosen ? editingUser.mahasiswaBimbinganNames || [] : undefined,
     };
 
     const updatedList = users.map((u) => (u.id === editingUser.id ? updatedUser : u));
     saveUsers(updatedList);
     setEditingUser(null);
-    alert(`Perubahan akun (${editingUser.fullName}) berhasil disimpan & tersinkron ke Database Mahasiswa!`);
+    alert(`Perubahan akun (${editingUser.fullName}) berhasil disimpan!`);
   };
 
   const handleExportUsers = () => {
@@ -246,7 +255,7 @@ export default function AdminUserManagementPage() {
             Role: u.role.toUpperCase(),
             'Password Initial': u.initialPassword || 'SIAKAL2026!',
             'Program Studi': u.prodi || '-',
-            'Angkatan': u.angkatan || '-',
+            'Mahasiswa Bimbingan': u.role === 'dosen' ? (u.mahasiswaBimbinganNames?.join(', ') || '-') : '-',
           })),
         },
       ],
@@ -274,7 +283,7 @@ export default function AdminUserManagementPage() {
             <span>Manajemen User & Hak Akses</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 mt-1 font-semibold">
-            Kelola akun pengguna, ID Masuk (NIM/NIP), dan kata sandi login terintegrasi Database Mahasiswa.
+            Kelola akun pengguna, ID Masuk (NIM/NIP), kata sandi login, dan penetapan Mahasiswa Bimbingan Dosen.
           </p>
         </div>
 
@@ -285,7 +294,7 @@ export default function AdminUserManagementPage() {
             <input type="file" accept=".xlsx,.xls" onChange={handleExcelFileUpload} className="hidden" />
           </label>
 
-          <button onClick={() => { setSelectedMhsId(''); setShowAddModal(true); }} className="glass-button text-xs sm:text-sm font-extrabold flex items-center gap-2 py-2.5 px-4 shadow-md cursor-pointer">
+          <button onClick={() => { setSelectedMhsId(''); setNewDosenBimbingans([]); setShowAddModal(true); }} className="glass-button text-xs sm:text-sm font-extrabold flex items-center gap-2 py-2.5 px-4 shadow-md cursor-pointer">
             <Plus className="w-4 h-4" />
             <span>Tambah User</span>
           </button>
@@ -315,7 +324,7 @@ export default function AdminUserManagementPage() {
             <option value="semua">Semua Role</option>
             <option value="admin">Admin</option>
             <option value="mahasiswa">Mahasiswa</option>
-            <option value="dosen">Dosen</option>
+            <option value="dosen">Dosen Pembimbing</option>
             <option value="pembimbing_lapangan">Pembimbing Lapangan</option>
             <option value="alumni">Alumni</option>
             <option value="unit_approver">Unit Approver</option>
@@ -351,7 +360,7 @@ export default function AdminUserManagementPage() {
                 <th className="py-3 px-4">ROLE</th>
                 <th className="py-3 px-4">ID MASUK</th>
                 <th className="py-3 px-4">KATA SANDI</th>
-                <th className="py-3 px-4">PROGRAM STUDI</th>
+                <th className="py-3 px-4">PRODI / MAHASISWA BIMBINGAN</th>
                 <th className="py-3 px-4 text-center">AKSI</th>
               </tr>
             </thead>
@@ -408,9 +417,26 @@ export default function AdminUserManagementPage() {
                         </div>
                       </td>
 
-                      {/* PROGRAM STUDI ONLY DISPLAYED FOR MAHASISWA & ALUMNI */}
+                      {/* PROGRAM STUDI (FOR MAHASISWA) OR MAHASISWA BIMBINGAN (FOR DOSEN) */}
                       <td className="py-3.5 px-4 font-bold text-slate-700">
-                        {u.role === 'mahasiswa' || u.role === 'alumni' ? u.prodi || '-' : '-'}
+                        {u.role === 'mahasiswa' || u.role === 'alumni' ? (
+                          <span>{u.prodi || '-'}</span>
+                        ) : u.role === 'dosen' ? (
+                          <div>
+                            <span className="text-xs font-black text-indigo-700 block mb-1">
+                              Bimbingan ({u.mahasiswaBimbinganNames?.length || 2} Mahasiswa):
+                            </span>
+                            <div className="flex flex-wrap gap-1">
+                              {(u.mahasiswaBimbinganNames || ['Ahmad Fauzi', 'Rizky Ramadhan']).map((mhsName, idx) => (
+                                <span key={idx} className="bg-indigo-50 text-indigo-900 px-2 py-0.5 rounded-md border border-indigo-200 text-[11px] font-bold">
+                                  {mhsName}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          '-'
+                        )}
                       </td>
 
                       <td className="py-3.5 px-4 text-center">
@@ -418,7 +444,7 @@ export default function AdminUserManagementPage() {
                           <button
                             onClick={() => setEditingUser({ ...u })}
                             className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-sky-500/10 transition-colors"
-                            title="Edit Akun User"
+                            title="Edit Akun User & Mahasiswa Bimbingan"
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
@@ -459,10 +485,10 @@ export default function AdminUserManagementPage() {
         </div>
       </div>
 
-      {/* MODAL TAMBAH USER SINGLE - WITH DYNAMIC MAHASISWA SYNC */}
+      {/* MODAL TAMBAH USER SINGLE */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-          <div className="glass-panel w-full max-w-lg p-6 space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl">
+          <div className="glass-panel w-full max-w-lg p-6 space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
                 <Plus className="w-5 h-5 text-sky-500" />
@@ -488,8 +514,8 @@ export default function AdminUserManagementPage() {
                     className="w-full glass-input text-xs font-semibold"
                   >
                     <option value="mahasiswa">Mahasiswa</option>
-                    <option value="admin">Administrator</option>
                     <option value="dosen">Dosen Pembimbing</option>
+                    <option value="admin">Administrator</option>
                     <option value="pembimbing_lapangan">Pembimbing Lapangan</option>
                     <option value="alumni">Alumni</option>
                     <option value="unit_approver">Unit Approver</option>
@@ -518,10 +544,10 @@ export default function AdminUserManagementPage() {
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Status Sinkronisasi</label>
-                    <div className="glass-input text-xs font-semibold text-slate-500 bg-slate-50 flex items-center gap-1.5 py-2">
+                    <label className="block text-xs font-bold text-slate-700 mb-1">Status Role</label>
+                    <div className="glass-input text-xs font-semibold text-slate-600 bg-slate-50 flex items-center gap-1.5 py-2">
                       <UserCheck className="w-3.5 h-3.5 text-emerald-500" />
-                      <span>Akun Sistem Non-Mahasiswa</span>
+                      <span>Akun Pengguna Sistem</span>
                     </div>
                   </div>
                 )}
@@ -534,7 +560,7 @@ export default function AdminUserManagementPage() {
                   required
                   value={newFullName}
                   onChange={(e) => setNewFullName(e.target.value)}
-                  placeholder="Contoh: Ahmad Fauzi"
+                  placeholder="Contoh: Capt. Budi Santoso, M.Mar."
                   className="w-full glass-input text-xs sm:text-sm font-semibold"
                 />
               </div>
@@ -542,7 +568,7 @@ export default function AdminUserManagementPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    {newRole === 'mahasiswa' || newRole === 'alumni' ? 'NIM (ID Masuk Login) *' : 'ID Masuk (Username/NIP) *'}
+                    {newRole === 'mahasiswa' || newRole === 'alumni' ? 'NIM (ID Masuk Login) *' : 'ID Masuk (NIP/Username) *'}
                   </label>
                   <input
                     type="text"
@@ -597,13 +623,81 @@ export default function AdminUserManagementPage() {
                 </div>
               )}
 
+              {/* MAHASISWA BIMBINGAN ALLOCATION FOR ROLE DOSEN PEMBIMBING */}
+              {newRole === 'dosen' && (
+                <div className="p-4 rounded-2xl bg-indigo-50/80 border border-indigo-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-black text-indigo-900 uppercase tracking-wider flex items-center gap-1.5">
+                      <UserPlus className="w-4 h-4 text-indigo-600" />
+                      <span>Alokasi Mahasiswa Bimbingan PRALA</span>
+                    </label>
+                    <span className="text-[11px] font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">
+                      {newDosenBimbingans.length} Mahasiswa Ditunjuk
+                    </span>
+                  </div>
+
+                  {/* List Assigned Student Badges */}
+                  <div className="flex flex-wrap gap-2">
+                    {newDosenBimbingans.length > 0 ? (
+                      newDosenBimbingans.map((mhsName, idx) => (
+                        <span key={idx} className="bg-white text-indigo-900 px-2.5 py-1 rounded-xl border border-indigo-300 text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                          <span>{mhsName}</span>
+                          <button
+                            type="button"
+                            onClick={() => setNewDosenBimbingans(newDosenBimbingans.filter((_, i) => i !== idx))}
+                            className="text-red-500 hover:text-red-700 font-black cursor-pointer text-xs"
+                            title="Hapus / Batalkan Bimbingan"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-indigo-500 italic">Belum ada mahasiswa bimbingan yang ditunjuk.</span>
+                    )}
+                  </div>
+
+                  {/* Add Student Dropdown Selector */}
+                  <div className="flex gap-2 pt-1">
+                    <select
+                      value={selectedBimbinganAdd}
+                      onChange={(e) => setSelectedBimbinganAdd(e.target.value)}
+                      className="w-full glass-input text-xs font-semibold bg-white border-indigo-300 text-slate-900"
+                    >
+                      <option value="">-- Pilih Mahasiswa dari Database --</option>
+                      {existingMahasiswas.map((m) => (
+                        <option key={m.id} value={m.fullName}>
+                          {m.nim ? `${m.nim} - ` : ''}{m.fullName} ({m.prodi || 'N/A'})
+                        </option>
+                      ))}
+                      <option value="Ahmad Fauzi">111111 - Ahmad Fauzi (Studi Nautika)</option>
+                      <option value="Rizky Ramadhan">2102088 - Rizky Ramadhan (Permesinan Kapal)</option>
+                      <option value="Bambang Pratama">2102011 - Bambang Pratama (MTPD)</option>
+                    </select>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (selectedBimbinganAdd && !newDosenBimbingans.includes(selectedBimbinganAdd)) {
+                          setNewDosenBimbingans([...newDosenBimbingans, selectedBimbinganAdd]);
+                          setSelectedBimbinganAdd('');
+                        }
+                      }}
+                      className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shrink-0 cursor-pointer shadow-sm"
+                    >
+                      + Tambah
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Email (Opsional)</label>
                 <input
                   type="email"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="Opsional (otomatis nim@siakal.poltek.ac.id)"
+                  placeholder="Opsional (otomatis id@siakal.poltek.ac.id)"
                   className="w-full glass-input text-xs font-semibold"
                 />
               </div>
@@ -616,8 +710,8 @@ export default function AdminUserManagementPage() {
                 >
                   Batal
                 </button>
-                <button type="submit" className="glass-button text-xs font-bold py-2 px-5">
-                  Simpan User Baru & Sinkronkan
+                <button type="submit" className="glass-button text-xs font-bold py-2 px-5 cursor-pointer">
+                  Simpan User Baru
                 </button>
               </div>
             </form>
@@ -628,11 +722,11 @@ export default function AdminUserManagementPage() {
       {/* MODAL EDIT USER */}
       {editingUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-          <div className="glass-panel w-full max-w-lg p-6 space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl">
+          <div className="glass-panel w-full max-w-lg p-6 space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
                 <Edit3 className="w-5 h-5 text-sky-500" />
-                <span>Edit Akun User</span>
+                <span>Edit Akun User & Pengaturan Bimbingan</span>
               </h3>
               <button onClick={() => setEditingUser(null)} className="text-slate-400 hover:text-slate-600 font-bold">
                 ✕
@@ -660,8 +754,8 @@ export default function AdminUserManagementPage() {
                     className="w-full glass-input text-xs font-semibold"
                   >
                     <option value="mahasiswa">Mahasiswa</option>
-                    <option value="admin">Administrator</option>
                     <option value="dosen">Dosen Pembimbing</option>
+                    <option value="admin">Administrator</option>
                     <option value="pembimbing_lapangan">Pembimbing Lapangan</option>
                     <option value="alumni">Alumni</option>
                     <option value="unit_approver">Unit Approver</option>
@@ -736,6 +830,81 @@ export default function AdminUserManagementPage() {
                 </div>
               )}
 
+              {/* MAHASISWA BIMBINGAN ALLOCATION FOR ROLE DOSEN PEMBIMBING */}
+              {editingUser.role === 'dosen' && (
+                <div className="p-4 rounded-2xl bg-indigo-50/80 border border-indigo-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-black text-indigo-900 uppercase tracking-wider flex items-center gap-1.5">
+                      <UserPlus className="w-4 h-4 text-indigo-600" />
+                      <span>Alokasi Mahasiswa Bimbingan PRALA</span>
+                    </label>
+                    <span className="text-[11px] font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">
+                      {(editingUser.mahasiswaBimbinganNames || ['Ahmad Fauzi', 'Rizky Ramadhan']).length} Mahasiswa Ditunjuk
+                    </span>
+                  </div>
+
+                  {/* List Assigned Student Badges (Can Edit & Delete) */}
+                  <div className="flex flex-wrap gap-2">
+                    {(editingUser.mahasiswaBimbinganNames || ['Ahmad Fauzi', 'Rizky Ramadhan']).map((mhsName, idx) => (
+                      <span key={idx} className="bg-white text-indigo-900 px-2.5 py-1 rounded-xl border border-indigo-300 text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                        <span>{mhsName}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const current = editingUser.mahasiswaBimbinganNames || ['Ahmad Fauzi', 'Rizky Ramadhan'];
+                            const updated = current.filter((_, i) => i !== idx);
+                            setEditingUser({ ...editingUser, mahasiswaBimbinganNames: updated });
+                          }}
+                          className="text-red-500 hover:text-red-700 font-black cursor-pointer text-xs"
+                          title="Hapus / Batalkan Bimbingan Mahasiswa Ini"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Add Student Dropdown Selector */}
+                  <div className="flex gap-2 pt-1">
+                    <select
+                      value={selectedBimbinganAdd}
+                      onChange={(e) => setSelectedBimbinganAdd(e.target.value)}
+                      className="w-full glass-input text-xs font-semibold bg-white border-indigo-300 text-slate-900"
+                    >
+                      <option value="">-- Pilih & Tambah Mahasiswa Bimbingan --</option>
+                      {existingMahasiswas.map((m) => (
+                        <option key={m.id} value={m.fullName}>
+                          {m.nim ? `${m.nim} - ` : ''}{m.fullName} ({m.prodi || 'N/A'})
+                        </option>
+                      ))}
+                      <option value="Ahmad Fauzi">111111 - Ahmad Fauzi (Studi Nautika)</option>
+                      <option value="Rizky Ramadhan">2102088 - Rizky Ramadhan (Permesinan Kapal)</option>
+                      <option value="Bambang Pratama">2102011 - Bambang Pratama (MTPD)</option>
+                      <option value="Deni Kurniawan">2001015 - Deni Kurniawan (Studi Nautika)</option>
+                    </select>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (selectedBimbinganAdd) {
+                          const current = editingUser.mahasiswaBimbinganNames || ['Ahmad Fauzi', 'Rizky Ramadhan'];
+                          if (!current.includes(selectedBimbinganAdd)) {
+                            setEditingUser({
+                              ...editingUser,
+                              mahasiswaBimbinganNames: [...current, selectedBimbinganAdd],
+                            });
+                          }
+                          setSelectedBimbinganAdd('');
+                        }
+                      }}
+                      className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shrink-0 cursor-pointer shadow-sm"
+                    >
+                      + Tambah
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="pt-2 flex items-center justify-end gap-2">
                 <button
                   type="button"
@@ -744,8 +913,8 @@ export default function AdminUserManagementPage() {
                 >
                   Batal
                 </button>
-                <button type="submit" className="glass-button text-xs font-bold py-2 px-5">
-                  Simpan Perubahan & Sinkronkan
+                <button type="submit" className="glass-button text-xs font-bold py-2 px-5 cursor-pointer">
+                  Simpan Perubahan
                 </button>
               </div>
             </form>
