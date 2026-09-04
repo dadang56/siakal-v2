@@ -65,10 +65,28 @@ export default function AdminUserManagementPage() {
   const [newAngkatan, setNewAngkatan] = useState('2026');
   const [selectedMhsId, setSelectedMhsId] = useState('');
   const [newDosenBimbingans, setNewDosenBimbingans] = useState<string[]>([]);
-  const [selectedBimbinganAdd, setSelectedBimbinganAdd] = useState('');
+  const [bimbinganSearchQuery, setBimbinganSearchQuery] = useState('');
 
   // Extract list of Mahasiswas from database
   const existingMahasiswas = users.filter((u) => u.role === 'mahasiswa' || u.role === 'alumni');
+
+  // Extended mock students list for easy search testing
+  const allSearchableStudents = [
+    ...existingMahasiswas.map((m) => ({ id: m.id, fullName: m.fullName, nim: m.nim || m.usernameOrId || 'N/A', prodi: m.prodi || 'Studi Nautika' })),
+    { id: 'mhs-mock-1', fullName: 'Ahmad Fauzi', nim: '111111', prodi: 'Studi Nautika' },
+    { id: 'mhs-mock-2', fullName: 'Rizky Ramadhan', nim: '2102088', prodi: 'Permesinan Kapal' },
+    { id: 'mhs-mock-3', fullName: 'Bambang Pratama', nim: '2102011', prodi: 'MTPD' },
+    { id: 'mhs-mock-4', fullName: 'Deni Kurniawan', nim: '2001015', prodi: 'Studi Nautika' },
+    { id: 'mhs-mock-5', fullName: 'Siti Rahmawati', nim: '2101099', prodi: 'Permesinan Kapal' },
+  ].filter((item, index, self) => index === self.findIndex((t) => t.fullName === item.fullName));
+
+  const filteredSearchMhs = allSearchableStudents.filter(
+    (m) =>
+      bimbinganSearchQuery.trim() !== '' &&
+      (m.fullName.toLowerCase().includes(bimbinganSearchQuery.toLowerCase()) ||
+        m.nim.toLowerCase().includes(bimbinganSearchQuery.toLowerCase()) ||
+        m.prodi.toLowerCase().includes(bimbinganSearchQuery.toLowerCase()))
+  );
 
   const saveUsers = (newList: UserAccount[]) => {
     setUsers(newList);
@@ -218,6 +236,7 @@ export default function AdminUserManagementPage() {
     setNewEmail('');
     setSelectedMhsId('');
     setNewDosenBimbingans([]);
+    setBimbinganSearchQuery('');
     alert(`Akun (${newFullName}) berhasil disimpan!`);
   };
 
@@ -239,6 +258,7 @@ export default function AdminUserManagementPage() {
     const updatedList = users.map((u) => (u.id === editingUser.id ? updatedUser : u));
     saveUsers(updatedList);
     setEditingUser(null);
+    setBimbinganSearchQuery('');
     alert(`Perubahan akun (${editingUser.fullName}) berhasil disimpan!`);
   };
 
@@ -293,7 +313,7 @@ export default function AdminUserManagementPage() {
             <input type="file" accept=".xlsx,.xls" onChange={handleExcelFileUpload} className="hidden" />
           </label>
 
-          <button onClick={() => { setSelectedMhsId(''); setNewDosenBimbingans([]); setShowAddModal(true); }} className="glass-button text-xs sm:text-sm font-extrabold flex items-center gap-2 py-2.5 px-4 shadow-md cursor-pointer">
+          <button onClick={() => { setSelectedMhsId(''); setNewDosenBimbingans([]); setBimbinganSearchQuery(''); setShowAddModal(true); }} className="glass-button text-xs sm:text-sm font-extrabold flex items-center gap-2 py-2.5 px-4 shadow-md cursor-pointer">
             <Plus className="w-4 h-4" />
             <span>Tambah User</span>
           </button>
@@ -442,7 +462,7 @@ export default function AdminUserManagementPage() {
                       <td className="py-3.5 px-4 text-center">
                         <div className="flex items-center justify-center gap-1.5">
                           <button
-                            onClick={() => setEditingUser({ ...u })}
+                            onClick={() => { setEditingUser({ ...u }); setBimbinganSearchQuery(''); }}
                             className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-sky-500/10 transition-colors cursor-pointer"
                             title="Edit Akun User & Mahasiswa Bimbingan"
                           >
@@ -485,7 +505,7 @@ export default function AdminUserManagementPage() {
         </div>
       </div>
 
-      {/* MODAL TAMBAH USER SINGLE - CLEAN & SPACIOUS 2-COLUMN GRID */}
+      {/* MODAL TAMBAH USER SINGLE */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
           <div className="glass-panel w-full max-w-xl p-6 sm:p-7 space-y-5 border border-slate-300 shadow-2xl relative bg-white rounded-3xl max-h-[90vh] overflow-y-auto">
@@ -654,7 +674,7 @@ export default function AdminUserManagementPage() {
                 </div>
               )}
 
-              {/* MAHASISWA BIMBINGAN ALLOCATION FOR ROLE DOSEN PEMBIMBING - CLEAN & MINIMALIST */}
+              {/* MAHASISWA BIMBINGAN ALLOCATION FOR ROLE DOSEN PEMBIMBING WITH LIVE SEARCH */}
               {newRole === 'dosen' && (
                 <div className="p-4.5 rounded-2xl bg-indigo-50/80 border border-indigo-200 space-y-3">
                   <div className="flex items-center justify-between">
@@ -663,7 +683,7 @@ export default function AdminUserManagementPage() {
                       <span>Mahasiswa Bimbingan PRALA</span>
                     </label>
                     <span className="text-[11px] font-black text-indigo-800 bg-indigo-100/90 px-2.5 py-0.5 rounded-full border border-indigo-300">
-                      {newDosenBimbingans.length} Mahasiswa
+                      {newDosenBimbingans.length} Mahasiswa Ditunjuk
                     </span>
                   </div>
 
@@ -688,36 +708,60 @@ export default function AdminUserManagementPage() {
                     )}
                   </div>
 
-                  {/* Add Student Dropdown Selector */}
-                  <div className="flex gap-2 pt-1">
-                    <select
-                      value={selectedBimbinganAdd}
-                      onChange={(e) => setSelectedBimbinganAdd(e.target.value)}
-                      className="w-full glass-input text-xs sm:text-sm font-semibold py-2 px-3 bg-white border-indigo-300 text-slate-900"
-                    >
-                      <option value="">-- Pilih Mahasiswa dari Database --</option>
-                      {existingMahasiswas.map((m) => (
-                        <option key={m.id} value={m.fullName}>
-                          {m.nim ? `${m.nim} - ` : ''}{m.fullName} ({m.prodi || 'N/A'})
-                        </option>
-                      ))}
-                      <option value="Ahmad Fauzi">111111 - Ahmad Fauzi (Studi Nautika)</option>
-                      <option value="Rizky Ramadhan">2102088 - Rizky Ramadhan (Permesinan Kapal)</option>
-                      <option value="Bambang Pratama">2102011 - Bambang Pratama (MTPD)</option>
-                    </select>
+                  {/* LIVE SEARCH INPUT & AUTOCOMPLETE LIST */}
+                  <div className="relative pt-1">
+                    <div className="relative">
+                      <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-indigo-500" />
+                      <input
+                        type="text"
+                        value={bimbinganSearchQuery}
+                        onChange={(e) => setBimbinganSearchQuery(e.target.value)}
+                        placeholder="Ketik Nama, NIM, atau Prodi Mahasiswa..."
+                        className="w-full glass-input pl-10 text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-indigo-300 text-slate-900 shadow-sm"
+                      />
+                      {bimbinganSearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setBimbinganSearchQuery('')}
+                          className="absolute right-3.5 top-3 text-xs text-slate-400 hover:text-slate-600 font-bold"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (selectedBimbinganAdd && !newDosenBimbingans.includes(selectedBimbinganAdd)) {
-                          setNewDosenBimbingans([...newDosenBimbingans, selectedBimbinganAdd]);
-                          setSelectedBimbinganAdd('');
-                        }
-                      }}
-                      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shrink-0 cursor-pointer shadow-sm"
-                    >
-                      + Tambah
-                    </button>
+                    {/* LIVE SEARCH DROPDOWN SUGGESTIONS */}
+                    {bimbinganSearchQuery.trim() !== '' && (
+                      <div className="absolute z-30 left-0 right-0 mt-1 bg-white rounded-2xl border border-indigo-200 shadow-xl max-h-48 overflow-y-auto divide-y divide-slate-100">
+                        {filteredSearchMhs.length > 0 ? (
+                          filteredSearchMhs.map((m) => (
+                            <button
+                              key={m.id}
+                              type="button"
+                              onClick={() => {
+                                if (!newDosenBimbingans.includes(m.fullName)) {
+                                  setNewDosenBimbingans([...newDosenBimbingans, m.fullName]);
+                                }
+                                setBimbinganSearchQuery('');
+                              }}
+                              className="w-full text-left p-3 hover:bg-indigo-50 transition-colors flex items-center justify-between text-xs cursor-pointer"
+                            >
+                              <div>
+                                <div className="font-extrabold text-slate-900 text-xs sm:text-sm">{m.fullName}</div>
+                                <div className="text-[11px] text-slate-500 font-mono">NIM: {m.nim} • {m.prodi}</div>
+                              </div>
+                              <span className="px-3 py-1 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-sm">
+                                + Tambah
+                              </span>
+                            </button>
+                          ))
+                        ) : (
+                          <div className="p-3.5 text-xs text-slate-500 text-center italic">
+                            Tidak ditemukan mahasiswa dengan kata kunci &ldquo;{bimbinganSearchQuery}&rdquo;
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -739,7 +783,7 @@ export default function AdminUserManagementPage() {
         </div>
       )}
 
-      {/* MODAL EDIT USER - CLEAN & SPACIOUS 2-COLUMN GRID */}
+      {/* MODAL EDIT USER WITH LIVE SEARCH */}
       {editingUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
           <div className="glass-panel w-full max-w-xl p-6 sm:p-7 space-y-5 border border-slate-300 shadow-2xl relative bg-white rounded-3xl max-h-[90vh] overflow-y-auto">
@@ -850,7 +894,7 @@ export default function AdminUserManagementPage() {
                 </div>
               )}
 
-              {/* MAHASISWA BIMBINGAN ALLOCATION FOR ROLE DOSEN PEMBIMBING */}
+              {/* MAHASISWA BIMBINGAN ALLOCATION FOR ROLE DOSEN PEMBIMBING WITH LIVE SEARCH */}
               {editingUser.role === 'dosen' && (
                 <div className="p-4.5 rounded-2xl bg-indigo-50/80 border border-indigo-200 space-y-3">
                   <div className="flex items-center justify-between">
@@ -859,7 +903,7 @@ export default function AdminUserManagementPage() {
                       <span>Mahasiswa Bimbingan PRALA</span>
                     </label>
                     <span className="text-[11px] font-black text-indigo-800 bg-indigo-100/90 px-2.5 py-0.5 rounded-full border border-indigo-300">
-                      {(editingUser.mahasiswaBimbinganNames || ['Ahmad Fauzi', 'Rizky Ramadhan']).length} Mahasiswa
+                      {(editingUser.mahasiswaBimbinganNames || ['Ahmad Fauzi', 'Rizky Ramadhan']).length} Mahasiswa Ditunjuk
                     </span>
                   </div>
 
@@ -884,43 +928,64 @@ export default function AdminUserManagementPage() {
                     ))}
                   </div>
 
-                  {/* Add Student Dropdown Selector */}
-                  <div className="flex gap-2 pt-1">
-                    <select
-                      value={selectedBimbinganAdd}
-                      onChange={(e) => setSelectedBimbinganAdd(e.target.value)}
-                      className="w-full glass-input text-xs sm:text-sm font-semibold py-2 px-3 bg-white border-indigo-300 text-slate-900"
-                    >
-                      <option value="">-- Pilih & Tambah Mahasiswa Bimbingan --</option>
-                      {existingMahasiswas.map((m) => (
-                        <option key={m.id} value={m.fullName}>
-                          {m.nim ? `${m.nim} - ` : ''}{m.fullName} ({m.prodi || 'N/A'})
-                        </option>
-                      ))}
-                      <option value="Ahmad Fauzi">111111 - Ahmad Fauzi (Studi Nautika)</option>
-                      <option value="Rizky Ramadhan">2102088 - Rizky Ramadhan (Permesinan Kapal)</option>
-                      <option value="Bambang Pratama">2102011 - Bambang Pratama (MTPD)</option>
-                      <option value="Deni Kurniawan">2001015 - Deni Kurniawan (Studi Nautika)</option>
-                    </select>
+                  {/* LIVE SEARCH INPUT & AUTOCOMPLETE LIST FOR EDIT MODAL */}
+                  <div className="relative pt-1">
+                    <div className="relative">
+                      <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-indigo-500" />
+                      <input
+                        type="text"
+                        value={bimbinganSearchQuery}
+                        onChange={(e) => setBimbinganSearchQuery(e.target.value)}
+                        placeholder="Ketik Nama, NIM, atau Prodi Mahasiswa..."
+                        className="w-full glass-input pl-10 text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-indigo-300 text-slate-900 shadow-sm"
+                      />
+                      {bimbinganSearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setBimbinganSearchQuery('')}
+                          className="absolute right-3.5 top-3 text-xs text-slate-400 hover:text-slate-600 font-bold"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (selectedBimbinganAdd) {
-                          const current = editingUser.mahasiswaBimbinganNames || ['Ahmad Fauzi', 'Rizky Ramadhan'];
-                          if (!current.includes(selectedBimbinganAdd)) {
-                            setEditingUser({
-                              ...editingUser,
-                              mahasiswaBimbinganNames: [...current, selectedBimbinganAdd],
-                            });
-                          }
-                          setSelectedBimbinganAdd('');
-                        }
-                      }}
-                      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shrink-0 cursor-pointer shadow-sm"
-                    >
-                      + Tambah
-                    </button>
+                    {/* LIVE SEARCH DROPDOWN SUGGESTIONS */}
+                    {bimbinganSearchQuery.trim() !== '' && (
+                      <div className="absolute z-30 left-0 right-0 mt-1 bg-white rounded-2xl border border-indigo-200 shadow-xl max-h-48 overflow-y-auto divide-y divide-slate-100">
+                        {filteredSearchMhs.length > 0 ? (
+                          filteredSearchMhs.map((m) => (
+                            <button
+                              key={m.id}
+                              type="button"
+                              onClick={() => {
+                                const current = editingUser.mahasiswaBimbinganNames || ['Ahmad Fauzi', 'Rizky Ramadhan'];
+                                if (!current.includes(m.fullName)) {
+                                  setEditingUser({
+                                    ...editingUser,
+                                    mahasiswaBimbinganNames: [...current, m.fullName],
+                                  });
+                                }
+                                setBimbinganSearchQuery('');
+                              }}
+                              className="w-full text-left p-3 hover:bg-indigo-50 transition-colors flex items-center justify-between text-xs cursor-pointer"
+                            >
+                              <div>
+                                <div className="font-extrabold text-slate-900 text-xs sm:text-sm">{m.fullName}</div>
+                                <div className="text-[11px] text-slate-500 font-mono">NIM: {m.nim} • {m.prodi}</div>
+                              </div>
+                              <span className="px-3 py-1 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shadow-sm">
+                                + Tambah
+                              </span>
+                            </button>
+                          ))
+                        ) : (
+                          <div className="p-3.5 text-xs text-slate-500 text-center italic">
+                            Tidak ditemukan mahasiswa dengan kata kunci &ldquo;{bimbinganSearchQuery}&rdquo;
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
