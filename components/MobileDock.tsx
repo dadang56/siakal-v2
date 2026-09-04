@@ -65,7 +65,7 @@ export function MobileDock({ role, prodi }: MobileDockProps) {
           items.push({ label: 'Bimbingan & Unggah TRB PDF', href: '/dashboard/prala/bimbingan', icon: Anchor });
         }
         if (isMTPD || !prodi) {
-          items.push({ label: 'Status Ploting Magang MTPD', href: '/dashboard/magang', icon: Briefcase });
+          items.push({ label: '(Magang dan PKL) MTPD', href: '/dashboard/magang', icon: Briefcase });
         }
         items.push({ label: 'Pengajuan Beasiswa', href: '/dashboard/beasiswa', icon: GraduationCap });
         items.push({ label: 'Input Prestasi Mahasiswa', href: '/dashboard/prestasi', icon: Trophy });

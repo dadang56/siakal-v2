@@ -329,7 +329,7 @@ export default function MainDashboardPage() {
             </Link>
 
             <Link href="/dashboard/admin/magang" className="glass-panel p-3.5 sm:p-4 flex items-center justify-between hover:border-amber-500 transition-all group rounded-2xl">
-              <span className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm">Ploting Magang</span>
+              <span className="font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm">(Magang dan PKL) MTPD</span>
               <Briefcase className="w-4.5 h-4.5 text-amber-500 group-hover:scale-110 transition-transform" />
             </Link>
 
