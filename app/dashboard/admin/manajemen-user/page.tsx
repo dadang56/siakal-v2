@@ -154,7 +154,7 @@ export default function AdminUserManagementPage() {
     saveUsers(updated);
     setShowImportModal(false);
     setImportedPreview([]);
-    alert(`Berhasil mengimpor ${newAccounts.length} akun pengguna baru dan tersinkronisasi ke Database Mahasiswa!`);
+    alert(`Berhasil mengimpor ${newAccounts.length} akun pengguna baru ke sistem!`);
   };
 
   const handleAddSingleUser = (e: React.FormEvent) => {
@@ -167,7 +167,6 @@ export default function AdminUserManagementPage() {
     const isMhsOrAlumni = newRole === 'mahasiswa' || newRole === 'alumni';
     const isDosen = newRole === 'dosen';
 
-    // Check if updating an existing student record by NIM or ID
     const existingIndex = users.findIndex(
       (u) =>
         (selectedMhsId && u.id === selectedMhsId) ||
@@ -287,8 +286,8 @@ export default function AdminUserManagementPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs sm:text-sm flex items-center gap-2 border border-slate-300 shadow-sm cursor-pointer transition-all">
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <label className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs sm:text-sm flex items-center gap-2 border border-slate-300 shadow-sm cursor-pointer transition-all">
             <Upload className="w-4 h-4 text-slate-600" />
             <span>Impor Excel</span>
             <input type="file" accept=".xlsx,.xls" onChange={handleExcelFileUpload} className="hidden" />
@@ -345,7 +344,7 @@ export default function AdminUserManagementPage() {
           </h3>
           <button
             onClick={handleDownloadTemplate}
-            className="text-xs font-extrabold text-sky-600 hover:underline flex items-center gap-1.5"
+            className="text-xs font-extrabold text-sky-600 hover:underline flex items-center gap-1.5 cursor-pointer"
           >
             <FileSpreadsheet className="w-4 h-4 text-sky-500" />
             <span>Download Template Excel Impor</span>
@@ -369,6 +368,7 @@ export default function AdminUserManagementPage() {
                 filteredUsers.map((u) => {
                   const loginId = u.usernameOrId || u.nim || u.nip || u.email;
                   const isPassVisible = visiblePasswords[u.id];
+                  const bimbinganList = u.mahasiswaBimbinganNames || (u.role === 'dosen' ? ['Ahmad Fauzi', 'Rizky Ramadhan'] : []);
 
                   return (
                     <tr key={u.id} className="hover:bg-slate-50 transition-colors">
@@ -422,12 +422,12 @@ export default function AdminUserManagementPage() {
                         {u.role === 'mahasiswa' || u.role === 'alumni' ? (
                           <span>{u.prodi || '-'}</span>
                         ) : u.role === 'dosen' ? (
-                          <div>
-                            <span className="text-xs font-black text-indigo-700 block mb-1">
-                              Bimbingan ({u.mahasiswaBimbinganNames?.length || 2} Mahasiswa):
+                          <div className="space-y-1">
+                            <span className="text-[11px] font-black text-indigo-700 block">
+                              Bimbingan ({bimbinganList.length} Mahasiswa):
                             </span>
                             <div className="flex flex-wrap gap-1">
-                              {(u.mahasiswaBimbinganNames || ['Ahmad Fauzi', 'Rizky Ramadhan']).map((mhsName, idx) => (
+                              {bimbinganList.map((mhsName, idx) => (
                                 <span key={idx} className="bg-indigo-50 text-indigo-900 px-2 py-0.5 rounded-md border border-indigo-200 text-[11px] font-bold">
                                   {mhsName}
                                 </span>
@@ -443,7 +443,7 @@ export default function AdminUserManagementPage() {
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             onClick={() => setEditingUser({ ...u })}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-sky-500/10 transition-colors"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-sky-600 hover:bg-sky-500/10 transition-colors cursor-pointer"
                             title="Edit Akun User & Mahasiswa Bimbingan"
                           >
                             <Edit3 className="w-4 h-4" />
@@ -451,7 +451,7 @@ export default function AdminUserManagementPage() {
 
                           <button
                             onClick={() => handleCopyCredentials(u)}
-                            className={`p-1.5 rounded-lg transition-colors ${
+                            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                               copiedId === u.id
                                 ? 'text-emerald-600 bg-emerald-500/20'
                                 : 'text-slate-500 hover:text-sky-600 hover:bg-sky-500/10'
@@ -463,7 +463,7 @@ export default function AdminUserManagementPage() {
 
                           <button
                             onClick={() => setDeleteTargetId(u.id)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-500/10 transition-colors"
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-500/10 transition-colors cursor-pointer"
                             title="Hapus Akun User"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -485,25 +485,25 @@ export default function AdminUserManagementPage() {
         </div>
       </div>
 
-      {/* MODAL TAMBAH USER SINGLE */}
+      {/* MODAL TAMBAH USER SINGLE - CLEAN & SPACIOUS 2-COLUMN GRID */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-          <div className="glass-panel w-full max-w-lg p-6 space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+          <div className="glass-panel w-full max-w-xl p-6 sm:p-7 space-y-5 border border-slate-300 shadow-2xl relative bg-white rounded-3xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3.5">
+              <h3 className="text-lg font-black text-slate-900 flex items-center gap-2.5">
                 <Plus className="w-5 h-5 text-sky-500" />
                 <span>Tambah Akun User Baru</span>
               </h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 font-bold">
-                ✕
+              <button onClick={() => setShowAddModal(false)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors font-bold cursor-pointer">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleAddSingleUser} className="space-y-3.5">
-              {/* ROLE SELECTOR */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <form onSubmit={handleAddSingleUser} className="space-y-4">
+              {/* ROW 1: ROLE & SINKRONISASI MAHASISWA */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Role Akun *</label>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5">Role Akun *</label>
                   <select
                     value={newRole}
                     onChange={(e) => {
@@ -511,7 +511,7 @@ export default function AdminUserManagementPage() {
                       setNewRole(r);
                       setSelectedMhsId('');
                     }}
-                    className="w-full glass-input text-xs font-semibold"
+                    className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-slate-50 border-slate-300 text-slate-900"
                   >
                     <option value="mahasiswa">Mahasiswa</option>
                     <option value="dosen">Dosen Pembimbing</option>
@@ -525,14 +525,14 @@ export default function AdminUserManagementPage() {
                 {/* SINKRONISASI DROPDOWN DARI DATABASE MAHASISWA */}
                 {(newRole === 'mahasiswa' || newRole === 'alumni') ? (
                   <div>
-                    <label className="block text-xs font-bold text-sky-700 mb-1 flex items-center gap-1">
-                      <RefreshCw className="w-3 h-3 text-sky-500 animate-spin-slow" />
+                    <label className="block text-xs font-bold text-sky-700 mb-1.5 flex items-center gap-1">
+                      <RefreshCw className="w-3.5 h-3.5 text-sky-500 animate-spin-slow" />
                       <span>Pilih dari Database Mahasiswa:</span>
                     </label>
                     <select
                       value={selectedMhsId}
                       onChange={(e) => handleSelectExistingMhs(e.target.value)}
-                      className="w-full glass-input text-xs font-semibold bg-sky-50/50 border-sky-300 text-sky-900"
+                      className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-sky-50/70 border-sky-300 text-sky-900"
                     >
                       <option value="">-- Buat Baru / Pilih Tersimpan --</option>
                       {existingMahasiswas.map((m) => (
@@ -544,63 +544,94 @@ export default function AdminUserManagementPage() {
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Status Role</label>
-                    <div className="glass-input text-xs font-semibold text-slate-600 bg-slate-50 flex items-center gap-1.5 py-2">
-                      <UserCheck className="w-3.5 h-3.5 text-emerald-500" />
-                      <span>Akun Pengguna Sistem</span>
-                    </div>
+                    <label className="block text-xs font-bold text-slate-800 mb-1.5">ID Masuk (NIP/Username) *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newUsernameOrId}
+                      onChange={(e) => setNewUsernameOrId(e.target.value)}
+                      placeholder="Contoh: 198503152010121002"
+                      className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-slate-50 border-slate-300 text-slate-900"
+                    />
                   </div>
                 )}
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap *</label>
-                <input
-                  type="text"
-                  required
-                  value={newFullName}
-                  onChange={(e) => setNewFullName(e.target.value)}
-                  placeholder="Contoh: Capt. Budi Santoso, M.Mar."
-                  className="w-full glass-input text-xs sm:text-sm font-semibold"
-                />
-              </div>
+              {/* ROW 2: NAMA LENGKAP & ID MASUK FOR MAHASISWA */}
+              {(newRole === 'mahasiswa' || newRole === 'alumni') ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-800 mb-1.5">Nama Lengkap Mahasiswa *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newFullName}
+                      onChange={(e) => setNewFullName(e.target.value)}
+                      placeholder="Contoh: Ahmad Fauzi"
+                      className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-slate-50 border-slate-300 text-slate-900"
+                    />
+                  </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-800 mb-1.5">NIM (ID Masuk Login) *</label>
+                    <input
+                      type="text"
+                      required
+                      value={newUsernameOrId}
+                      onChange={(e) => setNewUsernameOrId(e.target.value)}
+                      placeholder="Contoh: 111111"
+                      className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-slate-50 border-slate-300 text-slate-900"
+                    />
+                  </div>
+                </div>
+              ) : (
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    {newRole === 'mahasiswa' || newRole === 'alumni' ? 'NIM (ID Masuk Login) *' : 'ID Masuk (NIP/Username) *'}
-                  </label>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5">Nama Lengkap User *</label>
                   <input
                     type="text"
                     required
-                    value={newUsernameOrId}
-                    onChange={(e) => setNewUsernameOrId(e.target.value)}
-                    placeholder={newRole === 'mahasiswa' ? 'Contoh: 111111' : 'Contoh: 198503152010121002'}
-                    className="w-full glass-input text-xs font-mono"
+                    value={newFullName}
+                    onChange={(e) => setNewFullName(e.target.value)}
+                    placeholder="Contoh: Capt. Budi Santoso, M.Mar."
+                    className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-slate-50 border-slate-300 text-slate-900"
                   />
                 </div>
+              )}
 
+              {/* ROW 3: PASSWORD & EMAIL */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Password Initial *</label>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5">Password Initial *</label>
                   <input
                     type="text"
                     required
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full glass-input text-xs font-mono"
+                    className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-slate-50 border-slate-300 text-slate-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5">Email (Opsional)</label>
+                  <input
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    placeholder="Opsional (otomatis id@siakal.poltek.ac.id)"
+                    className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-slate-50 border-slate-300 text-slate-900"
                   />
                 </div>
               </div>
 
               {/* PROGRAM STUDI & ANGKATAN FOR MAHASISWA & ALUMNI */}
               {(newRole === 'mahasiswa' || newRole === 'alumni') && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-sky-50/60 p-3 rounded-xl border border-sky-200">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-sky-50/70 p-4 rounded-2xl border border-sky-200">
                   <div>
-                    <label className="block text-xs font-bold text-slate-800 mb-1">Program Studi *</label>
+                    <label className="block text-xs font-bold text-slate-800 mb-1.5">Program Studi *</label>
                     <select
                       value={newProdi}
                       onChange={(e) => setNewProdi(e.target.value)}
-                      className="w-full glass-input text-xs font-semibold bg-white"
+                      className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300 text-slate-900"
                     >
                       {prodiList.map((p) => (
                         <option key={p.id} value={p.nama}>
@@ -611,28 +642,28 @@ export default function AdminUserManagementPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-800 mb-1">Tahun Angkatan *</label>
+                    <label className="block text-xs font-bold text-slate-800 mb-1.5">Tahun Angkatan *</label>
                     <input
                       type="number"
                       value={newAngkatan}
                       onChange={(e) => setNewAngkatan(e.target.value)}
                       placeholder="Contoh: 2026"
-                      className="w-full glass-input text-xs font-mono bg-white"
+                      className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300 text-slate-900"
                     />
                   </div>
                 </div>
               )}
 
-              {/* MAHASISWA BIMBINGAN ALLOCATION FOR ROLE DOSEN PEMBIMBING */}
+              {/* MAHASISWA BIMBINGAN ALLOCATION FOR ROLE DOSEN PEMBIMBING - CLEAN & MINIMALIST */}
               {newRole === 'dosen' && (
-                <div className="p-4 rounded-2xl bg-indigo-50/80 border border-indigo-200 space-y-3">
+                <div className="p-4.5 rounded-2xl bg-indigo-50/80 border border-indigo-200 space-y-3">
                   <div className="flex items-center justify-between">
                     <label className="block text-xs font-black text-indigo-900 uppercase tracking-wider flex items-center gap-1.5">
                       <UserPlus className="w-4 h-4 text-indigo-600" />
-                      <span>Alokasi Mahasiswa Bimbingan PRALA</span>
+                      <span>Mahasiswa Bimbingan PRALA</span>
                     </label>
-                    <span className="text-[11px] font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">
-                      {newDosenBimbingans.length} Mahasiswa Ditunjuk
+                    <span className="text-[11px] font-black text-indigo-800 bg-indigo-100/90 px-2.5 py-0.5 rounded-full border border-indigo-300">
+                      {newDosenBimbingans.length} Mahasiswa
                     </span>
                   </div>
 
@@ -640,20 +671,20 @@ export default function AdminUserManagementPage() {
                   <div className="flex flex-wrap gap-2">
                     {newDosenBimbingans.length > 0 ? (
                       newDosenBimbingans.map((mhsName, idx) => (
-                        <span key={idx} className="bg-white text-indigo-900 px-2.5 py-1 rounded-xl border border-indigo-300 text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                        <span key={idx} className="bg-white text-indigo-900 px-3 py-1 rounded-xl border border-indigo-300 text-xs font-bold flex items-center gap-2 shadow-sm">
                           <span>{mhsName}</span>
                           <button
                             type="button"
                             onClick={() => setNewDosenBimbingans(newDosenBimbingans.filter((_, i) => i !== idx))}
                             className="text-red-500 hover:text-red-700 font-black cursor-pointer text-xs"
-                            title="Hapus / Batalkan Bimbingan"
+                            title="Hapus Bimbingan"
                           >
                             ✕
                           </button>
                         </span>
                       ))
                     ) : (
-                      <span className="text-xs text-indigo-500 italic">Belum ada mahasiswa bimbingan yang ditunjuk.</span>
+                      <span className="text-xs text-indigo-600 font-semibold italic">Belum ada mahasiswa bimbingan yang ditunjuk.</span>
                     )}
                   </div>
 
@@ -662,7 +693,7 @@ export default function AdminUserManagementPage() {
                     <select
                       value={selectedBimbinganAdd}
                       onChange={(e) => setSelectedBimbinganAdd(e.target.value)}
-                      className="w-full glass-input text-xs font-semibold bg-white border-indigo-300 text-slate-900"
+                      className="w-full glass-input text-xs sm:text-sm font-semibold py-2 px-3 bg-white border-indigo-300 text-slate-900"
                     >
                       <option value="">-- Pilih Mahasiswa dari Database --</option>
                       {existingMahasiswas.map((m) => (
@@ -683,7 +714,7 @@ export default function AdminUserManagementPage() {
                           setSelectedBimbinganAdd('');
                         }
                       }}
-                      className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shrink-0 cursor-pointer shadow-sm"
+                      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shrink-0 cursor-pointer shadow-sm"
                     >
                       + Tambah
                     </button>
@@ -691,26 +722,15 @@ export default function AdminUserManagementPage() {
                 </div>
               )}
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Email (Opsional)</label>
-                <input
-                  type="email"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="Opsional (otomatis id@siakal.poltek.ac.id)"
-                  className="w-full glass-input text-xs font-semibold"
-                />
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-2">
+              <div className="pt-3 flex items-center justify-end gap-2.5 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200"
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200 cursor-pointer"
                 >
                   Batal
                 </button>
-                <button type="submit" className="glass-button text-xs font-bold py-2 px-5 cursor-pointer">
+                <button type="submit" className="glass-button text-xs sm:text-sm font-extrabold py-2.5 px-6 cursor-pointer">
                   Simpan User Baru
                 </button>
               </div>
@@ -719,39 +739,28 @@ export default function AdminUserManagementPage() {
         </div>
       )}
 
-      {/* MODAL EDIT USER */}
+      {/* MODAL EDIT USER - CLEAN & SPACIOUS 2-COLUMN GRID */}
       {editingUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-          <div className="glass-panel w-full max-w-lg p-6 space-y-4 border border-slate-300 shadow-2xl relative bg-white rounded-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
+          <div className="glass-panel w-full max-w-xl p-6 sm:p-7 space-y-5 border border-slate-300 shadow-2xl relative bg-white rounded-3xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3.5">
+              <h3 className="text-lg font-black text-slate-900 flex items-center gap-2.5">
                 <Edit3 className="w-5 h-5 text-sky-500" />
-                <span>Edit Akun User & Pengaturan Bimbingan</span>
+                <span>Edit Akun User</span>
               </h3>
-              <button onClick={() => setEditingUser(null)} className="text-slate-400 hover:text-slate-600 font-bold">
-                ✕
+              <button onClick={() => setEditingUser(null)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors font-bold cursor-pointer">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveEditUser} className="space-y-3.5">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Nama Lengkap *</label>
-                <input
-                  type="text"
-                  required
-                  value={editingUser.fullName}
-                  onChange={(e) => setEditingUser({ ...editingUser, fullName: e.target.value })}
-                  className="w-full glass-input text-xs sm:text-sm font-semibold"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <form onSubmit={handleSaveEditUser} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Role Akun *</label>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5">Role Akun *</label>
                   <select
                     value={editingUser.role}
                     onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as any })}
-                    className="w-full glass-input text-xs font-semibold"
+                    className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-slate-50 border-slate-300 text-slate-900"
                   >
                     <option value="mahasiswa">Mahasiswa</option>
                     <option value="dosen">Dosen Pembimbing</option>
@@ -763,7 +772,7 @@ export default function AdminUserManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5">
                     {editingUser.role === 'mahasiswa' || editingUser.role === 'alumni' ? 'NIM (ID Masuk Login) *' : 'ID Masuk (NIP/Username) *'}
                   </label>
                   <input
@@ -771,44 +780,55 @@ export default function AdminUserManagementPage() {
                     required
                     value={editingUser.usernameOrId || editingUser.nim || editingUser.nip || ''}
                     onChange={(e) => setEditingUser({ ...editingUser, usernameOrId: e.target.value, nim: e.target.value, nip: e.target.value })}
-                    className="w-full glass-input text-xs font-mono"
+                    className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-slate-50 border-slate-300 text-slate-900"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Password Initial *</label>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5">Nama Lengkap *</label>
                   <input
                     type="text"
                     required
-                    value={editingUser.initialPassword || 'SIAKAL2026!'}
-                    onChange={(e) => setEditingUser({ ...editingUser, initialPassword: e.target.value })}
-                    className="w-full glass-input text-xs font-mono"
+                    value={editingUser.fullName}
+                    onChange={(e) => setEditingUser({ ...editingUser, fullName: e.target.value })}
+                    className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-slate-50 border-slate-300 text-slate-900"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Email *</label>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5">Email *</label>
                   <input
                     type="email"
                     required
                     value={editingUser.email}
                     onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
-                    className="w-full glass-input text-xs font-semibold"
+                    className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-slate-50 border-slate-300 text-slate-900"
                   />
                 </div>
               </div>
 
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1.5">Password Initial *</label>
+                <input
+                  type="text"
+                  required
+                  value={editingUser.initialPassword || 'SIAKAL2026!'}
+                  onChange={(e) => setEditingUser({ ...editingUser, initialPassword: e.target.value })}
+                  className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-slate-50 border-slate-300 text-slate-900"
+                />
+              </div>
+
               {/* PROGRAM STUDI & ANGKATAN FOR MAHASISWA & ALUMNI */}
               {(editingUser.role === 'mahasiswa' || editingUser.role === 'alumni') && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-sky-50/60 p-3 rounded-xl border border-sky-200">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-sky-50/70 p-4 rounded-2xl border border-sky-200">
                   <div>
-                    <label className="block text-xs font-bold text-slate-800 mb-1">Program Studi *</label>
+                    <label className="block text-xs font-bold text-slate-800 mb-1.5">Program Studi *</label>
                     <select
                       value={editingUser.prodi || prodiList[0]?.nama}
                       onChange={(e) => setEditingUser({ ...editingUser, prodi: e.target.value })}
-                      className="w-full glass-input text-xs font-semibold bg-white"
+                      className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300 text-slate-900"
                     >
                       {prodiList.map((p) => (
                         <option key={p.id} value={p.nama}>
@@ -819,12 +839,12 @@ export default function AdminUserManagementPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-800 mb-1">Tahun Angkatan *</label>
+                    <label className="block text-xs font-bold text-slate-800 mb-1.5">Tahun Angkatan *</label>
                     <input
                       type="number"
                       value={editingUser.angkatan || 2026}
                       onChange={(e) => setEditingUser({ ...editingUser, angkatan: Number(e.target.value) })}
-                      className="w-full glass-input text-xs font-mono bg-white"
+                      className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300 text-slate-900"
                     />
                   </div>
                 </div>
@@ -832,21 +852,21 @@ export default function AdminUserManagementPage() {
 
               {/* MAHASISWA BIMBINGAN ALLOCATION FOR ROLE DOSEN PEMBIMBING */}
               {editingUser.role === 'dosen' && (
-                <div className="p-4 rounded-2xl bg-indigo-50/80 border border-indigo-200 space-y-3">
+                <div className="p-4.5 rounded-2xl bg-indigo-50/80 border border-indigo-200 space-y-3">
                   <div className="flex items-center justify-between">
                     <label className="block text-xs font-black text-indigo-900 uppercase tracking-wider flex items-center gap-1.5">
                       <UserPlus className="w-4 h-4 text-indigo-600" />
-                      <span>Alokasi Mahasiswa Bimbingan PRALA</span>
+                      <span>Mahasiswa Bimbingan PRALA</span>
                     </label>
-                    <span className="text-[11px] font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">
-                      {(editingUser.mahasiswaBimbinganNames || ['Ahmad Fauzi', 'Rizky Ramadhan']).length} Mahasiswa Ditunjuk
+                    <span className="text-[11px] font-black text-indigo-800 bg-indigo-100/90 px-2.5 py-0.5 rounded-full border border-indigo-300">
+                      {(editingUser.mahasiswaBimbinganNames || ['Ahmad Fauzi', 'Rizky Ramadhan']).length} Mahasiswa
                     </span>
                   </div>
 
                   {/* List Assigned Student Badges (Can Edit & Delete) */}
                   <div className="flex flex-wrap gap-2">
                     {(editingUser.mahasiswaBimbinganNames || ['Ahmad Fauzi', 'Rizky Ramadhan']).map((mhsName, idx) => (
-                      <span key={idx} className="bg-white text-indigo-900 px-2.5 py-1 rounded-xl border border-indigo-300 text-xs font-bold flex items-center gap-1.5 shadow-sm">
+                      <span key={idx} className="bg-white text-indigo-900 px-3 py-1 rounded-xl border border-indigo-300 text-xs font-bold flex items-center gap-2 shadow-sm">
                         <span>{mhsName}</span>
                         <button
                           type="button"
@@ -856,7 +876,7 @@ export default function AdminUserManagementPage() {
                             setEditingUser({ ...editingUser, mahasiswaBimbinganNames: updated });
                           }}
                           className="text-red-500 hover:text-red-700 font-black cursor-pointer text-xs"
-                          title="Hapus / Batalkan Bimbingan Mahasiswa Ini"
+                          title="Hapus Bimbingan"
                         >
                           ✕
                         </button>
@@ -869,7 +889,7 @@ export default function AdminUserManagementPage() {
                     <select
                       value={selectedBimbinganAdd}
                       onChange={(e) => setSelectedBimbinganAdd(e.target.value)}
-                      className="w-full glass-input text-xs font-semibold bg-white border-indigo-300 text-slate-900"
+                      className="w-full glass-input text-xs sm:text-sm font-semibold py-2 px-3 bg-white border-indigo-300 text-slate-900"
                     >
                       <option value="">-- Pilih & Tambah Mahasiswa Bimbingan --</option>
                       {existingMahasiswas.map((m) => (
@@ -897,7 +917,7 @@ export default function AdminUserManagementPage() {
                           setSelectedBimbinganAdd('');
                         }
                       }}
-                      className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shrink-0 cursor-pointer shadow-sm"
+                      className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs shrink-0 cursor-pointer shadow-sm"
                     >
                       + Tambah
                     </button>
@@ -905,15 +925,15 @@ export default function AdminUserManagementPage() {
                 </div>
               )}
 
-              <div className="pt-2 flex items-center justify-end gap-2">
+              <div className="pt-3 flex items-center justify-end gap-2.5 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={() => setEditingUser(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200"
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200 cursor-pointer"
                 >
                   Batal
                 </button>
-                <button type="submit" className="glass-button text-xs font-bold py-2 px-5 cursor-pointer">
+                <button type="submit" className="glass-button text-xs sm:text-sm font-extrabold py-2.5 px-6 cursor-pointer">
                   Simpan Perubahan
                 </button>
               </div>

@@ -96,7 +96,7 @@ export default function AdminMonitoringPralaPage() {
             <span>Portal Monitoring PRALA (Praktek Laut 1 Tahun)</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 mt-1 font-semibold">
-            Pemantauan Data Kapal, Perusahaan Pelayaran, Perwira Kontak, dan Unggahan TRB PDF Mahasiswa Studi Nautika & Permesinan Kapal.
+            Pemantauan Data Kapal, Perusahaan Pelayaran, Perwira Kontak, Dosen Pembimbing, dan TRB PDF Mahasiswa.
           </p>
         </div>
 
@@ -145,7 +145,8 @@ export default function AdminMonitoringPralaPage() {
               <tr className="bg-slate-100 text-slate-700 font-extrabold uppercase text-xs tracking-wider border-b border-slate-200">
                 <th className="py-3 px-4">MAHASISWA</th>
                 <th className="py-3 px-4">PERUSAHAAN & KAPAL</th>
-                <th className="py-3 px-4">CONTACT PERSON PERWIRA</th>
+                <th className="py-3 px-4">DOSEN PEMBIMBING</th>
+                <th className="py-3 px-4">CONTACT PERWIRA</th>
                 <th className="py-3 px-4">STATUS TRB</th>
                 <th className="py-3 px-4">PROGRES</th>
                 <th className="py-3 px-4 text-center">AKSI</th>
@@ -167,6 +168,14 @@ export default function AdminMonitoringPralaPage() {
                     <div className="text-slate-800 font-semibold flex items-center gap-1.5 mt-0.5">
                       <Ship className="w-4 h-4 text-amber-500 shrink-0" />
                       <span>{p.namaKapal} ({p.tipeKapal})</span>
+                    </div>
+                  </td>
+
+                  {/* DOSEN PEMBIMBING DISPLAY COLUMN */}
+                  <td className="py-3.5 px-4">
+                    <div className="font-extrabold text-indigo-900 flex items-center gap-1.5 bg-indigo-50/80 px-2.5 py-1 rounded-lg border border-indigo-200 w-fit">
+                      <UserCheck className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                      <span>{p.pembimbingDosen || 'Belum Ditetapkan'}</span>
                     </div>
                   </td>
 
