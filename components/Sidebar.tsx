@@ -42,7 +42,7 @@ export function Sidebar({ role, prodi }: SidebarProps) {
           { label: 'Daftar Prodi', href: '/dashboard/admin/prodi', icon: Building2 },
           { label: 'Periode Akademik', href: '/dashboard/admin/periode-akademik', icon: Calendar },
           { label: 'Monitoring PRALA', href: '/dashboard/admin/prala', icon: Anchor },
-          { label: 'Ploting Magang MTPD', href: '/dashboard/admin/magang', icon: Briefcase },
+          { label: '(Magang dan PKL) MTPD', href: '/dashboard/admin/magang', icon: Briefcase },
           { label: 'Manajemen Beasiswa', href: '/dashboard/admin/beasiswa', icon: GraduationCap },
           { label: 'Verifikasi Prestasi', href: '/dashboard/admin/prestasi', icon: Trophy },
           { label: 'Supervisi Clearance Out', href: '/dashboard/admin/clearance-out', icon: FileCheck },

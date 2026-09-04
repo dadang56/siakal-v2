@@ -46,7 +46,7 @@ export function MobileDock({ role, prodi }: MobileDockProps) {
           { label: 'Daftar Prodi', href: '/dashboard/admin/prodi', icon: Building2, category: 'Master Data' },
           { label: 'Periode Akademik', href: '/dashboard/admin/periode-akademik', icon: Calendar, category: 'Akademik' },
           { label: 'Monitoring PRALA', href: '/dashboard/admin/prala', icon: Anchor, category: 'Pra-Layar' },
-          { label: 'Ploting Magang MTPD', href: '/dashboard/admin/magang', icon: Briefcase, category: 'Magang' },
+          { label: '(Magang dan PKL) MTPD', href: '/dashboard/admin/magang', icon: Briefcase, category: 'Magang' },
           { label: 'Manajemen Beasiswa', href: '/dashboard/admin/beasiswa', icon: GraduationCap, category: 'Layanan' },
           { label: 'Verifikasi Prestasi', href: '/dashboard/admin/prestasi', icon: Trophy, category: 'Layanan' },
           { label: 'Supervisi Clearance Out', href: '/dashboard/admin/clearance-out', icon: FileCheck, category: 'Layanan' },
