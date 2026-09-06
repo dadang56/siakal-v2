@@ -106,7 +106,6 @@ export const initialProdiList: ProdiItem[] = [
   { id: 'prodi-1', nama: 'Studi Nautika', jenjang: 'Diploma III', kode: 'PRODI-NT-01' },
   { id: 'prodi-2', nama: 'Permesinan Kapal', jenjang: 'Diploma III', kode: 'PRODI-PK-02' },
   { id: 'prodi-3', nama: 'Manajemen Transportasi Perairan Daratan', jenjang: 'Diploma III', kode: 'PRODI-MTPD-03' },
-  { id: 'prodi-4', nama: 'Teknologi Rekayasa Pelayaran & TSDP', jenjang: 'Diploma IV', kode: 'PRODI-TSDP-04' },
 ];
 
 export const initialAccounts: UserAccount[] = [

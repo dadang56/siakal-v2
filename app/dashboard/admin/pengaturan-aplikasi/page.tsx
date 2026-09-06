@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Settings, Upload, Image as ImageIcon, CheckCircle2, Trash2, Plus, RefreshCw, AlertTriangle, Sparkles, Wand2, HardDrive, Link2, ExternalLink } from 'lucide-react';
-import { DEFAULT_POLTEKTRANS_LOGO, DEFAULT_BACKGROUND_SLIDES } from '@/lib/defaultBranding';
+import { Settings, Upload, Image as ImageIcon, CheckCircle2, Trash2, Plus, RefreshCw, AlertTriangle, Sparkles, Wand2, HardDrive, Link2, ExternalLink, Database, Download, UploadCloud, ShieldCheck } from 'lucide-react';
+import { DEFAULT_POLTEKTRANS_LOGO, DEFAULT_BACKGROUND_SLIDES, OFFICIAL_POLTEKTRANS_LOGO_DATA_URI } from '@/lib/defaultBranding';
 import { getGoogleDriveDirectLink, extractGoogleDriveFileId, loadGoogleDriveConfig, saveGoogleDriveConfig, GoogleDriveConfig } from '@/lib/googleDrive';
+import { exportDatabaseBackup, restoreDatabaseBackup, getAppLogo, saveAppLogo, getAppBackgrounds, saveAppBackgrounds, getProdiList, getUserList } from '@/lib/dbStorage';
 
 // High-Resolution Image Compressor for Full HD 1080p Crystal Sharpness
 function compressImage(file: File, maxWidth = 1920, quality = 0.85, isLogo = false): Promise<string> {
@@ -16,9 +17,15 @@ function compressImage(file: File, maxWidth = 1920, quality = 0.85, isLogo = fal
         let width = img.width;
         let height = img.height;
 
-        if (width > maxWidth) {
-          height = Math.round((height * maxWidth) / width);
-          width = maxWidth;
+        const maxDim = isLogo ? 400 : maxWidth;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
         }
 
         canvas.width = width;
@@ -117,28 +124,46 @@ export default function AppSettingsPage() {
     }
   }, []);
 
+  const [backupMsg, setBackupMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   const persistBranding = (newLogo: string, newBgs: string[]) => {
     try {
-      if (newLogo && newLogo.trim().length > 0) {
-        localStorage.setItem('siakal_custom_logo', newLogo);
-      } else {
-        localStorage.removeItem('siakal_custom_logo');
-      }
-
-      if (newBgs && newBgs.length > 0) {
-        localStorage.setItem('siakal_custom_backgrounds', JSON.stringify(newBgs));
-      } else {
-        localStorage.removeItem('siakal_custom_backgrounds');
-      }
+      saveAppLogo(newLogo);
+      saveAppBackgrounds(newBgs);
 
       // Broadcast custom event so LandingSlider & Navbar update in real-time
       window.dispatchEvent(new Event('siakal_branding_updated'));
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 3500);
     } catch (err) {
-      console.error('LocalStorage quota error:', err);
-      alert('Gagal menyimpan memori lokal browser. Gunakan Google Drive Link untuk file besar.');
+      console.error('Storage error:', err);
     }
+  };
+
+  const handleExportBackup = () => {
+    exportDatabaseBackup();
+    setBackupMsg({ type: 'success', text: 'Berkas cadangan database (.JSON) berhasil diunduh!' });
+    setTimeout(() => setBackupMsg(null), 4000);
+  };
+
+  const handleRestoreBackupFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const content = ev.target?.result as string;
+      const res = restoreDatabaseBackup(content);
+      if (res.success) {
+        setBackupMsg({ type: 'success', text: res.message });
+        setLogoUrl(getAppLogo());
+        setBackgrounds(getAppBackgrounds());
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        setBackupMsg({ type: 'error', text: res.message });
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   const handleSaveDriveConfig = (e: React.FormEvent) => {
@@ -236,8 +261,8 @@ export default function AppSettingsPage() {
   };
 
   const confirmResetToDefault = () => {
-    localStorage.removeItem('siakal_custom_logo');
-    localStorage.removeItem('siakal_custom_backgrounds');
+    saveAppLogo('');
+    saveAppBackgrounds(DEFAULT_BACKGROUND_SLIDES);
     localStorage.removeItem('siakal_google_drive_config');
     setLogoUrl('');
     setBackgrounds(DEFAULT_BACKGROUND_SLIDES);
@@ -388,7 +413,7 @@ export default function AppSettingsPage() {
                 alt="Logo Preview"
                 className="max-h-full max-w-full object-contain"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = DEFAULT_POLTEKTRANS_LOGO;
+                  (e.target as HTMLImageElement).src = OFFICIAL_POLTEKTRANS_LOGO_DATA_URI;
                 }}
               />
             </div>
@@ -505,6 +530,84 @@ export default function AppSettingsPage() {
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* SECTION 3: MANAJEMEN CADANGAN DATABASE PERMANEN (BACKUP & RESTORE JSON) */}
+      <div className="glass-panel p-6 space-y-6">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+              <Database className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
+                3. Manajemen Cadangan & Pemulihan Database Permanen
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+                Simpan seluruh database SIAKAL V2 (Prodi, Akun Pengguna, Kelompok Magang, & Branding) ke dalam satu file .JSON agar data dapat dipulihkan kapan saja di komputer atau perangkat manapun.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {backupMsg && (
+          <div
+            className={`p-3.5 rounded-xl text-xs font-bold flex items-center gap-2 ${
+              backupMsg.type === 'success'
+                ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20'
+                : 'bg-red-500/10 text-red-700 dark:text-red-300 border border-red-500/20'
+            }`}
+          >
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span>{backupMsg.text}</span>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-white/10 space-y-3">
+            <div className="flex items-center gap-2.5">
+              <Download className="w-5 h-5 text-sky-500" />
+              <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">Ekspor Cadangan Database (.JSON)</h4>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+              Unduh salinan penuh seluruh data akademik, master prodi, akun pengguna, dan pengaturan ke komputer Anda.
+            </p>
+            <button
+              type="button"
+              onClick={handleExportBackup}
+              className="w-full py-2.5 px-4 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Download className="w-4 h-4" />
+              <span>Unduh File Cadangan (.JSON)</span>
+            </button>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-white/10 space-y-3">
+            <div className="flex items-center gap-2.5">
+              <UploadCloud className="w-5 h-5 text-purple-500" />
+              <h4 className="text-sm font-extrabold text-slate-900 dark:text-white">Pulihkan / Impor Database (.JSON)</h4>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+              Pilih file cadangan JSON yang pernah Anda unduh untuk memulihkan seluruh data ke browser / perangkat ini.
+            </p>
+            <div>
+              <input
+                type="file"
+                accept=".json"
+                id="restore-db-input"
+                className="hidden"
+                onChange={handleRestoreBackupFile}
+              />
+              <label
+                htmlFor="restore-db-input"
+                className="w-full py-2.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <UploadCloud className="w-4 h-4" />
+                <span>Pilih File Cadangan & Pulihkan</span>
+              </label>
+            </div>
+          </div>
         </div>
       </div>
 

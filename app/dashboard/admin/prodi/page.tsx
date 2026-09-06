@@ -3,21 +3,33 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, Plus, Trash2, Edit3, AlertTriangle, Search, Download } from 'lucide-react';
 import { initialProdiList } from '@/lib/mockStore';
+import { getProdiList, saveProdiList, idbGet, STORAGE_KEYS } from '@/lib/dbStorage';
 import { exportToExcel } from '@/lib/utils/excel';
 
 export default function AdminProdiPage() {
   const [prodis, setProdis] = useState<any[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const stored = localStorage.getItem('siakal_prodi_list');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed)) return parsed;
-        }
-      } catch (e) {}
-    }
-    return initialProdiList;
+    return getProdiList();
   });
+
+  useEffect(() => {
+    // Initial sync with localStorage & IndexedDB
+    const list = getProdiList();
+    setProdis(list);
+
+    // Also check IndexedDB if localStorage was cleared
+    idbGet<any[]>(STORAGE_KEYS.PRODIS).then((idbList) => {
+      if (Array.isArray(idbList) && idbList.length > 0) {
+        setProdis(idbList);
+        saveProdiList(idbList);
+      }
+    });
+
+    const handleProdiUpdate = () => {
+      setProdis(getProdiList());
+    };
+    window.addEventListener('siakal_prodis_updated', handleProdiUpdate);
+    return () => window.removeEventListener('siakal_prodis_updated', handleProdiUpdate);
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterJenjang, setFilterJenjang] = useState('semua');
@@ -32,9 +44,7 @@ export default function AdminProdiPage() {
 
   const saveProdis = (newList: any[]) => {
     setProdis(newList);
-    try {
-      localStorage.setItem('siakal_prodi_list', JSON.stringify(newList));
-    } catch (e) {}
+    saveProdiList(newList);
   };
 
   const handleAddProdi = (e: React.FormEvent) => {

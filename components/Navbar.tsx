@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LogOut } from 'lucide-react';
-import { DEFAULT_POLTEKTRANS_LOGO } from '@/lib/defaultBranding';
+import { DEFAULT_POLTEKTRANS_LOGO, OFFICIAL_POLTEKTRANS_LOGO_DATA_URI } from '@/lib/defaultBranding';
 import { getGoogleDriveDirectLink } from '@/lib/googleDrive';
 
 interface NavbarProps {
@@ -64,7 +64,7 @@ export function Navbar({ currentUser, onLogout }: NavbarProps) {
             alt="Logo Resmi Kampus Poltektrans SDP Palembang"
             className="h-8 sm:h-10 w-auto max-w-[100px] sm:max-w-[170px] object-contain drop-shadow-md transition-transform group-hover:scale-105 shrink-0"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = DEFAULT_POLTEKTRANS_LOGO;
+              (e.target as HTMLImageElement).src = OFFICIAL_POLTEKTRANS_LOGO_DATA_URI;
             }}
           />
 

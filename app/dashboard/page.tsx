@@ -82,6 +82,15 @@ export default function MainDashboardPage() {
     } catch (e) {
       setCurrentUser({ fullName: 'Administrator SIAKAL', role: 'admin' });
     }
+
+    const handleProdisUpdated = () => {
+      try {
+        const sp = localStorage.getItem('siakal_prodi_list');
+        if (sp) setProdis(JSON.parse(sp));
+      } catch (e) {}
+    };
+    window.addEventListener('siakal_prodis_updated', handleProdisUpdated);
+    return () => window.removeEventListener('siakal_prodis_updated', handleProdisUpdated);
   }, []);
 
   const role = currentUser?.role || 'admin';

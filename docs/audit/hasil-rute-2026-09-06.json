@@ -1,0 +1,138 @@
+[
+  {
+    "path": "/login",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/admin/alumni",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/admin/arsip",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/admin/beasiswa",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/admin/beasiswa/seleksi",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/admin/clearance-out",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/admin/kepuasan-lulusan",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/admin/magang",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/admin/mahasiswa",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/admin/manajemen-user",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/admin/pengaturan-aplikasi",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/admin/periode-akademik",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/admin/prala",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/admin/prestasi",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/admin/prodi",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/beasiswa",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/clearance-out/approval",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/clearance-out/pengajuan",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/clearance-out/print",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/magang",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/mahasiswa/lengkapi-biodata",
+    "status": 200
+  },
+  {
+    "path": "/dashboard",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/pembimbing-lapangan",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/prala/bimbingan",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/prala/data-kapal",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/prestasi",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/profil-unit",
+    "status": 200
+  },
+  {
+    "path": "/dashboard/tracer-study",
+    "status": 200
+  },
+  {
+    "path": "/kepuasan-pengguna",
+    "status": 200
+  },
+  {
+    "path": "/",
+    "status": 200
+  },
+  {
+    "path": "/manifest.json",
+    "status": 404
+  },
+  {
+    "path": "/manifest.webmanifest",
+    "status": 200
+  },
+  {
+    "path": "/icon.png",
+    "status": 404
+  },
+  {
+    "path": "/icon-512.png",
+    "status": 404
+  }
+]

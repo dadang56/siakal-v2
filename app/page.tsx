@@ -135,8 +135,12 @@ export default function LandingPage() {
             <div className="bg-white/25 backdrop-blur-2xl p-6 sm:p-8 border border-white/40 shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-3xl relative space-y-5 text-white">
               
               <div className="text-center">
-                <div className="w-12 h-12 mx-auto mb-2 rounded-2xl bg-gradient-to-tr from-sky-400 to-blue-600 p-0.5 shadow-glow flex items-center justify-center font-black text-white text-xl">
-                  S
+                <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+                  <img
+                    src="/logo.png"
+                    alt="Logo Poltektrans SDP Palembang"
+                    className="max-h-16 max-w-16 object-contain drop-shadow-lg"
+                  />
                 </div>
                 <h2 className="text-xl sm:text-2xl font-black tracking-wide text-white drop-shadow-md">Masuk ke SIAKAL</h2>
                 <p className="text-xs font-semibold text-slate-100 drop-shadow-sm mt-0.5">Politeknik Transportasi SDP Palembang</p>
