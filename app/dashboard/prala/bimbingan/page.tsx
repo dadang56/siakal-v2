@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { Anchor, Plus, Upload, FileText, CheckCircle2, Clock, ExternalLink, Calendar, AlertTriangle, MessageSquare, ShieldCheck, Check, Edit3 } from 'lucide-react';
 import { Modal } from '@/components/Modal';
+import { fileToDataUrl, getCurrentUser, getUserList, STORAGE_KEYS } from '@/lib/dbStorage';
+import { usePersistentState } from '@/lib/usePersistentState';
 
 export interface TrbReportStage {
   stageNumber: number; // 1, 2, 3, 4
@@ -17,6 +19,12 @@ export interface TrbReportStage {
 }
 
 export default function PralaBimbinganPage() {
+  const currentUser = getCurrentUser();
+  const assignedStudent = currentUser?.role === 'dosen'
+    ? getUserList().find((user) => user.role === 'mahasiswa' && currentUser.mahasiswaBimbinganNames?.includes(user.fullName))
+    : currentUser;
+  const reportOwnerId = assignedStudent?.id || currentUser?.id || 'unknown';
+  const reportsStore = usePersistentState<Record<string, TrbReportStage[]>>(STORAGE_KEYS.PRALA_REPORTS, {});
   const [tanggalMulaiPrala, setTanggalMulaiPrala] = useState('2025-09-01');
   const [dosenNama, setDosenNama] = useState('Capt. Budi Santoso, M.Mar.');
 
@@ -79,6 +87,12 @@ export default function PralaBimbinganPage() {
   const [dosenCatatanInput, setDosenCatatanInput] = useState('');
 
   useEffect(() => {
+    if (reportsStore.ready && reportsStore.value[reportOwnerId]) {
+      setReports(reportsStore.value[reportOwnerId]);
+    }
+  }, [reportsStore.ready, reportOwnerId]);
+
+  useEffect(() => {
     try {
       const stored = localStorage.getItem('siakal_prala_student_data');
       if (stored) {
@@ -100,7 +114,7 @@ export default function PralaBimbinganPage() {
     } catch (e) {}
   }, []);
 
-  const handleUploadReport = (e: React.FormEvent) => {
+  const handleUploadReport = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStage || !pdfInputUrl) return;
 
@@ -120,6 +134,7 @@ export default function PralaBimbinganPage() {
       return r;
     });
 
+    if (!await reportsStore.persist({ ...reportsStore.value, [reportOwnerId]: updated })) return;
     setReports(updated);
     setSelectedStage(null);
     setPdfInputUrl('');
@@ -127,9 +142,9 @@ export default function PralaBimbinganPage() {
     alert(`Laporan TRB Stage ${selectedStage.stageNumber} berhasil diunggah! Status: ${isOnTime ? 'On-Time (Tepat Waktu)' : 'Terlambat'}`);
   };
 
-  const handleSaveDosenVerification = (e: React.FormEvent) => {
+  const handleSaveDosenVerification = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!dosenVerifyStage) return;
+    if (!dosenVerifyStage || currentUser?.role !== 'dosen' || !dosenVerifyStage.trbPdfUrl) return;
 
     const updated = reports.map((r) => {
       if (r.stageNumber === dosenVerifyStage.stageNumber) {
@@ -142,6 +157,7 @@ export default function PralaBimbinganPage() {
       return r;
     });
 
+    if (!await reportsStore.persist({ ...reportsStore.value, [reportOwnerId]: updated })) return;
     setReports(updated);
     setDosenVerifyStage(null);
     setDosenCatatanInput('');
@@ -334,7 +350,7 @@ export default function PralaBimbinganPage() {
                     )}
 
                     {/* DOSEN QUICK VERIFY BUTTON */}
-                    <button
+                    {currentUser?.role === 'dosen' && r.trbPdfUrl && <button
                       type="button"
                       onClick={() => {
                         setDosenVerifyStage(r);
@@ -346,7 +362,7 @@ export default function PralaBimbinganPage() {
                     >
                       <Edit3 className="w-3.5 h-3.5 text-indigo-600" />
                       <span>Verifikasi Dosen</span>
-                    </button>
+                    </button>}
                   </div>
                 </div>
               </div>
@@ -369,11 +385,14 @@ export default function PralaBimbinganPage() {
             <div>
               <label className="block text-xs font-bold text-slate-800 mb-1.5">URL / File Scan PDF Dokumen TRB *</label>
               <input
-                type="text"
+                type="file"
+                accept="application/pdf"
                 required
-                value={pdfInputUrl}
-                onChange={(e) => setPdfInputUrl(e.target.value)}
-                placeholder="Masukkan URL/File Scan_TRB_Bulan3.pdf"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  try { setPdfInputUrl(await fileToDataUrl(file)); } catch (error) { alert((error as Error).message); }
+                }}
                 className="w-full glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300 text-slate-900"
               />
             </div>

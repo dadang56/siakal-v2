@@ -6,8 +6,11 @@ import { Navbar } from '@/components/Navbar';
 import { LandingSlider } from '@/components/LandingSlider';
 import { Smile, CheckCircle2, ArrowRight, ArrowLeft, Send, Search, UserCheck } from 'lucide-react';
 import { initialAccounts, UserAccount } from '@/lib/mockStore';
+import { STORAGE_KEYS } from '@/lib/dbStorage';
+import { usePersistentState } from '@/lib/usePersistentState';
 
 export default function KepuasanPenggunaPublicPage() {
+  const surveyStore = usePersistentState<any[]>(STORAGE_KEYS.GRADUATE_SURVEYS, []);
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
   // Form Step 1: Identitas
@@ -84,10 +87,9 @@ export default function KepuasanPenggunaPublicPage() {
     setStep(2);
   };
 
-  const handleSubmitFinal = () => {
-    try {
-      const existing = JSON.parse(localStorage.getItem('siakal_kepuasan_public') || '[]');
-      existing.push({
+  const handleSubmitFinal = async () => {
+      const next = {
+        id: `survey-${Date.now()}`,
         namaAtasan,
         jabatanAtasan,
         namaPerusahaan,
@@ -97,9 +99,11 @@ export default function KepuasanPenggunaPublicPage() {
         prodiAlumni: selectedAlumni?.prodi || '-',
         scores,
         submittedAt: new Date().toISOString(),
-      });
-      localStorage.setItem('siakal_kepuasan_public', JSON.stringify(existing));
-    } catch (e) {}
+      };
+    if (!await surveyStore.persist([...surveyStore.value, next])) {
+      alert('Jawaban belum tersimpan. Silakan coba lagi.');
+      return;
+    }
     setStep(3);
   };
 

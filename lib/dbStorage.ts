@@ -11,10 +11,23 @@ export const STORAGE_KEYS = {
   PERIODES: 'siakal_periode_list',
   MAGANG_GROUPS: 'siakal_magang_groups',
   MAGANG_LOGS: 'siakal_magang_activity_logs',
+  MAGANG_REPORTS: 'siakal_magang_reports',
+  FIELD_SUPERVISORS: 'siakal_field_supervisors',
   PRALA_DATA: 'siakal_prala_student_data',
   CUSTOM_LOGO: 'siakal_custom_logo',
   CUSTOM_BGS: 'siakal_custom_backgrounds',
   GOOGLE_DRIVE: 'siakal_google_drive_config',
+  ACHIEVEMENTS: 'siakal_achievements',
+  SCHOLARSHIP_OFFERS: 'siakal_scholarship_offers',
+  SCHOLARSHIP_APPLICATIONS: 'siakal_scholarship_applications',
+  SCHOLARSHIP_SELECTION: 'siakal_scholarship_selection',
+  CLEARANCE_REQUESTS: 'siakal_clearance_requests',
+  TRACER_STUDIES: 'siakal_tracer_studies',
+  GRADUATE_SURVEYS: 'siakal_kepuasan_public',
+  SURVEY_FOLLOW_UPS: 'siakal_survey_follow_ups',
+  UNIT_PROFILES: 'siakal_unit_profiles',
+  PRALA_REPORTS: 'siakal_prala_reports',
+  PRALA_RECORDS: 'siakal_prala_records',
 } as const;
 
 // ----------------------------------------------------
@@ -57,6 +70,17 @@ export async function idbGet<T>(key: string): Promise<T | null> {
   }
 }
 
+export async function restoreFromIDB<T>(key: string, fallback: T): Promise<T> {
+  const value = await idbGet<T>(key);
+  if (value === null) return getStoredItem(key, fallback);
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (_) {
+    // Large document payloads may intentionally live only in IndexedDB.
+  }
+  return value;
+}
+
 export async function idbSet(key: string, value: any): Promise<boolean> {
   try {
     const db = await openIDB();
@@ -89,15 +113,20 @@ export function getStoredItem<T>(key: string, fallback: T): T {
   return fallback;
 }
 
-export function setStoredItem<T>(key: string, value: T): void {
-  if (typeof window === 'undefined') return;
+export async function setStoredItem<T>(key: string, value: T): Promise<boolean> {
+  if (typeof window === 'undefined') return false;
+  let localSaved = false;
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    localSaved = true;
   } catch (err) {
     console.error(`[Storage] LocalStorage quota error for ${key}:`, err);
   }
-  // Asynchronously mirror to IndexedDB for safety
-  idbSet(key, value).catch(() => {});
+  const indexedSaved = await idbSet(key, value);
+  if (localSaved || indexedSaved) {
+    window.dispatchEvent(new CustomEvent('siakal_storage_updated', { detail: { key } }));
+  }
+  return localSaved || indexedSaved;
 }
 
 // ----------------------------------------------------
@@ -109,7 +138,7 @@ export function getProdiList(): ProdiItem[] {
 }
 
 export function saveProdiList(list: ProdiItem[]): void {
-  setStoredItem(STORAGE_KEYS.PRODIS, list);
+  void setStoredItem(STORAGE_KEYS.PRODIS, list);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('siakal_prodis_updated'));
   }
@@ -120,7 +149,7 @@ export function getUserList(): UserAccount[] {
 }
 
 export function saveUserList(list: UserAccount[]): void {
-  setStoredItem(STORAGE_KEYS.USERS, list);
+  void setStoredItem(STORAGE_KEYS.USERS, list);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('siakal_users_updated'));
   }
@@ -156,7 +185,7 @@ export function getAppBackgrounds(): string[] {
 }
 
 export function saveAppBackgrounds(slides: string[]): void {
-  setStoredItem(STORAGE_KEYS.CUSTOM_BGS, slides);
+  void setStoredItem(STORAGE_KEYS.CUSTOM_BGS, slides);
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event('siakal_branding_updated'));
   }
@@ -180,6 +209,7 @@ export interface DatabaseBackupPayload {
     pralaData?: any;
     customLogo?: string;
     customBackgrounds?: string[];
+    [collection: string]: unknown;
   };
 }
 
@@ -197,9 +227,22 @@ export function exportDatabaseBackup(): void {
       periodes: getStoredItem(STORAGE_KEYS.PERIODES, []),
       magangGroups: getStoredItem(STORAGE_KEYS.MAGANG_GROUPS, []),
       magangLogs: getStoredItem(STORAGE_KEYS.MAGANG_LOGS, []),
+      magangReports: getStoredItem(STORAGE_KEYS.MAGANG_REPORTS, []),
+      fieldSupervisors: getStoredItem(STORAGE_KEYS.FIELD_SUPERVISORS, []),
       pralaData: getStoredItem(STORAGE_KEYS.PRALA_DATA, null),
       customLogo: getAppLogo(),
       customBackgrounds: getAppBackgrounds(),
+      achievements: getStoredItem(STORAGE_KEYS.ACHIEVEMENTS, []),
+      scholarshipOffers: getStoredItem(STORAGE_KEYS.SCHOLARSHIP_OFFERS, []),
+      scholarshipApplications: getStoredItem(STORAGE_KEYS.SCHOLARSHIP_APPLICATIONS, []),
+      scholarshipSelection: getStoredItem(STORAGE_KEYS.SCHOLARSHIP_SELECTION, []),
+      clearanceRequests: getStoredItem(STORAGE_KEYS.CLEARANCE_REQUESTS, []),
+      tracerStudies: getStoredItem(STORAGE_KEYS.TRACER_STUDIES, []),
+      graduateSurveys: getStoredItem(STORAGE_KEYS.GRADUATE_SURVEYS, []),
+      surveyFollowUps: getStoredItem(STORAGE_KEYS.SURVEY_FOLLOW_UPS, []),
+      unitProfiles: getStoredItem(STORAGE_KEYS.UNIT_PROFILES, []),
+      pralaReports: getStoredItem(STORAGE_KEYS.PRALA_REPORTS, []),
+      pralaRecords: getStoredItem(STORAGE_KEYS.PRALA_RECORDS, []),
     },
   };
 
@@ -226,12 +269,30 @@ export function restoreDatabaseBackup(jsonString: string): { success: boolean; m
     const cols = data.collections;
     if (Array.isArray(cols.prodis)) saveProdiList(cols.prodis);
     if (Array.isArray(cols.users)) saveUserList(cols.users);
-    if (Array.isArray(cols.periodes)) setStoredItem(STORAGE_KEYS.PERIODES, cols.periodes);
-    if (Array.isArray(cols.magangGroups)) setStoredItem(STORAGE_KEYS.MAGANG_GROUPS, cols.magangGroups);
-    if (Array.isArray(cols.magangLogs)) setStoredItem(STORAGE_KEYS.MAGANG_LOGS, cols.magangLogs);
-    if (cols.pralaData) setStoredItem(STORAGE_KEYS.PRALA_DATA, cols.pralaData);
+    if (Array.isArray(cols.periodes)) void setStoredItem(STORAGE_KEYS.PERIODES, cols.periodes);
+    if (Array.isArray(cols.magangGroups)) void setStoredItem(STORAGE_KEYS.MAGANG_GROUPS, cols.magangGroups);
+    if (Array.isArray(cols.magangLogs)) void setStoredItem(STORAGE_KEYS.MAGANG_LOGS, cols.magangLogs);
+    if (cols.pralaData) void setStoredItem(STORAGE_KEYS.PRALA_DATA, cols.pralaData);
     if (cols.customLogo) saveAppLogo(cols.customLogo);
     if (Array.isArray(cols.customBackgrounds)) saveAppBackgrounds(cols.customBackgrounds);
+    const collectionMap: Record<string, string> = {
+      achievements: STORAGE_KEYS.ACHIEVEMENTS,
+      scholarshipOffers: STORAGE_KEYS.SCHOLARSHIP_OFFERS,
+      scholarshipApplications: STORAGE_KEYS.SCHOLARSHIP_APPLICATIONS,
+      scholarshipSelection: STORAGE_KEYS.SCHOLARSHIP_SELECTION,
+      clearanceRequests: STORAGE_KEYS.CLEARANCE_REQUESTS,
+      tracerStudies: STORAGE_KEYS.TRACER_STUDIES,
+      graduateSurveys: STORAGE_KEYS.GRADUATE_SURVEYS,
+      surveyFollowUps: STORAGE_KEYS.SURVEY_FOLLOW_UPS,
+      unitProfiles: STORAGE_KEYS.UNIT_PROFILES,
+      pralaReports: STORAGE_KEYS.PRALA_REPORTS,
+      pralaRecords: STORAGE_KEYS.PRALA_RECORDS,
+      magangReports: STORAGE_KEYS.MAGANG_REPORTS,
+      fieldSupervisors: STORAGE_KEYS.FIELD_SUPERVISORS,
+    };
+    Object.entries(collectionMap).forEach(([name, key]) => {
+      if (cols[name] !== undefined) void setStoredItem(key, cols[name]);
+    });
 
     return {
       success: true,
@@ -240,4 +301,36 @@ export function restoreDatabaseBackup(jsonString: string): { success: boolean; m
   } catch (err: any) {
     return { success: false, message: `Gagal memulihkan cadangan: ${err.message}` };
   }
+}
+
+export function getCurrentUser(): UserAccount | null {
+  return getStoredItem<UserAccount | null>('siakal_user', null);
+}
+
+export async function updateCurrentUser(patch: Partial<UserAccount>): Promise<UserAccount | null> {
+  const current = getCurrentUser();
+  if (!current) return null;
+  const updated = { ...current, ...patch };
+  const users = getUserList();
+  const nextUsers = users.some((user) => user.id === updated.id)
+    ? users.map((user) => (user.id === updated.id ? updated : user))
+    : [...users, updated];
+  const [sessionSaved, usersSaved] = await Promise.all([
+    setStoredItem('siakal_user', updated),
+    setStoredItem(STORAGE_KEYS.USERS, nextUsers),
+  ]);
+  return sessionSaved && usersSaved ? updated : null;
+}
+
+export function fileToDataUrl(file: File, maxBytes = 15 * 1024 * 1024): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (file.size > maxBytes) {
+      reject(new Error(`Ukuran berkas melebihi ${Math.round(maxBytes / 1024 / 1024)} MB.`));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(new Error('Berkas tidak dapat dibaca.'));
+    reader.readAsDataURL(file);
+  });
 }

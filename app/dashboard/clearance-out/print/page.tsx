@@ -3,9 +3,16 @@
 import React, { useEffect } from 'react';
 import { CheckCircle2, Printer, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { ClearanceRequest, initialClearanceUnits } from '@/lib/mockStore';
+import { STORAGE_KEYS } from '@/lib/dbStorage';
+import { usePersistentState } from '@/lib/usePersistentState';
 
 export default function ClearanceOutPrintPage() {
-  const approversList = [
+  const searchParams = useSearchParams();
+  const requestsStore = usePersistentState<ClearanceRequest[]>(STORAGE_KEYS.CLEARANCE_REQUESTS, []);
+  const request = requestsStore.value.find((item) => item.id === searchParams.get('id'));
+  const defaultApproversList = [
     { code: 1, name: 'KEPALA SUBBAGIAN KEUANGAN', approver: 'Dra. Rahmawati, M.M.', nip: '197508122001122001', ttdUrl: 'https://api.dicebear.com/7.x/shapes/svg?seed=ttd-1' },
     { code: 2, name: 'KEPALA SUBBAGIAN ADM. KETARUNAAN & ALUMNI', approver: 'Capt. Bambang Santoso, M.Mar.', nip: '198003152006041003', ttdUrl: 'https://api.dicebear.com/7.x/shapes/svg?seed=ttd-2' },
     { code: 3, name: 'KEPALA UNIT PERPUSTAKAAN', approver: 'Dra. Sri Wahyuni, M.IP.', nip: '196811201994032002', ttdUrl: 'https://api.dicebear.com/7.x/shapes/svg?seed=ttd-3' },
@@ -21,10 +28,22 @@ export default function ClearanceOutPrintPage() {
     { code: 13, name: 'PENGELOLA KAS & PERBANKAN APBN', approver: 'Rina Kartika, S.E.', nip: '198711042012012002', ttdUrl: 'https://api.dicebear.com/7.x/shapes/svg?seed=ttd-13' },
     { code: 14, name: 'DIREKTUR POLTEKTRANS SDP PALEMBANG', approver: 'Dr. Hj. Netty Herawati, M.Si.', nip: '196503121990032001', ttdUrl: 'https://api.dicebear.com/7.x/shapes/svg?seed=ttd-14' },
   ];
+  const approversList = request?.approvals.map((approval) => ({
+    code: approval.unitCode,
+    name: initialClearanceUnits.find((unit) => unit.unitCode === approval.unitCode)?.name || `Unit ${approval.unitCode}`,
+    approver: approval.approverNama || '-',
+    nip: approval.approverNip || '-',
+    ttdUrl: '',
+  })) || [];
 
   const handlePrint = () => {
     window.print();
   };
+
+  if (!requestsStore.ready) return <div className="min-h-screen grid place-items-center">Memuat dokumen…</div>;
+  if (!request || request.statusKeseluruhan !== 'Approved' || request.approvals.some((approval) => approval.status !== 'Memenuhi Syarat')) {
+    return <div className="min-h-screen grid place-items-center p-6 bg-slate-100"><div className="glass-panel max-w-lg p-8 text-center"><h1 className="text-xl font-black text-slate-900">Dokumen belum dapat diterbitkan</h1><p className="mt-2 text-sm text-slate-600">Surat hanya tersedia setelah seluruh unit menyatakan memenuhi syarat.</p><Link href="/dashboard/clearance-out/pengajuan" className="glass-button mt-5 inline-flex">Kembali ke status pengajuan</Link></div></div>;
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 dark:bg-slate-950 p-4 sm:p-8 font-serif">
@@ -65,10 +84,10 @@ export default function ClearanceOutPrintPage() {
 
         {/* Biodata */}
         <div className="space-y-1.5 text-xs font-sans mb-6 border p-3 rounded-lg bg-slate-50">
-          <div><strong>Nama Mahasiswa:</strong> AHMAD FAUZI</div>
-          <div><strong>NIM:</strong> 2101034</div>
-          <div><strong>Program Studi:</strong> D3 Studi Nautika</div>
-          <div><strong>Tahun Lulus / Angkatan:</strong> 2026 / Angkatan XLVIII</div>
+          <div><strong>Nama Mahasiswa:</strong> {request.mahasiswaNama.toUpperCase()}</div>
+          <div><strong>NIM:</strong> {request.nim}</div>
+          <div><strong>Program Studi:</strong> {request.prodi}</div>
+          <div><strong>Jenis Pengajuan:</strong> {request.jenisPengajuan}</div>
         </div>
 
         <p className="text-xs leading-relaxed font-sans mb-6">

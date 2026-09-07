@@ -7,14 +7,15 @@ import { Navbar } from '@/components/Navbar';
 import { LandingSlider } from '@/components/LandingSlider';
 import { LogIn, Smile, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 import { initialAccounts, UserAccount } from '@/lib/mockStore';
+import { getUserList, setStoredItem } from '@/lib/dbStorage';
 
 export default function LandingPage() {
   const router = useRouter();
-  const [emailOrNim, setEmailOrNim] = useState('admin');
-  const [password, setPassword] = useState('SIAKAL2026!');
+  const [emailOrNim, setEmailOrNim] = useState('');
+  const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -24,30 +25,21 @@ export default function LandingPage() {
       return;
     }
 
-    let userList: UserAccount[] = initialAccounts;
-    try {
-      const stored = localStorage.getItem('siakal_user_list');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          userList = parsed;
-        }
-      }
-    } catch (err) {}
+    const userList: UserAccount[] = getUserList();
 
     const matchedUser = userList.find(
       (u) =>
         u.email.toLowerCase() === inputClean ||
         (u.nim && u.nim.toLowerCase() === inputClean) ||
         (u.nip && u.nip.toLowerCase() === inputClean) ||
-        (u.usernameOrId && u.usernameOrId.toLowerCase() === inputClean) ||
-        u.fullName.toLowerCase().includes(inputClean)
+        (u.usernameOrId && u.usernameOrId.toLowerCase() === inputClean)
     );
 
-    if (matchedUser) {
-      try {
-        localStorage.setItem('siakal_user', JSON.stringify(matchedUser));
-      } catch (err) {}
+    if (matchedUser && password === matchedUser.initialPassword) {
+      if (!await setStoredItem('siakal_user', matchedUser)) {
+        setErrorMsg('Sesi tidak dapat disimpan di perangkat ini. Periksa izin penyimpanan browser.');
+        return;
+      }
 
       if (matchedUser.role === 'mahasiswa' && matchedUser.isProfileCompleted === false) {
         router.push('/dashboard/mahasiswa/lengkapi-biodata');
@@ -57,38 +49,15 @@ export default function LandingPage() {
       return;
     }
 
-    let fallbackRole: UserAccount['role'] = 'mahasiswa';
-    if (inputClean.includes('admin')) fallbackRole = 'admin';
-    else if (inputClean.includes('dosen')) fallbackRole = 'dosen';
-    else if (inputClean.includes('super') || inputClean.includes('pembimbing') || inputClean.includes('pelni')) fallbackRole = 'pembimbing_lapangan';
-    else if (inputClean.includes('alumni')) fallbackRole = 'alumni';
-    else if (inputClean.includes('unit') || inputClean.includes('perpus') || inputClean.includes('approver')) fallbackRole = 'unit_approver';
-
-    const fallbackAcc = userList.find((a) => a.role === fallbackRole) || initialAccounts[0];
-    try {
-      localStorage.setItem('siakal_user', JSON.stringify(fallbackAcc));
-    } catch (err) {}
-
-    router.push('/dashboard');
+    setErrorMsg('ID masuk atau kata sandi tidak sesuai.');
   };
 
-  const handleQuickDemo = (targetRole: UserAccount['role']) => {
-    let userList: UserAccount[] = initialAccounts;
-    try {
-      const stored = localStorage.getItem('siakal_user_list');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          userList = parsed;
-        }
-      }
-    } catch (err) {}
+  const handleQuickDemo = async (targetRole: UserAccount['role']) => {
+    const userList: UserAccount[] = getUserList();
 
     const demoAcc = userList.find((a) => a.role === targetRole) || initialAccounts.find((a) => a.role === targetRole) || initialAccounts[0];
 
-    try {
-      localStorage.setItem('siakal_user', JSON.stringify(demoAcc));
-    } catch (err) {}
+    if (!await setStoredItem('siakal_user', demoAcc)) return;
 
     if (demoAcc.role === 'mahasiswa' && demoAcc.isProfileCompleted === false) {
       router.push('/dashboard/mahasiswa/lengkapi-biodata');
@@ -106,14 +75,14 @@ export default function LandingPage() {
       <Navbar hideThemeToggle={true} />
 
       {/* Landing Page Hero & Liquid Glass Login Card Box */}
-      <main className="relative z-10 max-w-[1920px] w-full mx-auto px-4 sm:px-8 lg:px-12 py-10 flex-1 flex items-center">
-        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <main className="relative z-10 max-w-[1920px] w-full mx-auto px-4 sm:px-8 lg:px-12 py-6 sm:py-10 flex-1 flex items-center min-w-0">
+        <div className="w-full min-w-0 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-center">
           
           {/* Left Column: Minimalist Title Headline */}
-          <div className="lg:col-span-7 space-y-6 text-left">
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] leading-tight">
-              Sistem Informasi Akademik <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400">
+          <div className="lg:col-span-7 min-w-0 space-y-5 sm:space-y-6 text-left">
+            <h1 className="text-2xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] leading-tight break-words">
+              <span className="block">Sistem Informasi Akademik</span>
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-sky-300 to-blue-400">
                 Ketarunaan & Alumni
               </span>
             </h1>
@@ -121,18 +90,18 @@ export default function LandingPage() {
             <div className="pt-2">
               <Link
                 href="/kepuasan-pengguna"
-                className="inline-flex items-center gap-2 py-3 px-5 rounded-2xl bg-white/20 hover:bg-white/35 backdrop-blur-xl border border-white/40 text-xs sm:text-sm font-extrabold text-white transition-all shadow-xl hover:scale-[1.02]"
+                className="flex sm:inline-flex w-full sm:w-auto min-w-0 items-center gap-2 py-3 px-4 sm:px-5 rounded-2xl bg-white/20 hover:bg-white/35 backdrop-blur-xl border border-white/40 text-[11px] sm:text-sm font-extrabold text-white transition-all shadow-xl hover:scale-[1.02]"
               >
-                <Smile className="w-4.5 h-4.5 text-amber-300" />
-                <span>Kuesioner Kepuasan Pengguna Lulusan (Bebas Login)</span>
-                <ArrowRight className="w-4 h-4 text-sky-300" />
+                <Smile className="w-4 h-4 shrink-0 text-amber-300" />
+                <span className="min-w-0 leading-snug">Kuesioner Kepuasan Pengguna Lulusan (Bebas Login)</span>
+                <ArrowRight className="w-4 h-4 shrink-0 text-sky-300" />
               </Link>
             </div>
           </div>
 
           {/* Right Column: 100% TRANSPARENT LIQUID GLASS LOGIN CARD BOX */}
-          <div className="lg:col-span-5 w-full max-w-md mx-auto">
-            <div className="bg-white/25 backdrop-blur-2xl p-6 sm:p-8 border border-white/40 shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-3xl relative space-y-5 text-white">
+          <div className="lg:col-span-5 w-full min-w-0 max-w-md mx-auto">
+            <div className="w-full min-w-0 bg-white/25 backdrop-blur-2xl p-5 sm:p-8 border border-white/40 shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-3xl relative space-y-5 text-white">
               
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
@@ -191,8 +160,8 @@ export default function LandingPage() {
                 </button>
               </form>
 
-              {/* QUICK DEMO ACCOUNT BUTTONS FOR ALL ROLES */}
-              <div className="pt-4 border-t border-white/20 space-y-2.5">
+              {/* Demo shortcuts are deliberately unavailable in production. */}
+              {process.env.NEXT_PUBLIC_ENABLE_DEMO === 'true' && <div className="pt-4 border-t border-white/20 space-y-2.5">
                 <div className="flex items-center justify-center gap-1.5 text-[11px] font-extrabold text-amber-300 uppercase tracking-wider drop-shadow-sm">
                   <Zap className="w-3.5 h-3.5 text-amber-300" />
                   <span>Uji Coba Mode Demo (Klik 1-Kali Login):</span>
@@ -253,7 +222,7 @@ export default function LandingPage() {
                     🏛️ Approver
                   </button>
                 </div>
-              </div>
+              </div>}
 
             </div>
           </div>
@@ -262,7 +231,7 @@ export default function LandingPage() {
       </main>
 
       {/* 100% Liquid Glass Footbar (Footer) */}
-      <footer className="relative z-10 border-t border-white/25 bg-white/20 backdrop-blur-md py-4 text-center text-xs text-white font-bold shadow-sm">
+      <footer className="relative z-10 border-t border-white/25 bg-white/20 backdrop-blur-md py-4 px-4 text-center text-[11px] sm:text-xs leading-relaxed text-white font-bold shadow-sm">
         &copy; 2026 SIAKAL &bull; Politeknik Transportasi SDP Palembang
       </footer>
     </div>

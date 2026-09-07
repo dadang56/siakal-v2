@@ -1,9 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { GraduationCap, Save, CheckCircle2, Share2, Briefcase } from 'lucide-react';
+import { getCurrentUser, STORAGE_KEYS } from '@/lib/dbStorage';
+import { usePersistentState } from '@/lib/usePersistentState';
 
 export default function AlumniTracerStudyPage() {
+  const currentUser = getCurrentUser();
+  const tracerStore = usePersistentState<any[]>(STORAGE_KEYS.TRACER_STUDIES, []);
   const [noWhatsapp, setNoWhatsapp] = useState('081299887766');
   const [emailTerkini, setEmailTerkini] = useState('deni@alumni.poltek.ac.id');
   const [statusKerja, setStatusKerja] = useState<'Bekerja' | 'Wirausaha' | 'Lanjut Studi' | 'Mencari Kerja'>('Bekerja');
@@ -16,8 +20,27 @@ export default function AlumniTracerStudyPage() {
   const [evaluasiKurikulum, setEvaluasiKurikulum] = useState('Kurikulum bimbingan PRALA dan simulasi pelayaran sangat baik.');
   const [savedSuccess, setSavedSuccess] = useState(false);
 
-  const handleSubmitTracer = (e: React.FormEvent) => {
+  useEffect(() => {
+    const saved = tracerStore.value.find((item) => item.userId === currentUser?.id);
+    if (!saved) return;
+    setNoWhatsapp(saved.noWhatsapp || '');
+    setEmailTerkini(saved.emailTerkini || '');
+    setStatusKerja(saved.statusKerja || 'Bekerja');
+    setNamaPerusahaan(saved.namaPerusahaan || '');
+    setBidangIndustri(saved.bidangIndustri || '');
+    setJabatan(saved.jabatan || '');
+    setRangeGaji(saved.rangeGaji || '');
+    setMasaTungguBulan(saved.masaTungguBulan || 0);
+    setKeselarasan(saved.keselarasan || 'Sesuai');
+    setEvaluasiKurikulum(saved.evaluasiKurikulum || '');
+  }, [tracerStore.ready]);
+
+  const handleSubmitTracer = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentUser) return;
+    const record = { userId: currentUser.id, nama: currentUser.fullName, prodi: currentUser.prodi, noWhatsapp, emailTerkini, statusKerja, namaPerusahaan, bidangIndustri, jabatan, rangeGaji, masaTungguBulan, keselarasan, evaluasiKurikulum, updatedAt: new Date().toISOString() };
+    const others = tracerStore.value.filter((item) => item.userId !== currentUser.id);
+    if (!await tracerStore.persist([...others, record])) return;
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
   };
@@ -28,11 +51,11 @@ export default function AlumniTracerStudyPage() {
     <div className="max-w-3xl mx-auto space-y-6">
       {/* Header */}
       <div className="glass-panel p-6 border-l-4 border-l-sky-500">
-        <h1 className="text-xl font-extrabold text-white flex items-center gap-2">
+        <h1 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
           <GraduationCap className="w-6 h-6 text-sky-400" />
           <span>Form Kuesioner Tracer Study Alumni</span>
         </h1>
-        <p className="text-xs text-slate-300 mt-1">
+        <p className="text-xs text-slate-600 mt-1">
           Perbarui data rekam karir, status pekerjaan, masa tunggu, dan tingkat keselarasan bidang studi Anda demi mendukung akreditasi instansi.
         </p>
       </div>
@@ -45,11 +68,11 @@ export default function AlumniTracerStudyPage() {
 
       {/* Share Employer Survey Link Box */}
       <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs space-y-2">
-        <div className="font-bold text-amber-300 flex items-center gap-1.5">
+        <div className="font-bold text-amber-800 flex items-center gap-1.5">
           <Share2 className="w-4 h-4" />
           <span>Bagikan Tautan Kuesioner Kepuasan Pengguna Lulusan ke Atasan Anda:</span>
         </div>
-        <p className="text-slate-300 text-[11px]">
+        <p className="text-slate-600 text-[11px]">
           Minta atasan/manager tempat Anda bekerja untuk mengisi survei kepuasan lulusan via tautan publik (bebas login):
         </p>
         <div className="flex items-center gap-2">
@@ -73,11 +96,11 @@ export default function AlumniTracerStudyPage() {
 
       {/* Form Tracer */}
       <form onSubmit={handleSubmitTracer} className="glass-panel p-6 sm:p-8 space-y-4 text-xs">
-        <h3 className="text-sm font-bold text-white border-b border-white/10 pb-2">1. Kontak Terkini Alumni</h3>
+        <h3 className="text-sm font-bold text-slate-900 border-b border-slate-200 pb-2">1. Kontak Terkini Alumni</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block font-semibold text-slate-200 mb-1">Nomor WhatsApp Terkini *</label>
+            <label className="block font-semibold text-slate-700 mb-1">Nomor WhatsApp Terkini *</label>
             <input
               type="text"
               required
@@ -88,7 +111,7 @@ export default function AlumniTracerStudyPage() {
           </div>
 
           <div>
-            <label className="block font-semibold text-slate-200 mb-1">Email Aktif Terkini *</label>
+            <label className="block font-semibold text-slate-700 mb-1">Email Aktif Terkini *</label>
             <input
               type="email"
               required
@@ -99,14 +122,14 @@ export default function AlumniTracerStudyPage() {
           </div>
         </div>
 
-        <h3 className="text-sm font-bold text-white border-b border-white/10 pb-2 pt-2">2. Status Karir & Pekerjaan</h3>
+        <h3 className="text-sm font-bold text-slate-900 border-b border-slate-200 pb-2 pt-2">2. Status Karir & Pekerjaan</h3>
 
         <div>
-          <label className="block font-semibold text-slate-200 mb-1">Status Pekerjaan Saat Ini *</label>
+          <label className="block font-semibold text-slate-700 mb-1">Status Pekerjaan Saat Ini *</label>
           <select
             value={statusKerja}
             onChange={(e: any) => setStatusKerja(e.target.value)}
-            className="w-full glass-input text-xs bg-slate-900 text-white"
+            className="w-full glass-input text-xs"
           >
             <option value="Bekerja">Bekerja (Instansi / Perusahaan)</option>
             <option value="Wirausaha">Wirausaha / Membuka Usaha</option>

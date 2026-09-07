@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { UserCheck, Save, Lock, GraduationCap } from 'lucide-react';
-import { UserAccount, initialProdiList } from '@/lib/mockStore';
+import { initialProdiList } from '@/lib/mockStore';
+import { getCurrentUser, getProdiList, updateCurrentUser } from '@/lib/dbStorage';
 
 export default function LengkapiBiodataPage() {
   const router = useRouter();
@@ -37,18 +38,16 @@ export default function LengkapiBiodataPage() {
 
   useEffect(() => {
     try {
-      const storedUser = localStorage.getItem('siakal_user');
-      if (storedUser) {
-        const u = JSON.parse(storedUser) as UserAccount;
+      const u = getCurrentUser();
+      if (u) {
         if (u.fullName) setNamaLengkap(u.fullName);
         if (u.nim) setNim(u.nim);
         if (u.prodi) setProdi(u.prodi);
         if (u.angkatan) setAngkatan(u.angkatan.toString());
       }
 
-      const storedProdis = localStorage.getItem('siakal_prodi_list');
-      if (storedProdis) {
-        const parsed = JSON.parse(storedProdis);
+      const parsed = getProdiList();
+      if (parsed.length) {
         if (Array.isArray(parsed) && parsed.length > 0) {
           setProdiList(parsed);
           if (!prodi) setProdi(parsed[0].nama);
@@ -57,19 +56,21 @@ export default function LengkapiBiodataPage() {
     } catch (e) {}
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const stored = localStorage.getItem('siakal_user');
-    if (stored) {
-      const user = JSON.parse(stored) as UserAccount;
-      user.isProfileCompleted = true;
-      user.fullName = namaLengkap;
-      user.prodi = prodi || prodiList[0]?.nama;
-      user.nim = nim;
-      user.angkatan = parseInt(angkatan);
-      user.jenisKelamin = jenisKelamin;
-      user.noHp = noHp;
-      localStorage.setItem('siakal_user', JSON.stringify(user));
+    const saved = await updateCurrentUser({
+      isProfileCompleted: true,
+      fullName: namaLengkap,
+      prodi: prodi || prodiList[0]?.nama,
+      nim,
+      usernameOrId: nim,
+      angkatan: parseInt(angkatan),
+      jenisKelamin,
+      noHp,
+    });
+    if (!saved) {
+      alert('Biodata gagal disimpan. Silakan periksa ruang penyimpanan lalu coba lagi.');
+      return;
     }
     setSavedSuccess(true);
     setTimeout(() => {

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Upload, CheckCircle2, ShieldCheck, Image } from 'lucide-react';
 import { UserAccount } from '@/lib/mockStore';
+import { getCurrentUser, updateCurrentUser } from '@/lib/dbStorage';
 
 export default function ProfilUnitApproverPage() {
   const [namaGelar, setNamaGelar] = useState('Dra. Sri Wahyuni, M.IP.');
@@ -11,24 +12,20 @@ export default function ProfilUnitApproverPage() {
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem('siakal_user');
-    if (stored) {
-      const u = JSON.parse(stored) as UserAccount;
+    const u = getCurrentUser();
+    if (u) {
       if (u.namaLengkapGelar) setNamaGelar(u.namaLengkapGelar);
       if (u.nip) setNip(u.nip);
       if (u.ttdImageUrl) setTtdUrl(u.ttdImageUrl);
     }
   }, []);
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    const stored = localStorage.getItem('siakal_user');
-    if (stored) {
-      const u = JSON.parse(stored) as UserAccount;
-      u.namaLengkapGelar = namaGelar;
-      u.nip = nip;
-      u.ttdImageUrl = ttdUrl;
-      localStorage.setItem('siakal_user', JSON.stringify(u));
+    const saved = await updateCurrentUser({ namaLengkapGelar: namaGelar, nip, ttdImageUrl: ttdUrl });
+    if (!saved) {
+      alert('Profil gagal disimpan. Silakan coba lagi.');
+      return;
     }
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
@@ -37,11 +34,11 @@ export default function ProfilUnitApproverPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="glass-panel p-6 border-l-4 border-l-sky-500">
-        <h1 className="text-xl font-extrabold text-white flex items-center gap-2">
+        <h1 className="text-xl font-extrabold text-slate-900 flex items-center gap-2">
           <Settings className="w-6 h-6 text-sky-400" />
           <span>Pengaturan Profil Unit Approver Clearance Out</span>
         </h1>
-        <p className="text-xs text-slate-300 mt-1">
+        <p className="text-xs text-slate-600 mt-1">
           Atur Nama Lengkap + Gelar, NIP, dan Tanda Tangan Digital Transparan (PNG) untuk auto-stamping otomatis pada formulir cetak PDF FM.AT.01.017-01.
         </p>
       </div>
@@ -54,7 +51,7 @@ export default function ProfilUnitApproverPage() {
 
       <form onSubmit={handleSaveProfile} className="glass-panel p-6 space-y-4">
         <div>
-          <label className="block text-xs font-semibold text-slate-200 mb-1">Nama Lengkap & Gelar Resmi *</label>
+          <label className="block text-xs font-semibold text-slate-700 mb-1">Nama Lengkap & Gelar Resmi *</label>
           <input
             type="text"
             required
@@ -66,7 +63,7 @@ export default function ProfilUnitApproverPage() {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slate-200 mb-1">Nomor Induk Pegawai (NIP) *</label>
+          <label className="block text-xs font-semibold text-slate-700 mb-1">Nomor Induk Pegawai (NIP) *</label>
           <input
             type="text"
             required
@@ -78,7 +75,7 @@ export default function ProfilUnitApproverPage() {
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-slate-200 mb-1">URL File Tanda Tangan Digital (PNG Transparan) *</label>
+          <label className="block text-xs font-semibold text-slate-700 mb-1">URL File Tanda Tangan Digital (PNG Transparan) *</label>
           <input
             type="text"
             required

@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { Archive, Download, FileText, CheckCircle2, ShieldCheck, Database } from 'lucide-react';
 import { createAcademicArchiveZip } from '@/lib/utils/zip';
+import { getStoredItem, STORAGE_KEYS } from '@/lib/dbStorage';
+import { initialAccounts, initialPeriodeList, initialProdiList } from '@/lib/mockStore';
 
 export default function AdminArsipPage() {
   const [isExporting, setIsExporting] = useState(false);
@@ -13,17 +15,58 @@ export default function AdminArsipPage() {
     setDownloadSuccess(false);
 
     try {
-      // Mock data to include in ZIP archive
+      const users = getStoredItem(STORAGE_KEYS.USERS, initialAccounts);
+      const prodis = getStoredItem(STORAGE_KEYS.PRODIS, initialProdiList);
+      const periods = getStoredItem(STORAGE_KEYS.PERIODES, initialPeriodeList);
+      const activePeriod = periods.find((period: any) => period.isAktif) || periods[0];
+      const achievements = getStoredItem<any[]>(STORAGE_KEYS.ACHIEVEMENTS, []);
+      const scholarships = getStoredItem<any[]>(STORAGE_KEYS.SCHOLARSHIP_APPLICATIONS, []);
+      const clearances = getStoredItem<any[]>(STORAGE_KEYS.CLEARANCE_REQUESTS, []);
+      const tracers = getStoredItem<any[]>(STORAGE_KEYS.TRACER_STUDIES, []);
+      const surveys = getStoredItem<any[]>(STORAGE_KEYS.GRADUATE_SURVEYS, []);
+      const scholarshipOffers = getStoredItem<any[]>(STORAGE_KEYS.SCHOLARSHIP_OFFERS, []);
+      const scholarshipSelection = getStoredItem<any[]>(STORAGE_KEYS.SCHOLARSHIP_SELECTION, []);
+      const magangGroups = getStoredItem<any[]>(STORAGE_KEYS.MAGANG_GROUPS, []);
+      const magangLogs = getStoredItem<any[]>(STORAGE_KEYS.MAGANG_LOGS, []);
+      const magangReports = getStoredItem<Record<string, any>>(STORAGE_KEYS.MAGANG_REPORTS, {});
+      const fieldSupervisors = getStoredItem<any[]>(STORAGE_KEYS.FIELD_SUPERVISORS, []);
+      const pralaData = getStoredItem<any>(STORAGE_KEYS.PRALA_DATA, null);
+      const pralaReports = getStoredItem<any[]>(STORAGE_KEYS.PRALA_REPORTS, []);
+      const pralaRecords = getStoredItem<any[]>(STORAGE_KEYS.PRALA_RECORDS, []);
+      const surveyFollowUps = getStoredItem<any[]>(STORAGE_KEYS.SURVEY_FOLLOW_UPS, []);
+      const unitProfiles = getStoredItem<any[]>(STORAGE_KEYS.UNIT_PROFILES, []);
       const summaryStats = [
-        { Parameter: 'Total Program Studi', Value: 4 },
-        { Parameter: 'Total Mahasiswa Terdaftar', Value: 420 },
-        { Parameter: 'Total Mahasiswa PRALA', Value: 110 },
-        { Parameter: 'Total Magang MTPD', Value: 85 },
-        { Parameter: 'Serapan Alumni', Value: '94.2%' },
+        { Parameter: 'Total Program Studi', Value: prodis.length },
+        { Parameter: 'Total Pengguna', Value: users.length },
+        { Parameter: 'Total Prestasi', Value: achievements.length },
+        { Parameter: 'Total Pengajuan Beasiswa', Value: scholarships.length },
+        { Parameter: 'Total Clearance', Value: clearances.length },
+        { Parameter: 'Total Tracer Study', Value: tracers.length },
+        { Parameter: 'Total Survei Pengguna', Value: surveys.length },
         { Parameter: 'Tanggal Ekspor Arsip', Value: new Date().toLocaleDateString('id-ID') },
       ];
 
-      await createAcademicArchiveZip('2025-2026', 'Ganjil', { Ringkasan_Akademik: summaryStats });
+      await createAcademicArchiveZip(activePeriod?.tahun || 'Belum-Diatur', activePeriod?.semester || '-', {
+        Ringkasan: summaryStats,
+        Pengguna: users.map(({ initialPassword, ...user }) => user),
+        Program_Studi: prodis,
+        Prestasi: achievements,
+        Beasiswa: scholarships,
+        Penawaran_Beasiswa: scholarshipOffers,
+        Seleksi_Beasiswa: scholarshipSelection,
+        Clearance: clearances,
+        Tracer_Study: tracers,
+        Survei: surveys,
+        RTL_Survei: surveyFollowUps,
+        Kelompok_Magang: magangGroups,
+        Aktivitas_Magang: magangLogs,
+        Laporan_Magang: Object.values(magangReports),
+        Pembimbing_Lapangan: fieldSupervisors,
+        Data_PRALA: pralaData ? [pralaData] : [],
+        Laporan_PRALA: pralaReports,
+        Rekam_PRALA: pralaRecords,
+        Profil_Unit: unitProfiles,
+      });
       setDownloadSuccess(true);
     } catch (err) {
       alert('Gagal membuat paket arsip ZIP. Silakan coba lagi.');

@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, FileText, Upload, CheckCircle2, UserCheck, Clock, ExternalLink, Plus, Calendar, Image, Printer, X, ShieldCheck } from 'lucide-react';
 import { Modal } from '@/components/Modal';
+import { fileToDataUrl, getCurrentUser, setStoredItem, STORAGE_KEYS } from '@/lib/dbStorage';
+import { usePersistentState } from '@/lib/usePersistentState';
 
 export interface MagangActivityLog {
   id: string;
@@ -17,11 +19,22 @@ export interface MagangActivityLog {
 }
 
 export default function StudentMagangPage() {
+  const currentUser = getCurrentUser();
+  const reportsStore = usePersistentState<Record<string, any>>(STORAGE_KEYS.MAGANG_REPORTS, {});
   const [judulLaporan, setJudulLaporan] = useState('Laporan Akhir Magang MTPD: Efisiensi Logistik Pelabuhan');
-  const [laporanPdfUrl, setLaporanPdfUrl] = useState('https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf');
-  const [statusVerifikasi, setStatusVerifikasi] = useState<'Pending' | 'Diterima' | 'Revisi'>('Diterima');
-  const [catatanPembimbing, setCatatanPembimbing] = useState('Laporan akhir sangat baik dan memenuhi standar teknis operasional.');
+  const [laporanPdfUrl, setLaporanPdfUrl] = useState('');
+  const [statusVerifikasi, setStatusVerifikasi] = useState<'Pending' | 'Diterima' | 'Revisi'>('Pending');
+  const [catatanPembimbing, setCatatanPembimbing] = useState('');
   const [uploadedSuccess, setUploadedSuccess] = useState(false);
+
+  useEffect(() => {
+    const stored = currentUser ? reportsStore.value[currentUser.id] : null;
+    if (!stored) return;
+    setJudulLaporan(stored.judulLaporan);
+    setLaporanPdfUrl(stored.laporanPdfUrl);
+    setStatusVerifikasi(stored.statusVerifikasi);
+    setCatatanPembimbing(stored.catatanPembimbing || '');
+  }, [reportsStore.ready]);
 
   // Group Details State
   const [namaKelompok, setNamaKelompok] = useState('Kelompok 01 - Pelabuhan Palembang');
@@ -69,11 +82,20 @@ export default function StudentMagangPage() {
       const storedLogs = localStorage.getItem('siakal_magang_activity_logs');
       if (storedLogs) setActivities(JSON.parse(storedLogs));
 
-      const storedProf = localStorage.getItem('siakal_pembimbing_profile');
+      const storedProf = localStorage.getItem(STORAGE_KEYS.FIELD_SUPERVISORS) || localStorage.getItem('siakal_pembimbing_profile');
       if (storedProf) {
         const p = JSON.parse(storedProf);
         if (p.supervisorName) setPembimbingNama(p.supervisorName);
         if (p.supervisorTtdUrl) setPembimbingTtdUrl(p.supervisorTtdUrl);
+      }
+      const groups = JSON.parse(localStorage.getItem(STORAGE_KEYS.MAGANG_GROUPS) || '[]');
+      const group = Array.isArray(groups) ? groups.find((item: any) => item.anggotaMahasiswa?.some((member: any) => member.id === currentUser?.id)) : null;
+      if (group) {
+        setNamaKelompok(group.namaKelompok);
+        setTempatMagang(group.tempatMagang);
+        setNomorSk(group.nomorSkMagang);
+        setPembimbingNama(group.pembimbingLapanganNama);
+        setAnggotaText(group.anggotaMahasiswa.map((member: any) => `${member.nama} (${member.nim})`).join(', '));
       }
     } catch (e) {}
   }, []);
@@ -81,7 +103,7 @@ export default function StudentMagangPage() {
   const saveLogs = (updated: MagangActivityLog[]) => {
     setActivities(updated);
     try {
-      localStorage.setItem('siakal_magang_activity_logs', JSON.stringify(updated));
+      void setStoredItem(STORAGE_KEYS.MAGANG_LOGS, updated);
     } catch (e) {}
   };
 
@@ -111,8 +133,12 @@ export default function StudentMagangPage() {
     alert('Aktivitas Magang Bulanan berhasil ditambahkan! Menunggu verifikasi Pembimbing Lapangan.');
   };
 
-  const handleSubmitLaporan = (e: React.FormEvent) => {
+  const handleSubmitLaporan = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentUser || !laporanPdfUrl) return;
+    const saved = await reportsStore.persist({ ...reportsStore.value, [currentUser.id]: { judulLaporan, laporanPdfUrl, statusVerifikasi: 'Pending', catatanPembimbing: '', submittedAt: new Date().toISOString() } });
+    if (!saved) return;
+    setStatusVerifikasi('Pending');
     setUploadedSuccess(true);
     setTimeout(() => setUploadedSuccess(false), 3000);
   };
@@ -304,13 +330,17 @@ export default function StudentMagangPage() {
             <label className="block text-xs font-bold text-slate-800 mb-1.5">URL / File Laporan Akhir PDF *</label>
             <div className="flex gap-2">
               <input
-                type="text"
+                type="file"
+                accept="application/pdf"
                 required
-                value={laporanPdfUrl}
-                onChange={(e) => setLaporanPdfUrl(e.target.value)}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  try { setLaporanPdfUrl(await fileToDataUrl(file)); } catch (error) { alert((error as Error).message); }
+                }}
                 className="flex-1 glass-input text-xs sm:text-sm font-mono py-2.5 px-3.5 bg-white border-slate-300 text-slate-900"
               />
-              <a
+              {laporanPdfUrl && <a
                 href={laporanPdfUrl}
                 target="_blank"
                 rel="noreferrer"
@@ -318,7 +348,7 @@ export default function StudentMagangPage() {
               >
                 <ExternalLink className="w-4 h-4" />
                 <span>Pratinjau PDF</span>
-              </a>
+              </a>}
             </div>
           </div>
 

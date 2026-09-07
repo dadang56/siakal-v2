@@ -1,10 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Smile, Download, FileCheck, Save } from 'lucide-react';
 import { exportToExcel } from '@/lib/utils/excel';
+import { STORAGE_KEYS } from '@/lib/dbStorage';
+import { usePersistentState } from '@/lib/usePersistentState';
 
 export default function AdminKepuasanLulusanPage() {
+  const surveyStore = usePersistentState<any[]>(STORAGE_KEYS.GRADUATE_SURVEYS, []);
+  const followUpStore = usePersistentState<Record<number, string>>(STORAGE_KEYS.SURVEY_FOLLOW_UPS, {});
   const [surveyResults, setSurveyResults] = useState([
     { id: 1, aspek: 'Etika, Integritas, dan Kedisiplinan', sangatBaik: 96.6, baik: 3.4, cukup: 0.0, kurang: 0.0, rtl: 'Mempertahankan pembinaan etika, disiplin, integritas, dan kepatuhan keselamatan pelayanan transportasi SDP.' },
     { id: 2, aspek: 'Keahlian Berdasarkan Bidang Ilmu (Komp. Inti)', sangatBaik: 96.7, baik: 3.3, cukup: 0.0, kurang: 0.0, rtl: 'Meningkatkan penguatan kompetensi inti melalui review kurikulum dan RPS berbasis masukan pengguna lulusan.' },
@@ -12,6 +16,7 @@ export default function AdminKepuasanLulusanPage() {
     { id: 4, aspek: 'Penggunaan Teknologi Informasi', sangatBaik: 97.1, baik: 2.9, cukup: 0.0, kurang: 0.0, rtl: 'Memperkuat literasi dan keterampilan teknologi informasi melalui pemanfaatan LMS dan software transportasi.' },
     { id: 5, aspek: 'Kemampuan Berkomunikasi', sangatBaik: 96.9, baik: 3.1, cukup: 0.0, kurang: 0.0, rtl: 'Meningkatkan kemampuan komunikasi lisan dan tulisan mahasiswa melalui presentasi dan public speaking.' },
     { id: 6, aspek: 'Kerjasama Tim & Kepemimpinan', sangatBaik: 97.1, baik: 2.9, cukup: 0.0, kurang: 0.0, rtl: 'Mempertahankan dan memperkuat kemampuan kerja sama tim melalui pembelajaran kolaboratif dan posko.' },
+    { id: 7, aspek: 'Pengembangan Diri', sangatBaik: 0, baik: 0, cukup: 0, kurang: 0, rtl: 'Meningkatkan kebiasaan belajar mandiri, adaptasi, dan pengembangan kompetensi berkelanjutan.' },
   ]);
 
   const [savedRtl, setSavedRtl] = useState(false);
@@ -20,7 +25,19 @@ export default function AdminKepuasanLulusanPage() {
     setSurveyResults(surveyResults.map((item) => (item.id === id ? { ...item, rtl: val } : item)));
   };
 
-  const handleSaveRtl = () => {
+  useEffect(() => {
+    if (!surveyStore.ready || surveyStore.value.length === 0) return;
+    const keys = ['etika', 'kompetensi', 'bahasaAsing', 'teknologiInformasi', 'komunikasi', 'kerjasamaTim', 'pengembanganDiri'];
+    setSurveyResults((current) => current.map((row, index) => {
+      const values = surveyStore.value.map((survey) => Number(survey.scores?.[keys[index]] || 0));
+      const percent = (score: number) => Math.round((values.filter((value) => value === score).length / values.length) * 1000) / 10;
+      return { ...row, sangatBaik: percent(4), baik: percent(3), cukup: percent(2), kurang: percent(1), rtl: followUpStore.value[row.id] || row.rtl };
+    }));
+  }, [surveyStore.ready, followUpStore.ready]);
+
+  const handleSaveRtl = async () => {
+    const updates = Object.fromEntries(surveyResults.map((item) => [item.id, item.rtl]));
+    if (!await followUpStore.persist(updates)) return;
     setSavedRtl(true);
     setTimeout(() => setSavedRtl(false), 3000);
   };

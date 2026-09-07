@@ -13,6 +13,7 @@ export interface UserAccount {
   prodi?: string;
   angkatan?: number;
   nim?: string;
+  statusAkademik?: 'Aktif' | 'PRALA' | 'Magang' | 'Lulus / Alumni';
 
   // Extended 32 Official Biodata Items
   tempatLahir?: string;
@@ -214,12 +215,39 @@ export const initialScholarshipOffers: ScholarshipOffer[] = [
 ];
 
 export const initialClearanceUnits = [
-  { id: 'unit-perpus', name: 'Perpustakaan Kampus', namaUnit: 'Perpustakaan Kampus', kode: 'PERPUS', code: 'PERPUS', unitCode: 10 },
-  { id: 'unit-keuangan', name: 'Subbag Keuangan & Keuangan Taruna', namaUnit: 'Subbag Keuangan & Keuangan Taruna', kode: 'KEUANGAN', code: 'KEUANGAN', unitCode: 11 },
-  { id: 'unit-ketarunaan', name: 'Pusat Ketarunaan & Pengasuhan', namaUnit: 'Pusat Ketarunaan & Pengasuhan', kode: 'KETARUNAAN', code: 'KETARUNAAN', unitCode: 12 },
-  { id: 'unit-prodi', name: 'Ketua Program Studi', namaUnit: 'Ketua Program Studi', kode: 'PRODI', code: 'PRODI', unitCode: 13 },
-  { id: 'unit-lab', name: 'Laboratorium & Bengkel Kapal', namaUnit: 'Laboratorium & Bengkel Kapal', kode: 'LABORATORIUM', code: 'LABORATORIUM', unitCode: 14 },
-];
+  'Bendahara Penerimaan', 'Unit Asrama', 'Unit Perpustakaan', 'Unit Koperasi',
+  'Unit Olahraga dan Seni', 'Kabag Keuangan dan Umum', 'Program Studi',
+  'Akademik', 'Ketarunaan', 'Kabag Adm. Akademik & Ketarunaan',
+  'Unit Bintar', 'Pengasuh', 'Unit Aktivitas', 'Ka. Pusbangkar',
+].map((name, index) => ({
+  id: `unit-${index + 1}`,
+  name,
+  namaUnit: name,
+  kode: `UNIT_${index + 1}`,
+  code: `UNIT_${index + 1}`,
+  unitCode: index + 1,
+}));
+
+export interface ClearanceApproval {
+  unitCode: number;
+  status: 'Pending' | 'Memenuhi Syarat' | 'Tidak Memenuhi Syarat';
+  catatan: string;
+  approverNama?: string;
+  approverNip?: string;
+  approvedAt?: string;
+}
+
+export interface ClearanceRequest {
+  id: string;
+  mahasiswaId: string;
+  mahasiswaNama: string;
+  nim: string;
+  prodi: string;
+  jenisPengajuan: 'PRALA' | 'LULUS' | 'CUTI' | 'BERHENTI';
+  createdAt: string;
+  approvals: ClearanceApproval[];
+  statusKeseluruhan: 'Pending' | 'Approved' | 'Rejected';
+}
 
 export interface PeriodeItem {
   id: string;

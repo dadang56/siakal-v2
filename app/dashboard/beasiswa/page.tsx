@@ -2,19 +2,43 @@
 
 import React, { useState } from 'react';
 import { GraduationCap, Upload, CheckCircle2, FileText, Bell } from 'lucide-react';
-import { initialScholarshipOffers, ScholarshipOffer } from '@/lib/mockStore';
+import { initialScholarshipOffers, ScholarshipApplication, ScholarshipOffer } from '@/lib/mockStore';
 import { Modal } from '@/components/Modal';
+import { fileToDataUrl, getCurrentUser, STORAGE_KEYS } from '@/lib/dbStorage';
+import { usePersistentState } from '@/lib/usePersistentState';
 
 export default function StudentBeasiswaPage() {
-  const [offers] = useState<ScholarshipOffer[]>(initialScholarshipOffers);
+  const offersStore = usePersistentState<ScholarshipOffer[]>(STORAGE_KEYS.SCHOLARSHIP_OFFERS, initialScholarshipOffers);
+  const applicationsStore = usePersistentState<ScholarshipApplication[]>(STORAGE_KEYS.SCHOLARSHIP_APPLICATIONS, []);
+  const offers = offersStore.value;
+  const currentUser = getCurrentUser();
   const [selectedOffer, setSelectedOffer] = useState<ScholarshipOffer | null>(null);
   const [appliedSuccess, setAppliedSuccess] = useState(false);
 
   const [ktpUrl, setKtpUrl] = useState('');
   const [transkripUrl, setTranskripUrl] = useState('');
 
-  const handleApply = (e: React.FormEvent) => {
+  const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedOffer || !currentUser) return;
+    const today = new Date().toISOString().slice(0, 10);
+    if (selectedOffer.status !== 'Buka' || today < selectedOffer.tanggalBuka || today > selectedOffer.tanggalTutup) {
+      alert('Penawaran beasiswa tidak berada dalam masa pendaftaran.');
+      return;
+    }
+    const next: ScholarshipApplication = {
+      id: `application-${Date.now()}`,
+      penawaranId: selectedOffer.id,
+      namaBeasiswa: selectedOffer.namaBeasiswa,
+      mahasiswaId: currentUser.id,
+      mahasiswaNama: currentUser.fullName,
+      prodi: currentUser.prodi || '-',
+      berkasUploaded: { identitas: ktpUrl, transkrip: transkripUrl },
+      status: 'Diajukan',
+      appliedAt: new Date().toISOString(),
+    };
+    const existing = applicationsStore.value.filter((item) => !(item.penawaranId === selectedOffer.id && item.mahasiswaId === currentUser.id));
+    if (!await applicationsStore.persist([...existing, next])) return;
     setAppliedSuccess(true);
     setTimeout(() => {
       setAppliedSuccess(false);
@@ -88,11 +112,14 @@ export default function StudentBeasiswaPage() {
             <div>
               <label className="block text-xs font-bold text-slate-800 mb-1.5">1. Scan KTP & Kartu Mahasiswa (PDF) *</label>
               <input
-                type="text"
+                type="file"
+                accept="application/pdf"
                 required
-                value={ktpUrl}
-                onChange={(e) => setKtpUrl(e.target.value)}
-                placeholder="Masukkan URL/File Scan_KTP_KTM.pdf"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  try { setKtpUrl(await fileToDataUrl(file)); } catch (error) { alert((error as Error).message); }
+                }}
                 className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300 text-slate-900"
               />
             </div>
@@ -100,11 +127,14 @@ export default function StudentBeasiswaPage() {
             <div>
               <label className="block text-xs font-bold text-slate-800 mb-1.5">2. Transkrip Nilai Legalisir (PDF) *</label>
               <input
-                type="text"
+                type="file"
+                accept="application/pdf"
                 required
-                value={transkripUrl}
-                onChange={(e) => setTranskripUrl(e.target.value)}
-                placeholder="Masukkan URL/File Transkrip_Nilai.pdf"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  try { setTranskripUrl(await fileToDataUrl(file)); } catch (error) { alert((error as Error).message); }
+                }}
                 className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300 text-slate-900"
               />
             </div>

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, CheckCircle2, Plus, Edit3, Trash2, AlertTriangle, Sparkles, X, Check } from 'lucide-react';
 import { initialPeriodeList, PeriodeItem } from '@/lib/mockStore';
+import { setStoredItem, STORAGE_KEYS } from '@/lib/dbStorage';
 
 export default function AdminPeriodePage() {
   const [periodes, setPeriodes] = useState<PeriodeItem[]>(() => {
@@ -39,7 +40,7 @@ export default function AdminPeriodePage() {
   const savePeriodes = (newList: PeriodeItem[]) => {
     setPeriodes(newList);
     try {
-      localStorage.setItem('siakal_periode_list', JSON.stringify(newList));
+      void setStoredItem(STORAGE_KEYS.PERIODES, newList);
     } catch (e) {}
   };
 
@@ -63,13 +64,17 @@ export default function AdminPeriodePage() {
   const handleAddPeriode = (e: React.FormEvent) => {
     e.preventDefault();
     const tahunStr = `${newTahunStart}/${newTahunEnd}`;
+    if (periodes.some((period) => period.kodePeriode === newKodePeriode || (period.tahun === tahunStr && period.semester === newSemester))) {
+      alert('Periode atau kode periode tersebut sudah terdaftar.');
+      return;
+    }
     const newId = `per-${Date.now()}`;
 
     const newObj: PeriodeItem = {
       id: newId,
       tahun: tahunStr,
       semester: newSemester,
-      isAktif: isMakeActive,
+      isAktif: isMakeActive || !periodes.some((period) => period.isAktif),
       kodePeriode: newKodePeriode,
     };
 
@@ -89,6 +94,15 @@ export default function AdminPeriodePage() {
   const handleSaveEditPeriode = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingPeriode) return;
+    if (periodes.some((period) => period.id !== editingPeriode.id && (period.kodePeriode === editingPeriode.kodePeriode || (period.tahun === editingPeriode.tahun && period.semester === editingPeriode.semester)))) {
+      alert('Periode atau kode periode tersebut sudah terdaftar.');
+      return;
+    }
+    const wasActive = periodes.find((period) => period.id === editingPeriode.id)?.isAktif;
+    if (wasActive && !editingPeriode.isAktif) {
+      alert('Aktifkan periode lain terlebih dahulu sebelum menonaktifkan periode ini.');
+      return;
+    }
 
     let updatedList: PeriodeItem[];
     if (editingPeriode.isAktif) {

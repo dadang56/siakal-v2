@@ -1,39 +1,31 @@
 'use client';
 
-import React, { useState } from 'react';
-import { UserCheck, Search, Download, GraduationCap, Briefcase, Building2, MapPin } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { UserCheck, Search, Download, Building2 } from 'lucide-react';
 import { exportToExcel } from '@/lib/utils/excel';
+import { getUserList, STORAGE_KEYS } from '@/lib/dbStorage';
+import { usePersistentState } from '@/lib/usePersistentState';
 
 export default function AdminAlumniDatabasePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterProdi, setFilterProdi] = useState('Semua');
 
-  const [alumnis] = useState([
-    {
-      id: 'alm-1',
-      nama: 'Deni Kurniawan, A.Md.Tra.',
-      nim: '2001015',
-      prodi: 'Studi Nautika',
-      tahunLulus: 2024,
-      statusKerja: 'Bekerja Sesuai Bidang',
-      perusahaan: 'PT Samudera Indonesia Tbk',
-      jabatan: 'Officer Perwira Kapal',
-      masaTungguBulan: 2,
-      keselarasan: 'Sangat Selaras',
-    },
-    {
-      id: 'alm-2',
-      nama: 'Siti Nurhaliza, A.Md.Tra.',
-      nim: '2003022',
-      prodi: 'Manajemen Transportasi Perairan Daratan',
-      tahunLulus: 2024,
-      statusKerja: 'Bekerja Sesuai Bidang',
-      perusahaan: 'PT Pelindo Regional 2',
-      jabatan: 'Staf Operasional Pelabuhan',
-      masaTungguBulan: 3,
-      keselarasan: 'Sangat Selaras',
-    },
-  ]);
+  const tracerStore = usePersistentState<any[]>(STORAGE_KEYS.TRACER_STUDIES, []);
+  const alumnis = useMemo(() => tracerStore.value.map((record) => {
+    const account = getUserList().find((user) => user.id === record.userId);
+    return {
+      id: record.userId,
+      nama: record.nama || account?.fullName || '-',
+      nim: account?.nim || account?.usernameOrId || '-',
+      prodi: record.prodi || account?.prodi || '-',
+      tahunLulus: record.tahunLulus || (account?.angkatan ? Number(account.angkatan) + 3 : '-'),
+      statusKerja: record.statusKerja || '-',
+      perusahaan: record.namaPerusahaan || '-',
+      jabatan: record.jabatan || '-',
+      masaTungguBulan: Number(record.masaTungguBulan || 0),
+      keselarasan: record.keselarasan || '-',
+    };
+  }), [tracerStore.value]);
 
   const filteredAlumnis = alumnis.filter((a) => {
     const matchSearch =
@@ -159,6 +151,9 @@ export default function AdminAlumniDatabasePage() {
                   </td>
                 </tr>
               ))}
+              {tracerStore.ready && filteredAlumnis.length === 0 && (
+                <tr><td colSpan={5} className="py-10 text-center text-slate-500 font-semibold">Belum ada alumni yang mengirim tracer study.</td></tr>
+              )}
             </tbody>
           </table>
         </div>

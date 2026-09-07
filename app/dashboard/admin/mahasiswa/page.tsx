@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Download, Upload, Plus, Trash2, Edit3, FileSpreadsheet, GraduationCap, AlertTriangle, Eye, X, User, Home, Users2, ChevronRight, ChevronLeft, Save } from 'lucide-react';
 import { initialAccounts, UserAccount, initialProdiList } from '@/lib/mockStore';
 import { exportToExcel, readExcelFile, downloadMahasiswaBiodataTemplate } from '@/lib/utils/excel';
+import { saveUserList } from '@/lib/dbStorage';
 
 export default function AdminMahasiswaDatabasePage() {
   // Load Mahasiswa users
@@ -141,7 +142,7 @@ export default function AdminMahasiswaDatabasePage() {
       }
       const nonMhs = allUsers.filter((u) => u.role !== 'mahasiswa' && u.role !== 'alumni');
       const newList = [...nonMhs, ...updatedMahasiswas];
-      localStorage.setItem('siakal_user_list', JSON.stringify(newList));
+      saveUserList(newList);
     } catch (e) {}
   };
 
@@ -149,6 +150,10 @@ export default function AdminMahasiswaDatabasePage() {
     e.preventDefault();
     if (!fullName || !nim) {
       alert('Mohon isi Nama Lengkap dan NIM Mahasiswa!');
+      return;
+    }
+    if (mahasiswas.some((student) => (student.nim || student.usernameOrId)?.toLowerCase() === nim.toLowerCase())) {
+      alert('NIM sudah terdaftar. Gunakan menu edit untuk memperbarui data.');
       return;
     }
 
@@ -162,6 +167,7 @@ export default function AdminMahasiswaDatabasePage() {
       initialPassword: 'SIAKAL2026!',
       prodi: prodi || prodiList[0]?.nama,
       angkatan: Number(angkatan) || 2026,
+      statusAkademik,
       isProfileCompleted: true,
       
       tempatLahir,
@@ -235,11 +241,15 @@ export default function AdminMahasiswaDatabasePage() {
   };
 
   const handleConfirmBatchImport = () => {
-    const newStudents: UserAccount[] = importedPreview.map((row, idx) => {
-      const studentNim = row['NIM']?.toString() || row['Username/NIM/NIP']?.toString() || `2026${idx + 100}`;
-      const isAlumni = row['Status Akademik'] === 'Lulus / Alumni' || row['Role'] === 'alumni';
+    const allowedStatuses: UserAccount['statusAkademik'][] = ['Aktif', 'PRALA', 'Magang', 'Lulus / Alumni'];
+    const newStudents: UserAccount[] = importedPreview.flatMap((row, idx) => {
+      const studentNim = row['NIM']?.toString().trim() || row['Username/NIM/NIP']?.toString().trim();
+      if (!studentNim || !row['Nama Lengkap']) return [];
+      const rawStatus = String(row['Status Akademik'] || '').trim();
+      const normalizedStatus: UserAccount['statusAkademik'] = rawStatus === 'Alumni' ? 'Lulus / Alumni' : rawStatus === 'Mahasiswa Aktif' ? 'Aktif' : (allowedStatuses.includes(rawStatus as UserAccount['statusAkademik']) ? rawStatus as UserAccount['statusAkademik'] : 'Aktif');
+      const isAlumni = normalizedStatus === 'Lulus / Alumni' || String(row['Role']).toLowerCase() === 'alumni';
 
-      return {
+      return [{
         id: `imported-mhs-${Date.now()}-${idx}`,
         fullName: row['Nama Lengkap'] || 'Mahasiswa Baru',
         email: row['Email'] || `${studentNim}@siakal.poltek.ac.id`,
@@ -249,6 +259,7 @@ export default function AdminMahasiswaDatabasePage() {
         initialPassword: row['Password Initial']?.toString() || 'SIAKAL2026!',
         prodi: row['Program Studi'] || row['Prodi'] || prodiList[0]?.nama || 'Studi Nautika',
         angkatan: Number(row['Angkatan']) || 2026,
+        statusAkademik: isAlumni ? 'Lulus / Alumni' : normalizedStatus,
         isProfileCompleted: true,
         
         tempatLahir: row['Tempat Lahir'] || '',
@@ -280,14 +291,16 @@ export default function AdminMahasiswaDatabasePage() {
         pendidikanIbu: row['Pendidikan Ibu'] || 'SMA / SMK',
         pekerjaanIbu: row['Pekerjaan Ibu'] || 'Wirausaha',
         penghasilanIbu: row['Penghasilan Ibu'] || '',
-      };
+      }];
     });
 
-    const updated = [...mahasiswas, ...newStudents];
+    const existingNims = new Set(mahasiswas.map((student) => (student.nim || student.usernameOrId || '').toLowerCase()));
+    const uniqueStudents = newStudents.filter((student) => !existingNims.has((student.nim || '').toLowerCase()));
+    const updated = [...mahasiswas, ...uniqueStudents];
     saveAllUsers(updated);
     setShowImportModal(false);
     setImportedPreview([]);
-    alert(`Berhasil mengimpor ${newStudents.length} data mahasiswa!`);
+    alert(`Berhasil mengimpor ${uniqueStudents.length} data mahasiswa. ${newStudents.length - uniqueStudents.length} baris duplikat dilewati.`);
   };
 
   const handleExport = () => {
@@ -300,7 +313,7 @@ export default function AdminMahasiswaDatabasePage() {
             'Nama Lengkap': m.fullName,
             'Program Studi': m.prodi || '-',
             'Angkatan': m.angkatan || 2026,
-            'Status Akademik': m.role === 'alumni' ? 'Alumni' : 'Mahasiswa Aktif',
+            'Status Akademik': m.statusAkademik || (m.role === 'alumni' ? 'Lulus / Alumni' : 'Aktif'),
             'Tempat Lahir': m.tempatLahir || '-',
             'Tanggal Lahir': m.tanggalLahir || '-',
             'Jenis Kelamin': m.jenisKelamin || '-',
@@ -320,9 +333,18 @@ export default function AdminMahasiswaDatabasePage() {
             'Alat Transportasi': m.alatTransportasi || '-',
             'Status Tempat Tinggal': m.statusTempatTinggal || '-',
             'Nama Ayah': m.namaAyah || '-',
+            'NIK Ayah': m.nikAyah || '-',
+            'Tanggal Lahir Ayah': m.tanggalLahirAyah || '-',
+            'Pendidikan Ayah': m.pendidikanAyah || '-',
             'Pekerjaan Ayah': m.pekerjaanAyah || '-',
+            'Penghasilan Ayah': m.penghasilanAyah || '-',
             'Nama Ibu': m.namaIbu || '-',
+            'NIK Ibu': m.nikIbu || '-',
+            'Tanggal Lahir Ibu': m.tanggalLahirIbu || '-',
+            'Pendidikan Ibu': m.pendidikanIbu || '-',
             'Pekerjaan Ibu': m.pekerjaanIbu || '-',
+            'Penghasilan Ibu': m.penghasilanIbu || '-',
+            'Password Initial': m.initialPassword || 'SIAKAL2026!',
           })),
         },
       ],

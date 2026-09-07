@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Anchor, Search, FileText, CheckCircle2, AlertCircle, Download, ExternalLink, Ship, Building2, User, UserCheck, Calendar, Clock, AlertTriangle, Eye, X } from 'lucide-react';
 import { exportToExcel } from '@/lib/utils/excel';
+import { getStoredItem, STORAGE_KEYS } from '@/lib/dbStorage';
 
 export default function AdminMonitoringPralaPage() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -56,8 +57,23 @@ export default function AdminMonitoringPralaPage() {
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('siakal_prala_admin');
-      if (stored) setPralaData(JSON.parse(stored));
+      const records = getStoredItem<any[]>(STORAGE_KEYS.PRALA_RECORDS, []);
+      const reportMap = getStoredItem<Record<string, any[]>>(STORAGE_KEYS.PRALA_REPORTS, {});
+      if (records.length) setPralaData(records.map((record) => ({
+        id: record.mahasiswaId,
+        nim: record.nim || '-',
+        nama: record.mahasiswaNama,
+        prodi: record.prodi || '-',
+        angkatan: record.angkatan || '-',
+        perusahaan: record.namaPerusahaan,
+        namaKapal: record.namaKapal,
+        tipeKapal: record.tipeKapal,
+        contactPerson: record.namaContact,
+        noHpContact: record.noHpContact,
+        tanggalMulaiPrala: record.tanggalMulaiPrala,
+        pembimbingDosen: record.pembimbingDosen || '-',
+        reports: reportMap[record.mahasiswaId] || [],
+      })));
     } catch (e) {}
   }, []);
 

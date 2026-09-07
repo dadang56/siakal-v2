@@ -107,18 +107,30 @@ export function MobileDock({ role, prodi }: MobileDockProps) {
 
   const allNavItems = getAllNavItems();
 
-  const quickDockItems = [
-    { label: 'Beranda', href: '/dashboard', icon: LayoutDashboard },
-    { label: role === 'admin' ? 'Mahasiswa' : 'PRALA', href: role === 'admin' ? '/dashboard/admin/mahasiswa' : '/dashboard/prala/bimbingan', icon: role === 'admin' ? Users : Anchor },
-    { label: role === 'admin' ? 'Clearance' : 'Beasiswa', href: role === 'admin' ? '/dashboard/admin/clearance-out' : '/dashboard/beasiswa', icon: role === 'admin' ? FileCheck : GraduationCap },
-  ];
+  const quickDockItems = (() => {
+    const home = { label: 'Beranda', href: '/dashboard', icon: LayoutDashboard };
+    switch (role) {
+      case 'admin': return [home, { label: 'Mahasiswa', href: '/dashboard/admin/mahasiswa', icon: Users }, { label: 'Clearance', href: '/dashboard/admin/clearance-out', icon: FileCheck }];
+      case 'mahasiswa': {
+        const activity = isMTPD
+          ? { label: 'Magang', href: '/dashboard/magang', icon: Briefcase }
+          : { label: 'PRALA', href: '/dashboard/prala/bimbingan', icon: Anchor };
+        return [home, activity, { label: 'Beasiswa', href: '/dashboard/beasiswa', icon: GraduationCap }];
+      }
+      case 'dosen': return [home, { label: 'Bimbingan', href: '/dashboard/prala/bimbingan', icon: Anchor }, { label: 'Clearance', href: '/dashboard/clearance-out/approval', icon: FileCheck }];
+      case 'pembimbing_lapangan': return [home, { label: 'Magang', href: '/dashboard/pembimbing-lapangan', icon: Briefcase }];
+      case 'alumni': return [home, { label: 'Tracer', href: '/dashboard/tracer-study', icon: UserCheck }, { label: 'Clearance', href: '/dashboard/clearance-out/pengajuan', icon: FileCheck }];
+      case 'unit_approver': return [home, { label: 'Persetujuan', href: '/dashboard/clearance-out/approval', icon: FileCheck }, { label: 'Profil', href: '/dashboard/profil-unit', icon: Settings }];
+      default: return [home];
+    }
+  })();
 
   return (
     <>
       {/* ULTRA-CLEAN LIGHT APPLE-STYLE MOBILE NAVIGATION SHEET */}
       <AnimatePresence>
         {isMenuOpen && (
-          <div className="fixed inset-0 z-50 md:hidden flex flex-col justify-end">
+          <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end">
             {/* Dark Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -199,7 +211,7 @@ export function MobileDock({ role, prodi }: MobileDockProps) {
       </AnimatePresence>
 
       {/* FLOATING LIGHT APPLE DOCK PILL BAR AT BOTTOM OF MOBILE SCREEN */}
-      <div className="md:hidden fixed bottom-4 inset-x-4 z-40">
+      <div className="lg:hidden fixed bottom-[max(1rem,env(safe-area-inset-bottom))] inset-x-2 sm:inset-x-4 z-40">
         <div className="glass-panel bg-white/95 border border-slate-200 shadow-2xl p-1.5 flex items-center justify-around rounded-2xl relative max-w-md mx-auto">
           {quickDockItems.map((item) => {
             const Icon = item.icon;
@@ -208,14 +220,14 @@ export function MobileDock({ role, prodi }: MobileDockProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center gap-1 py-1.5 px-3 rounded-xl text-[10px] font-bold transition-colors ${
+                className={`flex flex-col items-center gap-1 py-1.5 px-2 sm:px-3 rounded-xl text-[10px] font-bold transition-colors min-w-0 ${
                   isActive
                     ? 'text-sky-600 font-extrabold bg-sky-500/10'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 <Icon className="w-5 h-5" />
-                <span>{item.label}</span>
+                <span className="truncate max-w-[70px]">{item.label}</span>
               </Link>
             );
           })}
@@ -224,7 +236,7 @@ export function MobileDock({ role, prodi }: MobileDockProps) {
           <button
             type="button"
             onClick={() => setIsMenuOpen(true)}
-            className="flex flex-col items-center gap-1 py-1.5 px-3.5 rounded-xl text-[10px] font-extrabold text-sky-600 bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 transition-all cursor-pointer active:scale-95"
+            className="flex flex-col items-center gap-1 py-1.5 px-2 sm:px-3.5 rounded-xl text-[10px] font-extrabold text-sky-600 bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 transition-all cursor-pointer active:scale-95 min-w-0"
           >
             <Grid className="w-5 h-5 text-sky-500" />
             <span>Semua Menu</span>

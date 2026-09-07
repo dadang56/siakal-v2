@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, Plus, FileText, Upload, CheckCircle2, UserPlus, Trash2, AlertTriangle, Users, UserCheck, Building2, X } from 'lucide-react';
 import { initialAccounts, UserAccount } from '@/lib/mockStore';
+import { setStoredItem, STORAGE_KEYS } from '@/lib/dbStorage';
 
 export default function AdminMagangPage() {
   const [users, setUsers] = useState<UserAccount[]>(() => {
@@ -51,7 +52,7 @@ export default function AdminMagangPage() {
   const saveGroups = (newList: any[]) => {
     setKelompoks(newList);
     try {
-      localStorage.setItem('siakal_magang_groups', JSON.stringify(newList));
+      void setStoredItem(STORAGE_KEYS.MAGANG_GROUPS, newList);
     } catch (e) {}
   };
 

@@ -4,9 +4,12 @@ import React, { useState } from 'react';
 import { Trophy, CheckCircle2, XCircle, Download, ExternalLink, Plus } from 'lucide-react';
 import { initialAchievements, Achievement } from '@/lib/mockStore';
 import { exportToExcel } from '@/lib/utils/excel';
+import { STORAGE_KEYS } from '@/lib/dbStorage';
+import { usePersistentState } from '@/lib/usePersistentState';
 
 export default function AdminPrestasiPage() {
-  const [achievements, setAchievements] = useState<Achievement[]>(initialAchievements);
+  const achievementsStore = usePersistentState<Achievement[]>(STORAGE_KEYS.ACHIEVEMENTS, initialAchievements);
+  const achievements = achievementsStore.value;
   const [showAddModal, setShowAddModal] = useState(false);
 
   const [mhsNama, setMhsNama] = useState('');
@@ -17,7 +20,7 @@ export default function AdminPrestasiPage() {
   const [penyelenggara, setPenyelenggara] = useState('');
 
   const handleSetStatus = (id: string, status: 'APPROVED' | 'REJECTED') => {
-    setAchievements(achievements.map((a) => (a.id === id ? { ...a, statusVerifikasi: status } : a)));
+    void achievementsStore.persist(achievements.map((a) => (a.id === id ? { ...a, statusVerifikasi: status } : a)));
   };
 
   const handleAddDirect = (e: React.FormEvent) => {
@@ -36,7 +39,7 @@ export default function AdminPrestasiPage() {
       statusVerifikasi: 'APPROVED',
     };
 
-    setAchievements([...achievements, newAch]);
+    void achievementsStore.persist([...achievements, newAch]);
     setShowAddModal(false);
     setMhsNama('');
     setNamaEvent('');

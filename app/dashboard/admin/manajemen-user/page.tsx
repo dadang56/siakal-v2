@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { Users, Upload, Download, Plus, Trash2, CheckCircle2, Search, Key, Copy, Eye, EyeOff, Check, AlertTriangle, FileSpreadsheet, Edit3, RefreshCw, UserCheck, UserPlus, X } from 'lucide-react';
 import { initialAccounts, UserAccount, initialProdiList } from '@/lib/mockStore';
 import { readExcelFile, downloadUserImportTemplate, exportToExcel } from '@/lib/utils/excel';
+import { saveUserList } from '@/lib/dbStorage';
+
+const VALID_ROLES: UserAccount['role'][] = ['admin', 'mahasiswa', 'dosen', 'pembimbing_lapangan', 'alumni', 'unit_approver'];
 
 export default function AdminUserManagementPage() {
   const [users, setUsers] = useState<UserAccount[]>(() => {
@@ -90,9 +93,7 @@ export default function AdminUserManagementPage() {
 
   const saveUsers = (newList: UserAccount[]) => {
     setUsers(newList);
-    try {
-      localStorage.setItem('siakal_user_list', JSON.stringify(newList));
-    } catch (e) {}
+    saveUserList(newList);
   };
 
   const confirmDeleteUser = () => {
@@ -149,36 +150,47 @@ export default function AdminUserManagementPage() {
   };
 
   const handleConfirmBatchImport = () => {
-    const newAccounts: UserAccount[] = importedPreview.map((row, idx) => {
-      const r = (row['Role']?.toString().toLowerCase().replace(' ', '_') as any) || 'mahasiswa';
+    const newAccounts: UserAccount[] = importedPreview.flatMap((row, idx) => {
+      const normalizedRole = String(row['Role'] || 'mahasiswa').toLowerCase().trim().replace(/\s+/g, '_');
+      if (!VALID_ROLES.includes(normalizedRole as UserAccount['role'])) return [];
+      const r = normalizedRole as UserAccount['role'];
+      const loginId = row['Username/NIM/NIP']?.toString().trim() || row['ID Masuk (NIM/NIP)']?.toString().trim();
+      const email = row['Email']?.toString().trim();
+      if (!loginId || !email || !row['Nama Lengkap']) return [];
       const isMhsOrAlumni = r === 'mahasiswa' || r === 'alumni';
 
-      return {
+      return [{
         id: `imported-${Date.now()}-${idx}`,
-        email: row['Email'] || `user${idx}@siakal.poltek.ac.id`,
+        email,
         fullName: row['Nama Lengkap'] || 'Pengguna Baru',
         role: r,
-        usernameOrId: row['Username/NIM/NIP']?.toString() || row['Email'],
+        usernameOrId: loginId,
         initialPassword: row['Password Initial']?.toString() || 'SIAKAL2026!',
-        nim: isMhsOrAlumni ? row['Username/NIM/NIP']?.toString() : undefined,
-        nip: r === 'dosen' ? row['Username/NIM/NIP']?.toString() : undefined,
-        prodi: isMhsOrAlumni ? (row['Prodi'] || prodiList[0]?.nama) : undefined,
+        nim: isMhsOrAlumni ? loginId : undefined,
+        nip: r === 'dosen' ? loginId : undefined,
+        prodi: isMhsOrAlumni ? (row['Prodi'] || row['Program Studi'] || prodiList[0]?.nama) : undefined,
         angkatan: isMhsOrAlumni ? (Number(row['Angkatan']) || 2026) : undefined,
         isProfileCompleted: true,
-      };
+      }];
     });
 
-    const updated = [...users, ...newAccounts];
+    const existingIds = new Set(users.flatMap((user) => [user.email.toLowerCase(), (user.usernameOrId || '').toLowerCase()]));
+    const uniqueAccounts = newAccounts.filter((user) => !existingIds.has(user.email.toLowerCase()) && !existingIds.has((user.usernameOrId || '').toLowerCase()));
+    const updated = [...users, ...uniqueAccounts];
     saveUsers(updated);
     setShowImportModal(false);
     setImportedPreview([]);
-    alert(`Berhasil mengimpor ${newAccounts.length} akun pengguna baru ke sistem!`);
+    alert(`Berhasil mengimpor ${uniqueAccounts.length} akun. ${newAccounts.length - uniqueAccounts.length} baris duplikat dilewati.`);
   };
 
   const handleAddSingleUser = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newFullName || !newUsernameOrId || !newPassword) {
       alert('Mohon isi Nama, Username/ID Masuk, dan Password!');
+      return;
+    }
+    if (!selectedMhsId && users.some((user) => user.usernameOrId?.toLowerCase() === newUsernameOrId.toLowerCase() || (newEmail && user.email.toLowerCase() === newEmail.toLowerCase()))) {
+      alert('ID masuk atau email sudah digunakan oleh akun lain.');
       return;
     }
 

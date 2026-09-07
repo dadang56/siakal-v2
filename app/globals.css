@@ -32,3 +32,21 @@
 ::-webkit-scrollbar-thumb {
   @apply bg-slate-300 rounded-full hover:bg-sky-500 transition-colors;
 }
+
+@media print {
+  header,
+  aside,
+  nav,
+  .print-hidden {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  body {
+    background: white !important;
+  }
+}

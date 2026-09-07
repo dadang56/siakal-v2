@@ -4,9 +4,12 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { GraduationCap, Plus, FileCheck, Trash2, AlertTriangle } from 'lucide-react';
 import { initialScholarshipOffers, ScholarshipOffer } from '@/lib/mockStore';
+import { STORAGE_KEYS } from '@/lib/dbStorage';
+import { usePersistentState } from '@/lib/usePersistentState';
 
 export default function AdminBeasiswaPage() {
-  const [offers, setOffers] = useState<ScholarshipOffer[]>(initialScholarshipOffers);
+  const offersStore = usePersistentState<ScholarshipOffer[]>(STORAGE_KEYS.SCHOLARSHIP_OFFERS, initialScholarshipOffers);
+  const offers = offersStore.value;
   const [showModal, setShowModal] = useState(false);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
@@ -33,7 +36,7 @@ export default function AdminBeasiswaPage() {
       status: 'Buka',
     };
 
-    setOffers([...offers, newOffer]);
+    void offersStore.persist([...offers, newOffer]);
     setShowModal(false);
     setNamaBeasiswa('');
     setSasaran('');
@@ -41,7 +44,7 @@ export default function AdminBeasiswaPage() {
 
   const confirmDeleteOffer = () => {
     if (!deleteTargetId) return;
-    setOffers(offers.filter((o) => o.id !== deleteTargetId));
+    void offersStore.persist(offers.filter((o) => o.id !== deleteTargetId));
     setDeleteTargetId(null);
   };
 

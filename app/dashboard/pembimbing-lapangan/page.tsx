@@ -14,6 +14,7 @@ export interface MagangActivityLog {
   supervisorName?: string;
   supervisorTtdUrl?: string;
 }
+import { setStoredItem, STORAGE_KEYS } from '@/lib/dbStorage';
 
 export default function FieldSupervisorPage() {
   // Supervisor Profile & Signature State
@@ -49,7 +50,7 @@ export default function FieldSupervisorPage() {
 
   useEffect(() => {
     try {
-      const storedProfile = localStorage.getItem('siakal_pembimbing_profile');
+      const storedProfile = localStorage.getItem(STORAGE_KEYS.FIELD_SUPERVISORS) || localStorage.getItem('siakal_pembimbing_profile');
       if (storedProfile) {
         const p = JSON.parse(storedProfile);
         if (p.supervisorName) setSupervisorName(p.supervisorName);
@@ -66,7 +67,7 @@ export default function FieldSupervisorPage() {
     e.preventDefault();
     const prof = { supervisorName, supervisorJabatan, supervisorTtdUrl };
     try {
-      localStorage.setItem('siakal_pembimbing_profile', JSON.stringify(prof));
+      void setStoredItem(STORAGE_KEYS.FIELD_SUPERVISORS, prof);
     } catch (e) {}
     setProfileSaved(true);
     setTimeout(() => setProfileSaved(false), 3000);
@@ -75,7 +76,7 @@ export default function FieldSupervisorPage() {
   const saveLogs = (updatedLogs: MagangActivityLog[]) => {
     setActivities(updatedLogs);
     try {
-      localStorage.setItem('siakal_magang_activity_logs', JSON.stringify(updatedLogs));
+      void setStoredItem(STORAGE_KEYS.MAGANG_LOGS, updatedLogs);
     } catch (e) {}
   };
 

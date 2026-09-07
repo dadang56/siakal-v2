@@ -14,11 +14,15 @@ import {
   BarChart3,
   ArrowRight,
 } from 'lucide-react';
-import { initialAchievements, Achievement, initialProdiList, initialAccounts } from '@/lib/mockStore';
+import { initialAchievements, Achievement, initialProdiList, initialAccounts, initialPeriodeList, PeriodeItem } from '@/lib/mockStore';
+import { getStoredItem, STORAGE_KEYS } from '@/lib/dbStorage';
 
 export default function MainDashboardPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [achievements] = useState<Achievement[]>(initialAchievements);
+  const [activePeriod, setActivePeriod] = useState<PeriodeItem>(initialPeriodeList[0]);
+  const [achievements, setAchievements] = useState<Achievement[]>(initialAchievements);
+  const [pralaRecords, setPralaRecords] = useState<any[]>([]);
+  const [magangReports, setMagangReports] = useState<Record<string, any>>({});
 
   // Synchronous State Initializers to tie directly to Master Data Prodi & User List
   const [prodis, setProdis] = useState<any[]>(() => {
@@ -79,6 +83,12 @@ export default function MainDashboardPage() {
 
       const storedClearance = localStorage.getItem('siakal_clearance_list');
       if (storedClearance) setClearanceList(JSON.parse(storedClearance));
+      setAchievements(getStoredItem(STORAGE_KEYS.ACHIEVEMENTS, initialAchievements));
+      setClearanceList(getStoredItem(STORAGE_KEYS.CLEARANCE_REQUESTS, []));
+      setPralaRecords(getStoredItem(STORAGE_KEYS.PRALA_RECORDS, []));
+      setMagangReports(getStoredItem(STORAGE_KEYS.MAGANG_REPORTS, {}));
+      const periods = getStoredItem<PeriodeItem[]>(STORAGE_KEYS.PERIODES, initialPeriodeList);
+      setActivePeriod(periods.find((period) => period.isAktif) || periods[0]);
     } catch (e) {
       setCurrentUser({ fullName: 'Administrator SIAKAL', role: 'admin' });
     }
@@ -106,21 +116,17 @@ export default function MainDashboardPage() {
   const totalAlumni = alumnis.length;
 
   // PRALA Mahasiswa (Nautika & Permesinan)
-  const pralaMahasiswas = mahasiswas.filter(
-    (u) => u.prodi && (u.prodi.toLowerCase().includes('nautika') || u.prodi.toLowerCase().includes('permesinan'))
-  );
-  const totalPrala = pralaMahasiswas.length;
+  const pralaMahasiswas = mahasiswas.filter((u) => u.statusAkademik === 'PRALA');
+  const totalPrala = pralaRecords.length || pralaMahasiswas.length;
 
   // Magang MTPD Mahasiswa
-  const magangMahasiswas = mahasiswas.filter(
-    (u) => u.prodi && (u.prodi.toLowerCase().includes('mtpd') || u.prodi.toLowerCase().includes('manajemen transportasi'))
-  );
-  const totalMagang = magangMahasiswas.length;
+  const magangMahasiswas = mahasiswas.filter((u) => u.statusAkademik === 'Magang');
+  const totalMagang = Object.keys(magangReports).length || magangMahasiswas.length;
 
   // Clearance Out Actual Rate
   const approvedClearance = clearanceList.filter((c) => c.statusKeseluruhan === 'Approved').length;
   const totalClearance = clearanceList.length;
-  const clearanceRatePercentage = totalClearance > 0 ? Math.round((approvedClearance / totalClearance) * 100) : 100;
+  const clearanceRatePercentage = totalClearance > 0 ? Math.round((approvedClearance / totalClearance) * 100) : 0;
 
   // Calculate per prodi distribution 100% EXACTLY from registered Mahasiswa list
   const prodiDistribution = prodis.map((p, idx) => {
@@ -165,7 +171,7 @@ export default function MainDashboardPage() {
         </div>
 
         <div className="px-3.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-xs font-extrabold text-sky-600 dark:text-sky-400 shrink-0 font-mono">
-          2025/2026 Ganjil
+          {activePeriod?.tahun} {activePeriod?.semester}
         </div>
       </div>
 

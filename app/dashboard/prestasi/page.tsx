@@ -4,11 +4,13 @@ import React, { useState } from 'react';
 import { Trophy, Plus, Upload, CheckCircle2, Award, ExternalLink } from 'lucide-react';
 import { initialAchievements, Achievement } from '@/lib/mockStore';
 import { Modal } from '@/components/Modal';
+import { fileToDataUrl, getCurrentUser, STORAGE_KEYS } from '@/lib/dbStorage';
+import { usePersistentState } from '@/lib/usePersistentState';
 
 export default function StudentPrestasiPage() {
-  const [myAchievements, setMyAchievements] = useState<Achievement[]>(
-    initialAchievements.filter((a) => a.mahasiswaId === 'user-mhs-1')
-  );
+  const currentUser = getCurrentUser();
+  const achievementsStore = usePersistentState<Achievement[]>(STORAGE_KEYS.ACHIEVEMENTS, initialAchievements);
+  const myAchievements = achievementsStore.value.filter((a) => a.mahasiswaId === currentUser?.id);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [namaEvent, setNamaEvent] = useState('');
@@ -18,23 +20,24 @@ export default function StudentPrestasiPage() {
   const [penyelenggara, setPenyelenggara] = useState('');
   const [fileBuktiUrl, setFileBuktiUrl] = useState('');
 
-  const handleSubmitMandiri = (e: React.FormEvent) => {
+  const handleSubmitMandiri = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!namaEvent) return;
     const newAch: Achievement = {
       id: `ach-mhs-${Date.now()}`,
-      mahasiswaId: 'user-mhs-1',
-      mahasiswaNama: 'Ahmad Fauzi',
+      mahasiswaId: currentUser?.id || 'unknown',
+      mahasiswaNama: currentUser?.fullName || 'Mahasiswa',
       namaEvent,
       jenisPrestasi,
       tingkat,
       capaian,
       penyelenggara: penyelenggara || 'Panitia Event',
       tanggalKegiatan: new Date().toISOString().split('T')[0],
-      fileBuktiUrl: fileBuktiUrl || 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+      fileBuktiUrl,
       statusVerifikasi: 'Pending',
     };
-    setMyAchievements([...myAchievements, newAch]);
+    const saved = await achievementsStore.persist([...achievementsStore.value, newAch]);
+    if (!saved) return;
     setNamaEvent('');
     setPenyelenggara('');
     setIsModalOpen(false);
@@ -113,6 +116,17 @@ export default function StudentPrestasiPage() {
               onChange={(e) => setNamaEvent(e.target.value)}
               placeholder="Contoh: Lomba Inovasi Maritime Student Challenge 2026"
               className="w-full glass-input text-xs sm:text-sm font-semibold py-2.5 px-3.5 bg-white border-slate-300 text-slate-900"
+            />
+            <input
+              type="file"
+              accept="application/pdf,image/png,image/jpeg"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                try { setFileBuktiUrl(await fileToDataUrl(file)); }
+                catch (error) { alert((error as Error).message); }
+              }}
+              className="mt-2 block w-full text-xs text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-sky-50 file:px-3 file:py-2 file:font-bold file:text-sky-700"
             />
           </div>
 

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Building2, Plus, Trash2, Edit3, AlertTriangle, Search, Download } from 'lucide-react';
 import { initialProdiList } from '@/lib/mockStore';
-import { getProdiList, saveProdiList, idbGet, STORAGE_KEYS } from '@/lib/dbStorage';
+import { getProdiList, saveProdiList, getUserList, saveUserList, idbGet, STORAGE_KEYS } from '@/lib/dbStorage';
 import { exportToExcel } from '@/lib/utils/excel';
 
 export default function AdminProdiPage() {
@@ -50,6 +50,10 @@ export default function AdminProdiPage() {
   const handleAddProdi = (e: React.FormEvent) => {
     e.preventDefault();
     if (!namaProdi || !kodeProdi) return;
+    if (prodis.some((item) => item.nama.toLowerCase() === namaProdi.toLowerCase() || item.kode.toLowerCase() === kodeProdi.toLowerCase())) {
+      alert('Nama atau kode program studi sudah terdaftar.');
+      return;
+    }
     const updated = [...prodis, { id: `prodi-${Date.now()}`, nama: namaProdi, jenjang, kode: kodeProdi }];
     saveProdis(updated);
     setNamaProdi('');
@@ -60,13 +64,27 @@ export default function AdminProdiPage() {
   const handleSaveEditProdi = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProdi) return;
+    if (prodis.some((item) => item.id !== editingProdi.id && (item.nama.toLowerCase() === editingProdi.nama.toLowerCase() || item.kode.toLowerCase() === editingProdi.kode.toLowerCase()))) {
+      alert('Nama atau kode program studi sudah digunakan.');
+      return;
+    }
+    const previous = prodis.find((item) => item.id === editingProdi.id);
     const updatedList = prodis.map((p) => (p.id === editingProdi.id ? editingProdi : p));
     saveProdis(updatedList);
+    if (previous && previous.nama !== editingProdi.nama) {
+      saveUserList(getUserList().map((user) => user.prodi === previous.nama ? { ...user, prodi: editingProdi.nama } : user));
+    }
     setEditingProdi(null);
   };
 
   const confirmDeleteProdi = () => {
     if (!deleteTargetId) return;
+    const target = prodis.find((item) => item.id === deleteTargetId);
+    if (target && getUserList().some((user) => user.prodi === target.nama)) {
+      alert('Program studi masih digunakan oleh data pengguna dan tidak dapat dihapus.');
+      setDeleteTargetId(null);
+      return;
+    }
     const updated = prodis.filter((p) => p.id !== deleteTargetId);
     saveProdis(updated);
     setDeleteTargetId(null);

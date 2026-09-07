@@ -104,7 +104,7 @@ export function Sidebar({ role, prodi }: SidebarProps) {
   const navItems = getNavItems();
 
   return (
-    <aside className="w-72 hidden md:block shrink-0">
+    <aside className="w-72 hidden lg:block shrink-0">
       <div className="glass-panel p-4 sticky top-20 space-y-4 max-h-[calc(100vh-6rem)] overflow-y-auto">
         <div className="px-3 py-2">
           <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">

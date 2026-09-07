@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Anchor, Save, Building2, Ship, UserCheck, Phone, Mail, CheckCircle2, Calendar, Clock, AlertCircle } from 'lucide-react';
+import { getCurrentUser, setStoredItem, STORAGE_KEYS } from '@/lib/dbStorage';
 
 export default function PralaDataKapalPage() {
   const [namaPerusahaan, setNamaPerusahaan] = useState('PT Samudera Indonesia Tbk');
@@ -16,7 +17,8 @@ export default function PralaDataKapalPage() {
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('siakal_prala_student_data');
+      const user = getCurrentUser();
+      const stored = localStorage.getItem(user ? `${STORAGE_KEYS.PRALA_DATA}:${user.id}` : STORAGE_KEYS.PRALA_DATA) || localStorage.getItem(STORAGE_KEYS.PRALA_DATA);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed.namaPerusahaan) setNamaPerusahaan(parsed.namaPerusahaan);
@@ -39,7 +41,7 @@ export default function PralaDataKapalPage() {
     return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const dataToSave = {
       namaPerusahaan,
@@ -51,9 +53,15 @@ export default function PralaDataKapalPage() {
       emailContact,
       tanggalMulaiPrala,
     };
-    try {
-      localStorage.setItem('siakal_prala_student_data', JSON.stringify(dataToSave));
-    } catch (e) {}
+    const user = getCurrentUser();
+    if (!user || !await setStoredItem(`${STORAGE_KEYS.PRALA_DATA}:${user.id}`, dataToSave)) {
+      alert('Data PRALA gagal disimpan. Silakan coba lagi.');
+      return;
+    }
+    await setStoredItem(STORAGE_KEYS.PRALA_DATA, dataToSave);
+    const records = JSON.parse(localStorage.getItem(STORAGE_KEYS.PRALA_RECORDS) || '[]');
+    const others = Array.isArray(records) ? records.filter((record: any) => record.mahasiswaId !== user.id) : [];
+    await setStoredItem(STORAGE_KEYS.PRALA_RECORDS, [...others, { ...dataToSave, mahasiswaId: user.id, mahasiswaNama: user.fullName, nim: user.nim, prodi: user.prodi }]);
 
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);

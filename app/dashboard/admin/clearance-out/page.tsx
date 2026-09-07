@@ -3,28 +3,13 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { FileCheck, Printer, CheckCircle2, Clock, Search } from 'lucide-react';
+import { ClearanceRequest } from '@/lib/mockStore';
+import { STORAGE_KEYS } from '@/lib/dbStorage';
+import { usePersistentState } from '@/lib/usePersistentState';
 
 export default function AdminClearanceOutPage() {
-  const [requests] = useState([
-    {
-      id: 'co-req-1',
-      mahasiswaNama: 'Ahmad Fauzi',
-      nim: '2101034',
-      prodi: 'Studi Nautika',
-      jenisPengajuan: 'PRALA',
-      clearedUnitsCount: 14,
-      statusKeseluruhan: 'Approved',
-    },
-    {
-      id: 'co-req-2',
-      mahasiswaNama: 'Bambang Pratama',
-      nim: '2102011',
-      prodi: 'MTPD',
-      jenisPengajuan: 'LULUS',
-      clearedUnitsCount: 11,
-      statusKeseluruhan: 'Pending',
-    },
-  ]);
+  const store = usePersistentState<ClearanceRequest[]>(STORAGE_KEYS.CLEARANCE_REQUESTS, []);
+  const requests = store.value.map((request) => ({ ...request, clearedUnitsCount: request.approvals.filter((approval) => approval.status === 'Memenuhi Syarat').length }));
 
   return (
     <div className="space-y-6">
@@ -86,7 +71,8 @@ export default function AdminClearanceOutPage() {
                   </td>
                   <td className="py-3.5 px-3 text-right">
                     <Link
-                      href="/dashboard/clearance-out/print"
+                      href={r.statusKeseluruhan === 'Approved' ? `/dashboard/clearance-out/print?id=${r.id}` : '#'}
+                      aria-disabled={r.statusKeseluruhan !== 'Approved'}
                       className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-bold text-xs inline-flex items-center gap-1.5 shadow-md"
                     >
                       <Printer className="w-4 h-4 text-sky-400" />

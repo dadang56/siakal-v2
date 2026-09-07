@@ -3,6 +3,9 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GraduationCap, Upload, FileText, CheckCircle2, XCircle, Bell, ArrowLeft } from 'lucide-react';
+import { ScholarshipApplication } from '@/lib/mockStore';
+import { fileToDataUrl, STORAGE_KEYS } from '@/lib/dbStorage';
+import { usePersistentState } from '@/lib/usePersistentState';
 
 export default function AdminBeasiswaSeleksiPage() {
   const router = useRouter();
@@ -14,20 +17,19 @@ export default function AdminBeasiswaSeleksiPage() {
   const [docsUploaded, setDocsUploaded] = useState(false);
 
   // Applicants list
-  const [applicants, setApplicants] = useState([
-    { id: 'app-1', mhsNama: 'Ahmad Fauzi', nim: '2101034', prodi: 'Studi Nautika', status: 'Diajukan' },
-    { id: 'app-2', mhsNama: 'Bambang Pratama', nim: '2102011', prodi: 'MTPD', status: 'Diajukan' },
-  ]);
+  const applicationsStore = usePersistentState<ScholarshipApplication[]>(STORAGE_KEYS.SCHOLARSHIP_APPLICATIONS, []);
+  const applicants = applicationsStore.value.map((item) => ({ ...item, mhsNama: item.mahasiswaNama, nim: item.mahasiswaId }));
 
   const [notificationSent, setNotificationSent] = useState(false);
 
-  const handleUploadRapatDocs = (e: React.FormEvent) => {
+  const handleUploadRapatDocs = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!await applicationsStore.persist(applicationsStore.value)) return;
     setDocsUploaded(true);
   };
 
   const handleSetStatus = (appId: string, newStatus: 'DITERIMA' | 'TIDAK_DITERIMA') => {
-    setApplicants(applicants.map((a) => (a.id === appId ? { ...a, status: newStatus } : a)));
+    void applicationsStore.persist(applicationsStore.value.map((a) => (a.id === appId ? { ...a, status: newStatus } : a)));
   };
 
   const handleFinalizeAndNotify = () => {
